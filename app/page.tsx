@@ -37,11 +37,8 @@ function LandingContent() {
       <div className="bg-glow"></div>
       
       <div className="glass-card animate-fade">
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ background: 'rgba(49, 130, 206, 0.1)', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Hub Financeiro Bot</span>
-          </div>
-        </div>
+        {/* Pílula removida para minimalismo total */}
+
 
         {success ? (
           <div style={{ textAlign: 'left' }}>
