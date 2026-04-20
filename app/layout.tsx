@@ -18,6 +18,10 @@ export const metadata: Metadata = {
      capable: true,
      title: "Hub Bot",
      statusBarStyle: "black-translucent"
+  },
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
   }
 };
 
