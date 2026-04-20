@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCustomerBySecretKey } from '@/lib/notionAdmin';
-import { parseFinancialText } from '@/lib/gemini';
-import { addTransactionToClientNotion } from '@/lib/notionClient';
+import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
+import { addTransactionToClientNotion, getBalancetesData } from '@/lib/notionClient';
 
 // Esta é a porta de entrada. Quando o iOS mandar o áudio, ele vai bater nesta URL usando o método POST
 export async function POST(request: Request) {
@@ -37,6 +37,18 @@ export async function POST(request: Request) {
 
     // Acordamos o Gemini para ler o texto e organizar nos moldes matemáticos da sua tabela
     const aiResult = await parseFinancialText(text);
+
+    if (aiResult.intent === 'consulta') {
+      console.log(`🤖 Usuário fez uma consulta. Resgatando balancetes no Notion de ${name}...`);
+      const balancetesReport = await getBalancetesData(notionAccessToken);
+      
+      console.log('🗣️ Pedindo conselho ao Zimbroo (Gemini) sem travas JSON...');
+      const advice = await generateFinancialAdvice(aiResult.pergunta, balancetesReport);
+      
+      console.log('💬 Resposta do Consultor falado gerada com sucesso.');
+      // Devolvemos o texto limpo para o iOS Shortcuts poder ler em voz alta
+      return NextResponse.json({ success: true, message: advice }, { status: 200 });
+    }
 
     console.log(`🤖 Gemini terminou de classificar (É uma ${aiResult.intent}). Inserindo no Notion particular de ${name}...`);
 
