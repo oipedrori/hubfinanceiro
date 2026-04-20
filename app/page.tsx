@@ -1,6 +1,4 @@
-'use client';
-
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
@@ -11,8 +9,26 @@ function LandingContent() {
   const name = searchParams.get('name');
   const error = searchParams.get('error');
 
+  const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other');
+
+  useEffect(() => {
+    // Detectar plataforma
+    const ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod|Macintosh/i.test(ua)) {
+      setPlatform('ios');
+    } else if (/Android/i.test(ua)) {
+      setPlatform('android');
+    }
+
+    // Salvar chave no localStorage se ela existir na URL
+    if (secretKey) {
+      localStorage.setItem('zimbroo_secret_key', secretKey);
+      console.log('Chave Zimbroo salva localmente.');
+    }
+  }, [secretKey]);
+
   const clientId = '31ed872b-594c-81a0-8494-0037918ae6cc';
-  // Atualizado para o novo domínio solicitado
+  // ... rest of logic
   const redirectUri = 'https://hubfinanceirobot.vercel.app/api/auth/callback/notion';
   const notionAuthUrl = `https://api.notion.com/v1/oauth/authorize?client_id=${clientId}&response_type=code&owner=user&redirect_uri=${encodeURIComponent(redirectUri)}`;
 
@@ -31,7 +47,7 @@ function LandingContent() {
           <div style={{ textAlign: 'left' }}>
             <h1 className="hero-title" style={{ fontSize: '2.5rem' }}>Pronto, <span>{name}</span>!</h1>
             <p className="subtitle" style={{ marginBottom: '1.5rem' }}>
-              Seu Notion foi conectado com sucesso. Agora você já pode configurar seu iPhone.
+              Seu Notion foi conectado com sucesso. {platform === 'ios' ? 'Agora você já pode configurar seu iPhone.' : 'Agora ficou fácil usar no seu Android.'}
             </p>
             
             <div className="success-box">
@@ -48,17 +64,26 @@ function LandingContent() {
                   COPIAR
                 </button>
               </div>
-              <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#94a3b8' }}>
-                Abra o app Atalhos no seu iPhone e cole esta chave no campo "Zimbroo Secret Key".
-              </p>
             </div>
 
-            <button 
-              onClick={() => window.location.href = '/'}
-              style={{ marginTop: '2rem', background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}
-            >
-              Voltar ao início
-            </button>
+            <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {platform === 'ios' ? (
+                <a href="https://www.icloud.com/shortcuts/f76389ba24984b9caba892875da8e1c3" target="_blank" className="btn-primary">
+                  Baixar Atalho do iOS
+                </a>
+              ) : (
+                <a href="/bot" className="btn-primary">
+                  Usar Web App (Modo Voz)
+                </a>
+              )}
+              
+              <button 
+                onClick={() => window.location.href = '/'}
+                style={{ background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}
+              >
+                Voltar ao início
+              </button>
+            </div>
           </div>
         ) : (
           <>

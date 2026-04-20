@@ -13,8 +13,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zimbroo - Hub Financeiro",
+  title: "Hub Financeiro Bot",
   description: "Gerencie suas finanças com o poder da voz e Inteligência Artificial.",
+  manifest: "/manifest.json",
+  themeColor: "#3182ce",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  appleWebApp: {
+     capable: true,
+     title: "Hub Bot",
+     statusBarStyle: "black-translucent"
+  }
 };
 
 export default function RootLayout({

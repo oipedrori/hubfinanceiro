@@ -1,0 +1,21 @@
+{
+  "name": "Hub Financeiro Bot",
+  "short_name": "Hub Bot",
+  "description": "Lançamentos financeiros por voz via Notion",
+  "start_url": "/bot",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#3182ce",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
