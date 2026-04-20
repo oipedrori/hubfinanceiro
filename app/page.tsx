@@ -1,66 +1,104 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+
+function LandingContent() {
+  const searchParams = useSearchParams();
+  const success = searchParams.get('success');
+  const secretKey = searchParams.get('key');
+  const name = searchParams.get('name');
+  const error = searchParams.get('error');
+
+  const clientId = '31ed872b-594c-81a0-8494-0037918ae6cc';
+  // Atualizado para o novo domínio solicitado
+  const redirectUri = 'https://hubfinanceirobot.vercel.app/api/auth/callback/notion';
+  const notionAuthUrl = `https://api.notion.com/v1/oauth/authorize?client_id=${clientId}&response_type=code&owner=user&redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+  return (
+    <main className="main">
+      <div className="bg-glow"></div>
+      
+      <div className="glass-card animate-fade">
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
+            <span style={{ color: '#10b981', fontWeight: 600 }}>Hub Financeiro</span>
+          </div>
+        </div>
+
+        {success ? (
+          <div style={{ textAlign: 'left' }}>
+            <h1 className="hero-title" style={{ fontSize: '2.5rem' }}>Pronto, <span>{name}</span>!</h1>
+            <p className="subtitle" style={{ marginBottom: '1.5rem' }}>
+              Seu Notion foi conectado com sucesso. Agora você já pode configurar seu iPhone.
+            </p>
+            
+            <div className="success-box">
+              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: '#10b981' }}>SUA CHAVE SECRETA ZIMBROO:</p>
+              <div className="key-display">
+                <span>{secretKey}</span>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(secretKey || '');
+                    alert('Chave copiada!');
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  COPIAR
+                </button>
+              </div>
+              <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+                Abra o app Atalhos no seu iPhone e cole esta chave no campo "Zimbroo Secret Key".
+              </p>
+            </div>
+
+            <button 
+              onClick={() => window.location.href = '/'}
+              style={{ marginTop: '2rem', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '10px 20px', borderRadius: '50px', cursor: 'pointer' }}
+            >
+              Voltar ao início
+            </button>
+          </div>
+        ) : (
+          <>
+            <h1 className="hero-title">Zimbroo <span>Hub.</span></h1>
+            <p className="subtitle">
+              Sua gestão financeira, agora com o poder da voz e Inteligência Artificial integrada ao seu Notion. 
+              Sem formulários, sem planilhas chatas. Apenas fale.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+              <a href={notionAuthUrl} className="btn-primary">
+                <Image src="https://www.notion.so/images/favicon.ico" alt="Notion" width={20} height={20} />
+                Conectar meu Notion
+              </a>
+              
+              {error && (
+                <p style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '10px' }}>
+                  Ops! Houve um erro na conexão: {error}. Tente novamente.
+                </p>
+              )}
+              
+              <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '1.5rem' }}>
+                Seguro. Privado. Seus dados continuam no seu Notion.
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+
+      <footer style={{ marginTop: '4rem', color: '#334155', fontSize: '0.8rem' }}>
+        © 2026 Zimbroo Hub Financeiro. Todos os direitos reservados.
+      </footer>
+    </main>
+  );
+}
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <Suspense fallback={<div className="main"><div className="hero-title">Carregando...</div></div>}>
+      <LandingContent />
+    </Suspense>
   );
 }
