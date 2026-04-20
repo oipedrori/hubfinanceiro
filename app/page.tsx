@@ -23,7 +23,7 @@ function LandingContent() {
       <div className="glass-card animate-fade">
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
-            <span style={{ color: '#10b981', fontWeight: 600 }}>Hub Financeiro</span>
+            <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Hub Financeiro Bot</span>
           </div>
         </div>
 
@@ -62,7 +62,7 @@ function LandingContent() {
           </div>
         ) : (
           <>
-            <h1 className="hero-title">Zimbroo <span>Hub.</span></h1>
+            <h1 className="hero-title">Hub Financeiro <span>Bot</span></h1>
             <p className="subtitle">
               Sua gestão financeira, agora com o poder da voz e Inteligência Artificial integrada ao seu Notion. 
               Sem formulários, sem planilhas chatas. Apenas fale.
@@ -88,8 +88,8 @@ function LandingContent() {
         )}
       </div>
 
-      <footer style={{ marginTop: '4rem', color: '#334155', fontSize: '0.8rem' }}>
-        © 2026 Zimbroo Hub Financeiro. Todos os direitos reservados.
+      <footer style={{ marginTop: '4rem', color: '#64748b', fontSize: '0.8rem' }}>
+        © 2026 Hub Financeiro Bot. Todos os direitos reservados.
       </footer>
     </main>
   );
