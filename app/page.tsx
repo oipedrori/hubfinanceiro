@@ -1,3 +1,5 @@
+'use client';
+
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -14,7 +16,10 @@ function LandingContent() {
   useEffect(() => {
     // Detectar plataforma
     const ua = navigator.userAgent || '';
-    if (/iPhone|iPad|iPod|Macintosh/i.test(ua)) {
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isMac = /Macintosh/i.test(ua);
+    
+    if (isIOS || isMac) {
       setPlatform('ios');
     } else if (/Android/i.test(ua)) {
       setPlatform('android');
@@ -23,12 +28,10 @@ function LandingContent() {
     // Salvar chave no localStorage se ela existir na URL
     if (secretKey) {
       localStorage.setItem('zimbroo_secret_key', secretKey);
-      console.log('Chave Zimbroo salva localmente.');
     }
   }, [secretKey]);
 
   const clientId = '31ed872b-594c-81a0-8494-0037918ae6cc';
-  // ... rest of logic
   const redirectUri = 'https://hubfinanceirobot.vercel.app/api/auth/callback/notion';
   const notionAuthUrl = `https://api.notion.com/v1/oauth/authorize?client_id=${clientId}&response_type=code&owner=user&redirect_uri=${encodeURIComponent(redirectUri)}`;
 
@@ -39,7 +42,6 @@ function LandingContent() {
       <div className="glass-card animate-fade">
         {/* Pílula removida para minimalismo total */}
 
-
         {success ? (
           <div style={{ textAlign: 'left' }}>
             <h1 className="hero-title" style={{ fontSize: '2.5rem' }}>Pronto, <span>{name}</span>!</h1>
@@ -48,7 +50,7 @@ function LandingContent() {
             </p>
             
             <div className="success-box">
-              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary)' }}>SUA CHAVE SECRETA ZIMBROO:</p>
+              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary)' }}>SUA CHAVE SECRETA HUB BOT:</p>
               <div className="key-display">
                 <span>{secretKey}</span>
                 <button 
@@ -76,7 +78,7 @@ function LandingContent() {
               
               <button 
                 onClick={() => window.location.href = '/'}
-                style={{ background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}
+                style={{ background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', width: '100%' }}
               >
                 Voltar ao início
               </button>
@@ -93,7 +95,7 @@ function LandingContent() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <a href={notionAuthUrl} className="btn-primary">
                 <img src="https://www.notion.so/images/favicon.ico" alt="Notion" width={20} height={20} />
-                Conectar meu Notion
+                Conectar seu Notion
               </a>
               
               {error && (
