@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     // 3. O cliente é válido e ativo! 
-    const { name, notionAccessToken, workspaceId } = customer.data;
+    const { name, notionAccessToken, workspaceId } = customer.data!;
     
     if (!notionAccessToken || !workspaceId) {
        return NextResponse.json({ error: 'O cadastro do cliente está incompleto (Falta URL ou Token Notion).' }, { status: 400 });
