@@ -41,10 +41,16 @@ export async function getCustomerBySecretKey(secretKey: string) {
     
     let workspaceId = null;
     if (workspaceUrl) {
-      const match = workspaceUrl.match(/[a-f0-9]{32}/i);
-      if (match) {
-         const raw = match[0];
-         workspaceId = `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`;
+      // Se já for um UUID completo (36 chars com hífens), usamos direto
+      if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(workspaceUrl)) {
+        workspaceId = workspaceUrl;
+      } else {
+        // Se for uma URL, tentamos extrair o hash de 32 chars e formatar
+        const match = workspaceUrl.match(/[a-f0-9]{32}/i);
+        if (match) {
+           const raw = match[0];
+           workspaceId = `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`;
+        }
       }
     }
 
