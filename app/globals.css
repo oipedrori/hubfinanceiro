@@ -22,13 +22,14 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  font-family: 'Noto Sans', sans-serif !important;
 }
 
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: 'Noto Sans', sans-serif !important;
   background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
