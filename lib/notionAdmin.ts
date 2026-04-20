@@ -71,7 +71,47 @@ export async function createNewCustomer(data: { name: string, notionAccessToken:
     throw new Error('Configuração de Admin ausente.');
   }
 
-  // Gera uma chave secreta aleatória curta para o usuário
+  // 1. Verificar se o cliente já existe por Workspace ID
+  const existingRes = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      filter: { property: 'ID do Workspace', rich_text: { equals: data.workspaceId } },
+      page_size: 1
+    })
+  });
+
+  if (existingRes.ok) {
+    const existingData = await existingRes.json();
+    if (existingData.results.length > 0) {
+      const existingPage = existingData.results[0];
+      const existingKey = existingPage.properties['Zimbroo Secret Key']?.rich_text[0]?.plain_text;
+      
+      // Se achamos o cara, atualizamos apenas o Token de Acesso (caso tenha mudado) e retornamos a chave velha
+      if (existingKey) {
+        await fetch(`https://api.notion.com/v1/pages/${existingPage.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Notion-Version': '2022-06-28',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            properties: {
+              'Notion Access Tolken': { rich_text: [{ text: { content: data.notionAccessToken } }] }
+            }
+          })
+        });
+        return { secretKey: existingKey };
+      }
+    }
+  }
+
+  // 2. Se não existe, cria um novo como antes
   const randomSuffix = Math.random().toString(36).substring(2, 7);
   const secretKey = `zimbroo_${randomSuffix}`;
 
