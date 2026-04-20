@@ -60,7 +60,7 @@ a {
 .glass-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 0; /* Minimalist boxes */
+  border-radius: 16px; /* Slightly more curved SaaS card */
   padding: 3rem;
   max-width: 500px;
   width: 100%;
@@ -96,7 +96,7 @@ a {
   background: var(--primary);
   color: #ffffff;
   padding: 0.8rem 2.5rem;
-  border-radius: 9999px; /* Pill shape */
+  border-radius: 12px; /* Curved corners instead of pill */
   font-weight: 600;
   font-size: 1rem;
   transition: opacity 0.2s ease;
@@ -118,9 +118,9 @@ a {
 
 /* Success UI */
 .success-box {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(49, 130, 206, 0.05);
   border: 1px solid var(--primary);
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 1.5rem;
   margin-top: 2rem;
   text-align: left;

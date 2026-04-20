@@ -22,7 +22,7 @@ function LandingContent() {
       
       <div className="glass-card animate-fade">
         <div style={{ marginBottom: '2rem' }}>
-          <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
+          <div style={{ background: 'rgba(49, 130, 206, 0.1)', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
             <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Hub Financeiro Bot</span>
           </div>
         </div>
@@ -35,7 +35,7 @@ function LandingContent() {
             </p>
             
             <div className="success-box">
-              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: '#10b981' }}>SUA CHAVE SECRETA ZIMBROO:</p>
+              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary)' }}>SUA CHAVE SECRETA ZIMBROO:</p>
               <div className="key-display">
                 <span>{secretKey}</span>
                 <button 
@@ -43,7 +43,7 @@ function LandingContent() {
                     navigator.clipboard.writeText(secretKey || '');
                     alert('Chave copiada!');
                   }}
-                  style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontWeight: 600 }}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
                 >
                   COPIAR
                 </button>
@@ -55,7 +55,7 @@ function LandingContent() {
 
             <button 
               onClick={() => window.location.href = '/'}
-              style={{ marginTop: '2rem', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', padding: '10px 20px', borderRadius: '50px', cursor: 'pointer' }}
+              style={{ marginTop: '2rem', background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' }}
             >
               Voltar ao início
             </button>
