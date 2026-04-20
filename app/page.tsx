@@ -50,7 +50,7 @@ function LandingContent() {
             </p>
             
             <div className="success-box">
-              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary)' }}>SUA CHAVE SECRETA HUB BOT:</p>
+              <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary)' }}>SUA CHAVE SECRETA:</p>
               <div className="key-display">
                 <span>{secretKey}</span>
                 <button 
@@ -67,7 +67,7 @@ function LandingContent() {
 
             <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {platform === 'ios' ? (
-                <a href="https://www.icloud.com/shortcuts/f76389ba24984b9caba892875da8e1c3" target="_blank" className="btn-primary">
+                <a href="https://www.icloud.com/shortcuts/c50627e44e3443229d99954c39c5d326" target="_blank" className="btn-primary">
                   Baixar Atalho do iOS
                 </a>
               ) : (
