@@ -70,7 +70,7 @@ function LandingContent() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <a href={notionAuthUrl} className="btn-primary">
-                <Image src="https://www.notion.so/images/favicon.ico" alt="Notion" width={20} height={20} />
+                <img src="https://www.notion.so/images/favicon.ico" alt="Notion" width={20} height={20} />
                 Conectar meu Notion
               </a>
               
@@ -97,7 +97,7 @@ function LandingContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="main"><div className="hero-title">Carregando...</div></div>}>
+    <Suspense fallback={<div className="main" style={{ background: '#0a0c10', color: 'white' }}><div className="hero-title">Carregando...</div></div>}>
       <LandingContent />
     </Suspense>
   );
