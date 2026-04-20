@@ -65,6 +65,16 @@ function LandingContent() {
               </div>
             </div>
 
+            <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '1rem' }}>Como configurar no iPhone:</p>
+              <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6' }}>
+                <li style={{ marginBottom: '8px' }}>Clique no botão azul **"Baixar Atalho"** abaixo.</li>
+                <li style={{ marginBottom: '8px' }}>**Copie** sua chave secreta gerada acima.</li>
+                <li style={{ marginBottom: '8px' }}>Ao abrir o Atalho no seu iPhone, localize o campo **"Zimbroo Secret Key"** e cole sua chave lá.</li>
+                <li>Pronto! Agora é só falar com a Siri ou clicar no ícone para lançar suas finanças.</li>
+              </ol>
+            </div>
+
             <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {platform === 'ios' ? (
                 <a href="https://www.icloud.com/shortcuts/c50627e44e3443229d99954c39c5d326" target="_blank" className="btn-primary">
