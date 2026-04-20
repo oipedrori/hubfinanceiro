@@ -16,10 +16,10 @@ export async function parseFinancialText(text: string) {
 
   // O Prompt Perfeito! (Baseado nas especificações que você me deu das tabelas)
   const prompt = `Você é um assistente financeiro ultra preciso atuando no backend do Hub Financeiro.
-O usuário enviará um texto ou transcrição de áudio grosseira de uma transação financeira.
+O usuário enviará um texto ou transcrição de áudio grosseira de uma transação financeira ou de uma pergunta/consulta contábil.
 ATENÇÃO: A data de referência de 'HOJE' é ${dateBRT}. Use essa exata data quando o usuário disser 'hoje' ou não citar nenhuma referência de dia.
 
-Sua primeira missão: Identifique se ela é "despesa" ou "receita".
+Sua primeira missão: Identifique se ela é "despesa", "receita", ou "consulta".
 
 Se você classificar como DESPESA devolva as propriedades:
 - "intent": "despesa"
@@ -38,6 +38,10 @@ Se você classificar como RECEITA devolva as propriedades:
 - "data": a data em YYYY-MM-DD. Se não falado, use hoje.
 - "tipo_receita": escolha ESTRITAMENTE: "Salário", "Empréstimo", "Reembolso", ou "Freela"
 
+Se você classificar como CONSULTA (ex: perguntas sobre saúde financeira, saldos ou conselhos):
+- "intent": "consulta"
+- "pergunta": texto transcrito do usuário contendo a pergunta ou pedido (string)
+
 Use as strings com a exata capitalização exigida. Não retorne NADA ALÉM do objeto JSON.
 
 TEXTO DO USUÁRIO A SER PROCESSADO:
@@ -53,5 +57,40 @@ TEXTO DO USUÁRIO A SER PROCESSADO:
   } catch (err) {
     console.error("Erro Ocorreu no Gemini:", err);
     throw new Error('Deu ruim no contato com a IA do Gemini.');
+  }
+}
+
+export async function generateFinancialAdvice(pergunta: string, balancetesData: string) {
+  // Para a resposta livre falada, NÃO limitamos o JSON. O robô está livre para gerar texto normal.
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  
+  const prompt = `Você é o "Zimbroo", um conselheiro financeiro autônomo, gentil, motivador e analítico.
+O cliente te testou / te perguntou algo via áudio do celular (ex. Dúvidas sobre finanças, saldo, dicas de compras).
+Sua resposta em texto será lida em voz alta de volta para ele pelo sistema do celular na rua ou no carro.
+
+AOS SEUS OLHOS ESTÁ O EXTRATO FINANCEIRO (BALANCETES DOS ÚLTIMOS MESES) DELE:
+---
+${balancetesData}
+---
+
+E ELE TE PERGUNTOU:
+"${pergunta}"
+
+SUA MISSÃO:
+Gere uma resposta conversacional impecável em português do brasil. 
+Aja como um amigo conselheiro.
+Você NÃO TEM TEMPO DE SOBRA! Responda de forma PONTUAL, com o limite estrito de 2 a 4 frases, senão a gravação fica longa e entediante.
+- Se o saldo dele estiver negativo, dê um alerta carinhoso mas real.
+- Se estiver positivo, motive-o.
+- Se ele não tiver cadastrado muitos dados ainda, brinque sobre ter poucos dados recentes no Notion.
+Dê apenas o texto puro como retorno, pronto para virar áudio.
+`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (err) {
+    console.error("Erro no conselheiro Gemini:", err);
+    throw new Error('O Consultor não conseguiu gerar a recomendação.');
   }
 }

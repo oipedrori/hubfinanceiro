@@ -56,3 +56,49 @@ export async function addTransactionToClientNotion(clientAccessToken: string, wo
   
   return await createRes.json();
 }
+
+export async function getBalancetesData(clientAccessToken: string) {
+  const searchRes = await fetch('https://api.notion.com/v1/search', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${clientAccessToken}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: 'Balancetes',
+      filter: { value: 'database', property: 'object' }
+    })
+  });
+
+  if (!searchRes.ok) throw new Error("Falha na busca pela tabela Balancetes do cliente");
+  const searchData = await searchRes.json();
+  if (searchData.results.length === 0) {
+    return 'O banco "Balancetes" não foi encontrado na conta.';
+  }
+  const targetDbId = searchData.results[0].id;
+
+  // Baixa os últimos meses disponíveis ordenados por padrão (o Notion organiza)
+  const rowsRes = await fetch(`https://api.notion.com/v1/databases/${targetDbId}/query`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${clientAccessToken}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ page_size: 4 })
+  });
+  const rowsData = await rowsRes.json();
+
+  if(rowsData.results.length === 0) return 'O Balancete do cliente não contém meses registrados.';
+
+  const relatorio = rowsData.results.map((row: any) => {
+    const mes = row.properties['Mês']?.title[0]?.plain_text || 'Desconhecido';
+    const entradas = row.properties['Entradas']?.rollup?.number || 0;
+    const saidas = row.properties['Saídas']?.rollup?.number || 0;
+    const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
+    return `[Mês: ${mes}] Entradas: R$${entradas.toFixed(2)} | Saídas: R$${saidas.toFixed(2)} | Balanço Final: R$${resultado.toFixed(2)}`;
+  });
+
+  return relatorio.join('\n');
+}
