@@ -14,8 +14,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL('/?error=no_code', request.url));
   }
 
-  const clientId = process.env.NOTION_CLIENT_ID;
-  const clientSecret = process.env.NOTION_CLIENT_SECRET;
+  const clientId = process.env.NOTION_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.NOTION_OAUTH_CLIENT_SECRET;
   const redirectUri = `${new URL(request.url).origin}/api/auth/callback/notion`;
 
   try {
