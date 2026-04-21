@@ -61,20 +61,20 @@ export async function POST(request: Request) {
     const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(aiResult.valor);
 
     if (aiResult.intent === 'despesa') {
-      responseMessage = `✅ Tudo pronto, ${name}! 
-\n💸 **Despesa:** ${aiResult.descricao}
+      responseMessage = `✅ Feito, ${name}! Anotei a boa.
+\n🍕 **O que foi:** ${aiResult.descricao}
 💰 **Valor:** ${valorFormatado}
 📂 **Categoria:** ${aiResult.categoria}
 💳 **Pagamento:** ${aiResult.metodo_pagamento}
-\nJá deixei tudo registrado no seu Notion. Manda a próxima! 🚀`;
+\nJá deixei tudo salvo lá no seu Notion. Se precisar de mais alguma coisa, é só chamar! 🚀`;
     } else if (aiResult.intent === 'receita') {
-      responseMessage = `✅ Boa, ${name}! Receita registrada.
-\n📈 **Receita:** ${aiResult.descricao}
-💰 **Valor:** ${valorFormatado}
+      responseMessage = `✅ Mandou muito, ${name}! Dinheiro na conta.
+\n💰 **Entrada:** ${aiResult.descricao}
+📈 **Valor:** ${valorFormatado}
 🏷️ **Tipo:** ${aiResult.tipo_receita}
-\nDinheiro no bolso! Tudo anotado. 🚀`;
+\nRelatório atualizado! Vamos pra cima! 🚀`;
     } else {
-      responseMessage = `✅ Entendido, ${name}! Lançamento realizado com sucesso.`;
+      responseMessage = `✅ Certinho, ${name}! Tudo anotado por aqui.`;
     }
 
     return NextResponse.json({ 

@@ -27,7 +27,7 @@ Se você classificar como DESPESA devolva as propriedades:
 - "valor": o valor financeiro limpo de moedas (numero)
 - "data": a data citada no texto (YYYY-MM-DD). Se não falado, use a data de hoje.
 - "tipo_despesa": escolha ESTRITAMENTE: "Móvel", "Recorrente", ou "Parcelada"
-- "metodo_pagamento": escolha ESTRITAMENTE: "Crédito", "Pix", "Dinheiro", "Transferência", ou "Débito"
+- "metodo_pagamento": escolha ESTRITAMENTE: "Crédito", "Pix", "Dinheiro", "Transferência", ou "Débito". SE NÃO MENCIONADO NO TEXTO, USE O PADRÃO: "Crédito".
 - "categoria": escolha ESTRITAMENTE: "Alimentação", "Comunicação", "Doação", "Educação", "Equipamentos", "Impostos", "Investimento", "Lazer", "Moradia", "Pet", "Saúde", "Seguro", "Transporte", "Vestuário", "Doações", "Indeterminado", "Higiene Pessoal", ou "Outros"
 - "num_parcelas": numero inteiro (se for à vista ou não mencionado parcelas, mande 1).
 
