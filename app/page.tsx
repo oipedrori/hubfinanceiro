@@ -56,9 +56,9 @@ function LandingContent() {
                 <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '1rem' }}>Como configurar no iPhone:</p>
                 <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6' }}>
                   <li style={{ marginBottom: '8px' }}>Copie sua chave secreta gerada logo abaixo.</li>
-                  <li style={{ marginBottom: '8px' }}>Clique no botão "Baixar Atalho" no final desta página.</li>
-                  <li style={{ marginBottom: '8px' }}>Ao abrir o Atalho no seu iPhone, localize o campo Zimbroo Secret Key e cole sua chave lá.</li>
-                  <li>Pronto! Agora é só falar com a Siri ou clicar no ícone para lançar suas finanças.</li>
+                  <li style={{ marginBottom: '8px' }}>Clique no botão azul "Baixar Atalho" no final desta página.</li>
+                  <li style={{ marginBottom: '8px' }}>Na primeira execução do Atalho, ele solicitará o seu código. Basta colar a chave que você copiou.</li>
+                  <li>Adicione o atalho na página inicial do seu celular para ter o Hub Financeiro sempre à mão.</li>
                 </ol>
               </div>
             )}
