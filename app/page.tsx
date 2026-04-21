@@ -57,7 +57,7 @@ function LandingContent() {
                 <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6' }}>
                   <li style={{ marginBottom: '8px' }}>Copie sua chave secreta gerada logo abaixo.</li>
                   <li style={{ marginBottom: '8px' }}>Clique no botão azul "Baixar Atalho" no final desta página.</li>
-                  <li style={{ marginBottom: '8px' }}>Na primeira execução do Atalho, ele solicitará o seu código. Basta colar a chave que você copiou.</li>
+                  <li style={{ marginBottom: '8px' }}>Ao adicionar o seu Atalho, ele solicitará o seu código. Basta colar a chave que você copiou.</li>
                   <li>Adicione o atalho na página inicial do seu celular para ter o Hub Financeiro sempre à mão.</li>
                 </ol>
               </div>
