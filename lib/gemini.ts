@@ -81,13 +81,14 @@ E ELE TE PERGUNTOU:
 "${pergunta}"
 
 SUA MISSÃO:
-1. Analise o momento atual do mês e o fluxo de caixa.
-2. Aplique mentalmente a regra 50/30/20 (50% Necessidades, 30% Lazer, 20% Investimento) para avaliar a saúde dos balancetes.
-3. Projete o fechamento do mês: baseado no que já entrou e saiu, ele terminará no azul ou no vermelho?
-4. Dê conselhos práticos: se sobrar, onde investir? Se faltar, onde cortar?
-5. Seja pontual! Responda de forma PONTUAL e amigável em no máximo 4 a 5 frases para não ser entediante.
+1. Analise o momento atual do mês e o fluxo de caixa, PRIORIZANDO os dados de 2026. Ignore dados de 2025 ao falar de 'este mês'.
+2. Cite VALORES REAIS (R$) do balancete em sua análise para dar clareza ao cliente.
+3. Aplique a regra 50/30/20 para avaliar a saúde dos balancetes.
+4. Projete o fechamento do mês: baseado no que já entrou e saiu, ele terminará no azul ou no vermelho?
+5. Formate sua resposta em 2 ou 3 parágrafos curtos para facilitar a leitura.
+6. Seja amigável e pontual em no máximo 5 ou 6 frases.
 
-Responda como um amigo mentor que entende de números. Dê apenas o texto puro.`;
+Responda como um amigo mentor que entende de números. Dê apenas o texto puro, quebrado em parágrafos.`;
 
   try {
     const result = await model.generateContent(prompt);
