@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCustomerBySecretKey } from '@/lib/notionAdmin';
+import { getCustomerBySecretKey, updateCustomerDbIds } from '@/lib/notionAdmin';
 import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
 import { addTransactionToClientNotion, getBalancetesData } from '@/lib/notionClient';
 
@@ -27,7 +27,10 @@ export async function POST(request: Request) {
     }
 
     // 3. O cliente é válido e ativo! 
-    const { name, notionAccessToken, workspaceId } = customer.data!;
+    const { 
+      name, notionAccessToken, workspaceId, 
+      despesasDbId, receitasDbId, balancetesDbId, pageId 
+    } = customer.data!;
     
     if (!notionAccessToken || !workspaceId) {
        return NextResponse.json({ error: 'O cadastro do cliente está incompleto (Falta URL ou Token Notion).' }, { status: 400 });
@@ -41,7 +44,12 @@ export async function POST(request: Request) {
 
     if (aiResult.intent === 'consulta') {
       console.log(`🤖 Usuário fez uma consulta. Resgatando balancetes no Notion de ${name}...`);
-      const balancetesReport = await getBalancetesData(notionAccessToken);
+      const { data: balancetesReport, newDbId } = await getBalancetesData(notionAccessToken, balancetesDbId);
+      
+      // Se descobrimos o ID agora, salvamos para a próxima vez ser rápida
+      if (newDbId && pageId) {
+        await updateCustomerDbIds(pageId, { balancetesDbId: newDbId });
+      }
       
       console.log('🗣️ Pedindo conselho ao Consultor (Gemini) sem travas JSON...');
       const advice = await generateFinancialAdvice(aiResult.pergunta, balancetesReport, firstName);
@@ -54,13 +62,21 @@ export async function POST(request: Request) {
     console.log(`🤖 Gemini terminou de classificar (É uma ${aiResult.intent}). Inserindo no Notion particular de ${name}...`);
 
     // 4. Entregamos os números e datas organizados para a "gaveta" privada de Despesas ou Receitas desse cliente
-    await addTransactionToClientNotion(notionAccessToken, workspaceId, aiResult);
+    const isDespesa = aiResult.intent === 'despesa';
+    const cachedId = isDespesa ? despesasDbId : receitasDbId;
+    
+    const { newDbId } = await addTransactionToClientNotion(notionAccessToken, workspaceId, aiResult, cachedId);
+
+    // Salva no cache se for a primeira vez
+    if (newDbId && pageId) {
+      if (isDespesa) await updateCustomerDbIds(pageId, { despesasDbId: newDbId });
+      else await updateCustomerDbIds(pageId, { receitasDbId: newDbId });
+    }
 
     // Tudo lindo! Devolvemos mensagem de sucesso pro celular
     // 5. Gerar Resposta Humanizada
     let responseMessage = "";
     const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(aiResult.valor);
-
 
     if (aiResult.intent === 'despesa') {
       responseMessage = `✅ Tudo pronto, ${firstName}. Lançamento realizado.

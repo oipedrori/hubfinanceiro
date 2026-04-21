@@ -54,9 +54,21 @@ export async function getCustomerBySecretKey(secretKey: string) {
       }
     }
 
+    const despesasDbId = page.properties['ID DB Despesas']?.rich_text[0]?.plain_text || null;
+    const receitasDbId = page.properties['ID DB Receitas']?.rich_text[0]?.plain_text || null;
+    const balancetesDbId = page.properties['ID DB Balancetes']?.rich_text[0]?.plain_text || null;
+
     return {
       status: 'active',
-      data: { name, notionAccessToken, workspaceId }
+      data: { 
+        name, 
+        notionAccessToken, 
+        workspaceId,
+        despesasDbId,
+        receitasDbId,
+        balancetesDbId,
+        pageId: page.id
+      }
     };
   } catch (error) {
     throw new Error('Falha ao tentar se conectar ao Notion Mestre do Hub Financeiro.');
@@ -141,4 +153,26 @@ export async function createNewCustomer(data: { name: string, notionAccessToken:
   }
 
   return { secretKey };
+}
+
+export async function updateCustomerDbIds(pageId: string, ids: { despesasDbId?: string, receitasDbId?: string, balancetesDbId?: string }) {
+  const token = process.env.ADMIN_NOTION_SECRET;
+  if (!token) return;
+
+  const properties: any = {};
+  if (ids.despesasDbId) properties['ID DB Despesas'] = { rich_text: [{ text: { content: ids.despesasDbId } }] };
+  if (ids.receitasDbId) properties['ID DB Receitas'] = { rich_text: [{ text: { content: ids.receitasDbId } }] };
+  if (ids.balancetesDbId) properties['ID DB Balancetes'] = { rich_text: [{ text: { content: ids.balancetesDbId } }] };
+
+  if (Object.keys(properties).length === 0) return;
+
+  await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ properties })
+  });
 }

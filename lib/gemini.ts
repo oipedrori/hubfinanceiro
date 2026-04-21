@@ -74,9 +74,10 @@ Pergunta do ${firstName}: "${pergunta}"
 Missão:
 - COMECE SEMPRE COM: "Oi ${firstName}! 😊"
 - Use emojis relevantes ao longo de toda a resposta.
-- Analise o fluxo de caixa usando conceito 50/30/20 internamente (NÃO cite o nome da regra).
-- Cite valores (R$) e projete se o mês fecha no azul. Sugira cortes ou investimentos.
-- Use 2-3 parágrafos curtos. Máximo 5 frases. Linguagem pessoal, amigável e educada. 
+- Analise o fluxo de caixa do Mês Atual (identifique pelo número inicial do mês, ex: 04 para Abril) usando conceito 50/30/20 internamente.
+- Ignore dados de anos passados se o mês atual já tiver registros.
+- Cite valores reais (R$) e projete o fechamento do mês (azul ou vermelho). 
+- Use 2-3 parágrafos curtos. Máximo 6 frases. Linguagem pessoal e educada. 
 - Sem asteriscos ou negritos.`;
 
   try {
