@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Hub Financeiro Bot",
   description: "Gerencie suas finanças com o poder da voz e Inteligência Artificial.",
   manifest: "/manifest.json",
-  themeColor: "#3182ce",
+  themeColor: "#0085E6",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   appleWebApp: {
      capable: true,

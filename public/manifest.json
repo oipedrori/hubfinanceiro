@@ -5,7 +5,7 @@
   "start_url": "/bot",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#3182ce",
+  "theme_color": "#0085E6",
   "icons": [
     {
       "src": "/icon-192.png",
