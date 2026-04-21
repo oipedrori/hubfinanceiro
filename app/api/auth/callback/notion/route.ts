@@ -46,11 +46,13 @@ export async function GET(request: Request) {
 
     // 2. Registrar no nosso Banco de Dados de Admin
     const userName = owner?.user?.name || 'Novo Usuário Zimbroo';
+    const userEmail = owner?.user?.person?.email || null;
     
     // O workspace_id do Notion as vezes vem sem hífens, mas nosso sistema gosta deles.
     // Vamos salvar o ID puro, o notionAdmin.ts já sabe tratar no get.
     const { secretKey } = await createNewCustomer({
       name: userName,
+      email: userEmail,
       notionAccessToken: access_token,
       workspaceId: workspace_id
     });

@@ -75,7 +75,7 @@ export async function getCustomerBySecretKey(secretKey: string) {
   }
 }
 
-export async function createNewCustomer(data: { name: string, notionAccessToken: string, workspaceId: string }) {
+export async function createNewCustomer(data: { name: string, email?: string, notionAccessToken: string, workspaceId: string }) {
   const token = process.env.ADMIN_NOTION_SECRET;
   const databaseId = process.env.ADMIN_NOTION_DB_ID;
 
@@ -138,6 +138,7 @@ export async function createNewCustomer(data: { name: string, notionAccessToken:
       parent: { database_id: databaseId },
       properties: {
         'Cliente': { title: [{ text: { content: data.name } }] },
+        'Email': { email: data.email || '' },
         'Zimbroo Secret Key': { rich_text: [{ text: { content: secretKey } }] },
         'Notion Access Tolken': { rich_text: [{ text: { content: data.notionAccessToken } }] },
         'ID do Workspace': { rich_text: [{ text: { content: data.workspaceId } }] },
