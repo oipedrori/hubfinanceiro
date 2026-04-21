@@ -66,11 +66,11 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
   
   const dateBRT = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', month: 'long', year: 'numeric', day: '2-digit' });
 
-  const prompt = `Você é o "Zimbroo", um conselheiro financeiro autônomo, gentil, motivador e analítico.
-O cliente te testou / te perguntou algo via áudio do celular (ex. Dúvidas sobre finanças, saldo, dicas de compras).
-Sua resposta em texto será lida em voz alta de volta para ele pelo sistema do celular na rua ou no carro.
+  const prompt = `Você é um conselheiro financeiro autônomo, gentil, motivador e altamente analítico.
+O cliente te testou / te perguntou algo via áudio do celular. Sua resposta será lida em voz alta de volta para ele.
 
-ATENÇÃO: A DATA DE HOJE É ${dateBRT}. Use isso para identificar qual balancete abaixo é o do mês atual.
+ATENÇÃO: A DATA DE HOJE É ${dateBRT}. 
+Use isso para entender o momento do mês (início, meio ou fim) e como isso afeta a urgência dos conselhos.
 
 AOS SEUS OLHOS ESTÁ O EXTRATO FINANCEIRO (BALANCETES DOS ÚLTIMOS MESES) DELE:
 ---
@@ -81,14 +81,13 @@ E ELE TE PERGUNTOU:
 "${pergunta}"
 
 SUA MISSÃO:
-Gere uma resposta conversacional impecável em português do brasil. 
-Aja como um amigo conselheiro.
-Você NÃO TEM TEMPO DE SOBRA! Responda de forma PONTUAL, com o limite estrito de 2 a 4 frases, senão a gravação fica longa e entediante.
-- Se o saldo dele estiver negativo, dê um alerta carinhoso mas real.
-- Se estiver positivo, motive-o.
-- Se ele não tiver cadastrado muitos dados ainda, brinque sobre ter poucos dados recentes no Notion.
-Dê apenas o texto puro como retorno, pronto para virar áudio.
-`;
+1. Analise o momento atual do mês e o fluxo de caixa.
+2. Aplique mentalmente a regra 50/30/20 (50% Necessidades, 30% Lazer, 20% Investimento) para avaliar a saúde dos balancetes.
+3. Projete o fechamento do mês: baseado no que já entrou e saiu, ele terminará no azul ou no vermelho?
+4. Dê conselhos práticos: se sobrar, onde investir? Se faltar, onde cortar?
+5. Seja pontual! Responda de forma PONTUAL e amigável em no máximo 4 a 5 frases para não ser entediante.
+
+Responda como um amigo mentor que entende de números. Dê apenas o texto puro.`;
 
   try {
     const result = await model.generateContent(prompt);
