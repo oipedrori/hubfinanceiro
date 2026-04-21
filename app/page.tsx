@@ -81,7 +81,7 @@ function LandingContent() {
 
             <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {platform === 'ios' ? (
-                <a href="https://www.icloud.com/shortcuts/558275e45ac14aa897d3826bdc5ccd31" target="_blank" className="btn-primary">
+                <a href="https://www.icloud.com/shortcuts/adec613888cf4228aa07ab6386f81aa4" target="_blank" className="btn-primary">
                   Baixar Atalho do iOS
                 </a>
               ) : (
