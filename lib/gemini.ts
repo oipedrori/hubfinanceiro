@@ -65,14 +65,16 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
   const dateBRT = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', month: 'long', year: 'numeric', day: '2-digit' });
+  const currentYear = new Date().getFullYear();
 
   const prompt = `Você é um conselheiro financeiro autônomo, gentil, motivador e altamente analítico.
 O cliente te testou / te perguntou algo via áudio do celular. Sua resposta será lida em voz alta de volta para ele.
 
 ATENÇÃO: A DATA DE HOJE É ${dateBRT}. 
-Use isso para entender o momento do mês (início, meio ou fim) e como isso afeta a urgência dos conselhos.
+O Hub Financeiro funciona em ciclos anuais. Portanto, FOQUE NO ANO VIGENTE (${currentYear}). 
+Qualquer dado de anos anteriores deve ser ignorado ao analisar 'este mês' ou o 'balanço do ano'.
 
-AOS SEUS OLHOS ESTÁ O EXTRATO FINANCEIRO (BALANCETES DOS ÚLTIMOS MESES) DELE:
+AOS SEUS OLHOS ESTÁ O EXTRATO FINANCEIRO (BALANCETES DO ANO VIGENTE) DELE:
 ---
 ${balancetesData}
 ---
@@ -81,9 +83,9 @@ E ELE TE PERGUNTOU:
 "${pergunta}"
 
 SUA MISSÃO:
-1. Analise o momento atual do mês e o fluxo de caixa, PRIORIZANDO os dados de 2026. Ignore dados de 2025 ao falar de 'este mês'.
+1. Analise o momento atual do mês e o fluxo de caixa do ANO VIGENTE.
 2. Cite VALORES REAIS (R$) do balancete em sua análise para dar clareza ao cliente.
-3. Aplique a regra 50/30/20 para avaliar a saúde dos balancetes.
+3. Aplique a regra 50/30/20 para avaliar a saúde financeira do usuário.
 4. Projete o fechamento do mês: baseado no que já entrou e saiu, ele terminará no azul ou no vermelho?
 5. Formate sua resposta em 2 ou 3 parágrafos curtos para facilitar a leitura.
 6. Seja amigável e pontual em no máximo 5 ou 6 frases.
