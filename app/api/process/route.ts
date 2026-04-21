@@ -63,9 +63,9 @@ export async function POST(request: Request) {
 
     if (aiResult.intent === 'despesa') {
       responseMessage = `✅ Tudo pronto, ${firstName}. Lançamento realizado.
-\n🍕 O que foi: ${aiResult.descricao}
+\n📝 O que foi: ${aiResult.descricao}
 💰 Valor: ${valorFormatado}
-📂 Categoria: ${aiResult.categoria}
+🏷️ Categoria: ${aiResult.categoria}
 💳 Pagamento: ${aiResult.metodo_pagamento}
 \nJá deixei tudo organizado no seu Notion. Tenha um ótimo dia! 🚀`;
     } else if (aiResult.intent === 'receita') {
