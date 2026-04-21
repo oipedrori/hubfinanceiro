@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 💰 Valor: ${valorFormatado}
 🏷️ Categoria: ${aiResult.categoria}
 💳 Pagamento: ${aiResult.metodo_pagamento}
-\nJá deixei tudo organizado no seu Notion. Tenha um ótimo dia! 🚀`;
+\nJá deixei tudo organizado no seu Notion. 🚀`;
     } else if (aiResult.intent === 'receita') {
       responseMessage = `✅ Confirmado, ${firstName}. Receita registrada.
 \n💰 Entrada: ${aiResult.descricao}
