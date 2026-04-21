@@ -60,24 +60,23 @@ TEXTO DO USUÁRIO A SER PROCESSADO:
   }
 }
 
-export async function generateFinancialAdvice(pergunta: string, balancetesData: string) {
+export async function generateFinancialAdvice(pergunta: string, balancetesData: string, firstName: string) {
   // Para a resposta livre falada, NÃO limitamos o JSON. O robô está livre para gerar texto normal.
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
   const dateBRT = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', month: 'long', year: 'numeric', day: '2-digit' });
   const currentYear = new Date().getFullYear();
 
-  const prompt = `Você é um conselheiro financeiro autônomo, gentil, motivador e altamente analítico.
-O cliente te testou / te perguntou algo via áudio do celular. Sua resposta será lida em voz alta de volta para ele.
-
   const prompt = `Conselheiro financeiro amigável e pontual. Data atual: ${dateBRT}. Ano vigente: ${currentYear}. 
-Dados Balancete (Mês: Entrada Saída Balanço): ${balancetesData}
-Pergunta: "${pergunta}"
+Dados Balancete: ${balancetesData}
+Pergunta do ${firstName}: "${pergunta}"
 
 Missão:
-- Analise o fluxo de caixa do Mês Atual usando conceito 50/30/20 internamente (NÃO cite o nome da regra).
+- COMECE SEMPRE COM: "Oi ${firstName}! 😊"
+- Use emojis relevantes ao longo de toda a resposta.
+- Analise o fluxo de caixa usando conceito 50/30/20 internamente (NÃO cite o nome da regra).
 - Cite valores (R$) e projete se o mês fecha no azul. Sugira cortes ou investimentos.
-- Use 2-3 parágrafos curtos. Máximo 5 frases. Linguagem pessoal e educada. 
+- Use 2-3 parágrafos curtos. Máximo 5 frases. Linguagem pessoal, amigável e educada. 
 - Sem asteriscos ou negritos.`;
 
   try {

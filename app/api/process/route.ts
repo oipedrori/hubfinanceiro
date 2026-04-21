@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     }
 
     console.log(`📡 Processando áudio do cliente: ${name}`);
+    const firstName = name.split(' ')[0];
 
     // Acordamos o Gemini para ler o texto e organizar nos moldes matemáticos da sua tabela
     const aiResult = await parseFinancialText(text);
@@ -42,8 +43,8 @@ export async function POST(request: Request) {
       console.log(`🤖 Usuário fez uma consulta. Resgatando balancetes no Notion de ${name}...`);
       const balancetesReport = await getBalancetesData(notionAccessToken);
       
-      console.log('🗣️ Pedindo conselho ao Zimbroo (Gemini) sem travas JSON...');
-      const advice = await generateFinancialAdvice(aiResult.pergunta, balancetesReport);
+      console.log('🗣️ Pedindo conselho ao Consultor (Gemini) sem travas JSON...');
+      const advice = await generateFinancialAdvice(aiResult.pergunta, balancetesReport, firstName);
       
       console.log('💬 Resposta do Consultor falado gerada com sucesso.');
       // Devolvemos o texto limpo para o iOS Shortcuts poder ler em voz alta
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
     // 5. Gerar Resposta Humanizada
     let responseMessage = "";
     const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(aiResult.valor);
-    const firstName = name.split(' ')[0];
+
 
     if (aiResult.intent === 'despesa') {
       responseMessage = `✅ Tudo pronto, ${firstName}. Lançamento realizado.
