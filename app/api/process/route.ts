@@ -59,22 +59,23 @@ export async function POST(request: Request) {
     // 5. Gerar Resposta Humanizada
     let responseMessage = "";
     const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(aiResult.valor);
+    const firstName = name.split(' ')[0];
 
     if (aiResult.intent === 'despesa') {
-      responseMessage = `✅ Feito, ${name}! Anotei a boa.
+      responseMessage = `✅ Feito, ${firstName}! Anotei a boa.
 \n🍕 **O que foi:** ${aiResult.descricao}
 💰 **Valor:** ${valorFormatado}
 📂 **Categoria:** ${aiResult.categoria}
 💳 **Pagamento:** ${aiResult.metodo_pagamento}
 \nJá deixei tudo salvo lá no seu Notion. Se precisar de mais alguma coisa, é só chamar! 🚀`;
     } else if (aiResult.intent === 'receita') {
-      responseMessage = `✅ Mandou muito, ${name}! Dinheiro na conta.
+      responseMessage = `✅ Mandou muito, ${firstName}! Dinheiro na conta.
 \n💰 **Entrada:** ${aiResult.descricao}
 📈 **Valor:** ${valorFormatado}
 🏷️ **Tipo:** ${aiResult.tipo_receita}
 \nRelatório atualizado! Vamos pra cima! 🚀`;
     } else {
-      responseMessage = `✅ Certinho, ${name}! Tudo anotado por aqui.`;
+      responseMessage = `✅ Certinho, ${firstName}! Tudo anotado por aqui.`;
     }
 
     return NextResponse.json({ 
