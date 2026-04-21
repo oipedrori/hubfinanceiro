@@ -56,9 +56,30 @@ export async function POST(request: Request) {
     await addTransactionToClientNotion(notionAccessToken, workspaceId, aiResult);
 
     // Tudo lindo! Devolvemos mensagem de sucesso pro celular
+    // 5. Gerar Resposta Humanizada
+    let responseMessage = "";
+    const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(aiResult.valor);
+
+    if (aiResult.intent === 'despesa') {
+      responseMessage = `✅ Tudo pronto, ${name}! 
+\n💸 **Despesa:** ${aiResult.descricao}
+💰 **Valor:** ${valorFormatado}
+📂 **Categoria:** ${aiResult.categoria}
+💳 **Pagamento:** ${aiResult.metodo_pagamento}
+\nJá deixei tudo registrado no seu Notion. Manda a próxima! 🚀`;
+    } else if (aiResult.intent === 'receita') {
+      responseMessage = `✅ Boa, ${name}! Receita registrada.
+\n📈 **Receita:** ${aiResult.descricao}
+💰 **Valor:** ${valorFormatado}
+🏷️ **Tipo:** ${aiResult.tipo_receita}
+\nDinheiro no bolso! Tudo anotado. 🚀`;
+    } else {
+      responseMessage = `✅ Entendido, ${name}! Lançamento realizado com sucesso.`;
+    }
+
     return NextResponse.json({ 
       success: true, 
-      message: `Tudo certo! Lançamento estruturado (como ${aiResult.intent}) e salvo na conta de ${name}.`
+      message: responseMessage 
     }, { status: 200 });
 
   } catch (error: any) {
