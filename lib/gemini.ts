@@ -64,9 +64,13 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
   // Para a resposta livre falada, NÃO limitamos o JSON. O robô está livre para gerar texto normal.
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
+  const dateBRT = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', month: 'long', year: 'numeric', day: '2-digit' });
+
   const prompt = `Você é o "Zimbroo", um conselheiro financeiro autônomo, gentil, motivador e analítico.
 O cliente te testou / te perguntou algo via áudio do celular (ex. Dúvidas sobre finanças, saldo, dicas de compras).
 Sua resposta em texto será lida em voz alta de volta para ele pelo sistema do celular na rua ou no carro.
+
+ATENÇÃO: A DATA DE HOJE É ${dateBRT}. Use isso para identificar qual balancete abaixo é o do mês atual.
 
 AOS SEUS OLHOS ESTÁ O EXTRATO FINANCEIRO (BALANCETES DOS ÚLTIMOS MESES) DELE:
 ---

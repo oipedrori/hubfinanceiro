@@ -86,7 +86,12 @@ export async function getBalancetesData(clientAccessToken: string) {
       'Notion-Version': '2022-06-28',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ page_size: 4 })
+    body: JSON.stringify({ 
+      page_size: 12,
+      sorts: [
+        { property: 'Mês', direction: 'descending' } 
+      ]
+    })
   });
   const rowsData = await rowsRes.json();
 
