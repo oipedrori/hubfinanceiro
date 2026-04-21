@@ -92,7 +92,7 @@ function LandingContent() {
               
               <button 
                 onClick={() => window.location.href = '/'}
-                style={{ background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', width: '100%' }}
+                style={{ background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '0.8rem 2.5rem', borderRadius: '12px', cursor: 'pointer', width: '100%', fontWeight: 600 }}
               >
                 Voltar ao início
               </button>
