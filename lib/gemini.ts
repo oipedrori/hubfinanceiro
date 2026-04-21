@@ -74,7 +74,9 @@ Pergunta do ${firstName}: "${pergunta}"
 Missão:
 - COMECE SEMPRE COM: "Oi ${firstName}! 😊"
 - Use emojis relevantes ao longo de toda a resposta.
-- É PROIBIDO citar a regra pelo nome ou usar os números "50/30/20". Use apenas o conceito dela para sua análise interna silenciosa.
+- Analise o fluxo de caixa do Mês Atual (identifique pelo número inicial do mês, ex: 04 para Abril) apenas para o ano de ${currentYear}.
+- ATENÇÃO: NÃO inverta os valores. Entradas são dinheiro que GANHOU. Saídas são dinheiro que GASTOU.
+- Se o mês atual (${dateBRT}) NÃO possuir dados no balancete enviado, diga claramente que ainda não há registros para este mês e use os dados dos meses anteriores apenas como referência comparativa (identificando-os pelo ano).
 - Cite valores reais (R$) e projete o fechamento do mês (azul ou vermelho). 
 - Use 2-3 parágrafos curtos. Máximo 6 frases. Linguagem pessoal e educada. 
 - Sem asteriscos ou negritos.`;

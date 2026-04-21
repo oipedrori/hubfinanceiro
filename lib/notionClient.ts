@@ -109,12 +109,15 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
 
   if(rowsData.results.length === 0) return { data: 'O Balancete do cliente não contém meses registrados.', newDbId: wasSearched ? targetDbId : null };
 
+  const currentYear = new Date().getFullYear();
+
   const relatorio = rowsData.results.map((row: any) => {
     const mes = row.properties['Mês']?.title[0]?.plain_text || 'Desconhecido';
     const entradas = row.properties['Entradas']?.rollup?.number || 0;
     const saidas = row.properties['Saídas']?.rollup?.number || 0;
     const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
-    return `${mes}: E${entradas} S${saidas} B${resultado}`;
+    // Adicionamos o ano corrente para a IA não se perder entre ciclos
+    return `${mes}/${currentYear}: Entradas R$${entradas} | Saídas R$${saidas} | Balanço R$${resultado}`;
   });
 
   return { data: relatorio.join('|'), newDbId: wasSearched ? targetDbId : null };
