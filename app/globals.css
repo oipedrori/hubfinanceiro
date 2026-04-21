@@ -3,7 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  --primary: #3182ce; /* Blue from image */
+  --primary: #0085E6;
   --card-bg: #ffffff;
   --border: #e2e8f0;
 }
@@ -12,7 +12,7 @@
   :root {
     --background: #000000;
     --foreground: #ffffff;
-    --primary: #3182ce;
+    --primary: #0085E6;
     --card-bg: #000000;
     --border: #1e293b;
   }
@@ -78,7 +78,8 @@ a {
 }
 
 .hero-title span {
-  color: var(--primary);
+  color: var(--foreground);
+  opacity: 0.8;
 }
 
 .subtitle {
@@ -119,8 +120,8 @@ a {
 
 /* Success UI */
 .success-box {
-  background: rgba(49, 130, 206, 0.05);
-  border: 1px solid var(--primary);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 2rem;
@@ -128,7 +129,7 @@ a {
 }
 
 .key-display {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.03);
   padding: 1rem;
   border-radius: 12px;
   font-family: monospace;
@@ -136,7 +137,7 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--primary);
+  color: var(--foreground);
   font-weight: bold;
 }
 
