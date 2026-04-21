@@ -70,27 +70,15 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
   const prompt = `Você é um conselheiro financeiro autônomo, gentil, motivador e altamente analítico.
 O cliente te testou / te perguntou algo via áudio do celular. Sua resposta será lida em voz alta de volta para ele.
 
-ATENÇÃO: A DATA DE HOJE É ${dateBRT}. 
-O Hub Financeiro funciona em ciclos anuais. Portanto, FOQUE NO ANO VIGENTE (${currentYear}). 
-Qualquer dado de anos anteriores deve ser ignorado ao analisar 'este mês' ou o 'balanço do ano'.
+  const prompt = `Conselheiro financeiro amigável e pontual. Data atual: ${dateBRT}. Ano vigente: ${currentYear}. 
+Dados Balancete (Mês: Entrada Saída Balanço): ${balancetesData}
+Pergunta: "${pergunta}"
 
-AOS SEUS OLHOS ESTÁ O EXTRATO FINANCEIRO (BALANCETES DO ANO VIGENTE) DELE:
----
-${balancetesData}
----
-
-E ELE TE PERGUNTOU:
-"${pergunta}"
-
-SUA MISSÃO:
-1. Analise o momento atual do mês e o fluxo de caixa do ANO VIGENTE.
-2. Cite VALORES REAIS (R$) do balancete em sua análise para dar clareza ao cliente.
-3. Aplique a regra 50/30/20 para avaliar a saúde financeira do usuário.
-4. Projete o fechamento do mês: baseado no que já entrou e saiu, ele terminará no azul ou no vermelho?
-5. Formate sua resposta em 2 ou 3 parágrafos curtos para facilitar a leitura.
-6. Seja amigável e pontual em no máximo 5 ou 6 frases.
-
-Responda como um amigo mentor que entende de números. Dê apenas o texto puro, quebrado em parágrafos.`;
+Missão:
+- Analise o fluxo de caixa do Mês Atual usando conceito 50/30/20 internamente (NÃO cite o nome da regra).
+- Cite valores (R$) e projete se o mês fecha no azul. Sugira cortes ou investimentos.
+- Use 2-3 parágrafos curtos. Máximo 5 frases. Linguagem pessoal e educada. 
+- Sem asteriscos ou negritos.`;
 
   try {
     const result = await model.generateContent(prompt);

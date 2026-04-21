@@ -102,8 +102,8 @@ export async function getBalancetesData(clientAccessToken: string) {
     const entradas = row.properties['Entradas']?.rollup?.number || 0;
     const saidas = row.properties['Saídas']?.rollup?.number || 0;
     const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
-    return `[Mês: ${mes}] Entradas: R$${entradas.toFixed(2)} | Saídas: R$${saidas.toFixed(2)} | Balanço Final: R$${resultado.toFixed(2)}`;
+    return `${mes}: E${entradas} S${saidas} B${resultado}`;
   });
 
-  return relatorio.join('\n');
+  return relatorio.join('|');
 }
