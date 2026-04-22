@@ -177,3 +177,50 @@ export async function updateCustomerDbIds(pageId: string, ids: { despesasDbId?: 
     body: JSON.stringify({ properties })
   });
 }
+
+// ---------- REGISTRO DE CONSUMO DE TOKENS ----------
+const TOKENS_DB_ID = '303ad1f2859080b6b54ced3ed91cc052';
+
+export async function logTokenUsage(customerPageId: string, tokensUsed: number) {
+  const token = process.env.ADMIN_NOTION_SECRET;
+  if (!token || tokensUsed <= 0) return;
+
+  // Gera a data/hora atual no fuso de Brasília para o título
+  const now = new Date();
+  const descricao = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+  try {
+    const res = await fetch('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        parent: { database_id: TOKENS_DB_ID },
+        properties: {
+          'Descrição': {
+            title: [{ text: { content: descricao } }]
+          },
+          'Tolkens': {
+            number: tokensUsed
+          },
+          'Usuário': {
+            relation: [{ id: customerPageId }]
+          }
+        }
+      })
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error('⚠️ Falha ao registrar tokens no Notion:', errBody);
+    } else {
+      console.log(`📊 Tokens registrados: ${tokensUsed} tokens para ${customerPageId}`);
+    }
+  } catch (err) {
+    // Silencia erros de log para não derrubar a requisição principal
+    console.error('⚠️ Erro ao registrar consumo de tokens:', err);
+  }
+}

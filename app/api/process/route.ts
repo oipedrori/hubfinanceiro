@@ -1,7 +1,42 @@
 import { NextResponse } from 'next/server';
-import { getCustomerBySecretKey, updateCustomerDbIds } from '@/lib/notionAdmin';
+import { getCustomerBySecretKey, updateCustomerDbIds, logTokenUsage } from '@/lib/notionAdmin';
 import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
 import { addTransactionToClientNotion, getBalancetesData } from '@/lib/notionClient';
+
+// ── Pré-classificador local: detecta consultas SEM gastar tokens ──
+// Conservador por design: só retorna true quando é claramente uma pergunta.
+// Se tiver dúvida, retorna false e o Gemini classifica normalmente.
+function isLikelyConsulta(text: string): boolean {
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+  // Padrões fortes de consulta financeira
+  const consultaPatterns = [
+    /como\s+(estao|esta|ta|anda|andam|vao)/,
+    /quanto\s+(gastei|ganhei|sobrou|falta|tenho|devo)/,
+    /me\s+(da|de|faz)\s+(um|uma)\s+(resumo|conselho|dica|analise)/,
+    /minhas?\s+(situacao|financas|financ|contas?)/,
+    /meus?\s+(saldo|balanco|balancete|gastos?|financ)/,
+    /(conselho|dica|sugestao|recomendacao)\s*(financ)?/,
+    /(resumo|analise|relatorio)\s+(financ|do\s+mes|mensal)/,
+    /estou\s+(gastando|economizando|devendo|perdendo|ganhando)/,
+    /posso\s+(gastar|economizar|investir)/,
+    /como\s+(economizar|investir|melhorar|reduzir|organizar)/,
+    /qual\s+(meu|minha)\s+(saldo|situacao|balanco)/,
+    /o\s+que\s+(voce\s+)?acha/,
+    /fechamento\s+do\s+mes/,
+    /como\s+(anda|vai)\s+meu/,
+  ];
+
+  if (consultaPatterns.some(p => p.test(lower))) return true;
+
+  // Texto com "?" e SEM valores monetários → provavelmente uma pergunta
+  if (lower.includes('?')) {
+    const hasMoneyValue = /\d+[\.,]?\d*\s*(reais|real|conto|mil)|\br?\$\s*\d/i.test(lower);
+    if (!hasMoneyValue) return true;
+  }
+
+  return false;
+}
 
 // Esta é a porta de entrada. Quando o iOS mandar o áudio, ele vai bater nesta URL usando o método POST
 export async function POST(request: Request) {
@@ -39,27 +74,53 @@ export async function POST(request: Request) {
     console.log(`📡 Processando áudio do cliente: ${name}`);
     const firstName = name.split(' ')[0];
 
-    // Acordamos o Gemini para ler o texto e organizar nos moldes matemáticos da sua tabela
-    const aiResult = await parseFinancialText(text);
+    // Acumulador de tokens consumidos nesta requisição
+    let totalTokens = 0;
 
-    if (aiResult.intent === 'consulta') {
-      console.log(`🤖 Usuário fez uma consulta. Resgatando balancetes no Notion de ${name}...`);
+    // ── ATALHO: Pré-classificação local para consultas ──
+    // Se o texto parece claramente uma pergunta, pulamos direto pro conselheiro (1 chamada ao invés de 2)
+    if (isLikelyConsulta(text)) {
+      console.log(`⚡ Atalho ativado: texto detectado como consulta localmente. Pulando classificação.`);
+      
       const { data: balancetesReport, newDbId } = await getBalancetesData(notionAccessToken, balancetesDbId);
       
-      // Se descobrimos o ID agora, salvamos para a próxima vez ser rápida
+      if (newDbId && pageId) {
+        updateCustomerDbIds(pageId, { balancetesDbId: newDbId }); // fire-and-forget
+      }
+
+      const adviceResult = await generateFinancialAdvice(text, balancetesReport, firstName);
+      totalTokens += adviceResult.tokensUsed || 0;
+
+      console.log('💬 Resposta do Consultor gerada com sucesso (via atalho).');
+      if (pageId) logTokenUsage(pageId, totalTokens);
+
+      return NextResponse.json({ success: true, message: adviceResult.text }, { status: 200 });
+    }
+
+    // ── FLUXO NORMAL: Gemini classifica o texto ──
+    const aiResult = await parseFinancialText(text);
+    totalTokens += aiResult._tokensUsed || 0;
+
+    // Caso o classificador detecte uma consulta que o atalho não pegou
+    if (aiResult.intent === 'consulta') {
+      console.log(`🤖 Consulta detectada pelo Gemini. Resgatando balancetes de ${name}...`);
+      const { data: balancetesReport, newDbId } = await getBalancetesData(notionAccessToken, balancetesDbId);
+      
       if (newDbId && pageId) {
         await updateCustomerDbIds(pageId, { balancetesDbId: newDbId });
       }
       
-      console.log('🗣️ Pedindo conselho ao Consultor (Gemini) sem travas JSON...');
-      const advice = await generateFinancialAdvice(aiResult.pergunta, balancetesReport, firstName);
+      console.log('🗣️ Pedindo conselho ao Consultor (Gemini)...');
+      const adviceResult = await generateFinancialAdvice(aiResult.pergunta, balancetesReport, firstName);
+      totalTokens += adviceResult.tokensUsed || 0;
       
-      console.log('💬 Resposta do Consultor falado gerada com sucesso.');
-      // Devolvemos o texto limpo para o iOS Shortcuts poder ler em voz alta
-      return NextResponse.json({ success: true, message: advice }, { status: 200 });
+      console.log('💬 Resposta do Consultor gerada com sucesso.');
+      if (pageId) logTokenUsage(pageId, totalTokens);
+
+      return NextResponse.json({ success: true, message: adviceResult.text }, { status: 200 });
     }
 
-    console.log(`🤖 Gemini terminou de classificar (É uma ${aiResult.intent}). Inserindo no Notion particular de ${name}...`);
+    console.log(`🤖 Gemini classificou como ${aiResult.intent}. Inserindo no Notion de ${name}...`);
 
     // 4. Entregamos os números e datas organizados para a "gaveta" privada de Despesas ou Receitas desse cliente
     const isDespesa = aiResult.intent === 'despesa';
@@ -73,7 +134,6 @@ export async function POST(request: Request) {
       else await updateCustomerDbIds(pageId, { receitasDbId: newDbId });
     }
 
-    // Tudo lindo! Devolvemos mensagem de sucesso pro celular
     // 5. Gerar Resposta Humanizada
     let responseMessage = "";
     const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(aiResult.valor);
@@ -94,6 +154,9 @@ export async function POST(request: Request) {
     } else {
       responseMessage = `✅ Certinho, ${firstName}. Tudo anotado por aqui.`;
     }
+
+    // Registra tokens consumidos (fire-and-forget)
+    if (pageId) logTokenUsage(pageId, totalTokens);
 
     return NextResponse.json({ 
       success: true, 
