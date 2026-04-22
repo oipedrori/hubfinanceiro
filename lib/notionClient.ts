@@ -86,7 +86,7 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
     if (!searchRes.ok) throw new Error("Falha na busca pela tabela Balancetes do cliente");
     const searchData = await searchRes.json();
     if (searchData.results.length === 0) {
-      return { data: 'O banco "Balancetes" não foi encontrado na conta.', newDbId: null };
+      return { data: 'O banco "Balancetes" não foi encontrado na conta.', newDbId: null, currentMonth: null };
     }
     targetDbId = searchData.results[0].id;
     wasSearched = true;
