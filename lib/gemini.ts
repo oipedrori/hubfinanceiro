@@ -68,11 +68,11 @@ TEXTO DO USUÁRIO A SER PROCESSADO:
 }
 
 export async function generateFinancialAdvice(pergunta: string, balancetesData: string, transacoesReport: string, firstName: string) {
-  // Thinking desativado + limite de tokens = resposta rápida e curta
+  // Thinking reduzido + limite de tokens = resposta rápida e curta
   const model = genAI.getGenerativeModel({ 
     model: "gemini-2.5-flash",
-    generationConfig: { maxOutputTokens: 300 },
-    thinkingConfig: { thinkingBudget: 0 }
+    generationConfig: { maxOutputTokens: 500 },
+    thinkingConfig: { thinkingBudget: 1024 }
   } as any);
   
   const now = new Date();
