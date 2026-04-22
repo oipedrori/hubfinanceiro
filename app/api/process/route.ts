@@ -3,25 +3,39 @@ import { getCustomerBySecretKey, updateCustomerDbIds, logTokenUsage } from '@/li
 import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
 import { addTransactionToClientNotion, getBalancetesData, getCurrentMonthTransactions } from '@/lib/notionClient';
 
+// ── Detector de SALDO: resposta fixa sem IA ──
+function isSaldoQuery(text: string): boolean {
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const saldoPatterns = [
+    /meu\s+saldo/,
+    /meu\s+balancete/,
+    /meu\s+balanco/,
+    /como\s+(esta|ta|anda)\s+(meu\s+)?(saldo|balancete|balanco)/,
+    /qual\s+(e\s+)?(meu|o)\s+(saldo|balancete|balanco)/,
+    /saldo\s+(atual|do\s+mes)/,
+    /balancete\s+(atual|do\s+mes)/,
+  ];
+  return saldoPatterns.some(p => p.test(lower));
+}
+
 // ── Pré-classificador local: detecta consultas SEM gastar tokens ──
 // Conservador por design: só retorna true quando é claramente uma pergunta.
 // Se tiver dúvida, retorna false e o Gemini classifica normalmente.
 function isLikelyConsulta(text: string): boolean {
   const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
-  // Padrões fortes de consulta financeira
+  // Padrões fortes de consulta financeira (saldo/balancete tratados separadamente)
   const consultaPatterns = [
     /como\s+(estao|esta|ta|anda|andam|vao)/,
     /quanto\s+(gastei|ganhei|sobrou|falta|tenho|devo)/,
     /me\s+(da|de|faz)\s+(um|uma)\s+(resumo|conselho|dica|analise)/,
     /minhas?\s+(situacao|financas|financ|contas?)/,
-    /meus?\s+(saldo|balanco|balancete|gastos?|financ)/,
+    /meus?\s+(gastos?|financ)/,
     /(conselho|dica|sugestao|recomendacao)\s*(financ)?/,
     /(resumo|analise|relatorio)\s+(financ|do\s+mes|mensal)/,
     /estou\s+(gastando|economizando|devendo|perdendo|ganhando)/,
     /posso\s+(gastar|economizar|investir)/,
     /como\s+(economizar|investir|melhorar|reduzir|organizar)/,
-    /qual\s+(meu|minha)\s+(saldo|situacao|balanco)/,
     /o\s+que\s+(voce\s+)?acha/,
     /fechamento\s+do\s+mes/,
     /como\s+(anda|vai)\s+meu/,
@@ -76,6 +90,35 @@ export async function POST(request: Request) {
 
     // Acumulador de tokens consumidos nesta requisição
     let totalTokens = 0;
+
+    // ── COMANDO DE SALDO: resposta instantânea sem IA ──
+    if (isSaldoQuery(text)) {
+      console.log(`📊 Comando de saldo detectado para ${name}. Sem IA.`);
+      
+      const transacoesResult = await getCurrentMonthTransactions(notionAccessToken, despesasDbId, receitasDbId);
+      
+      // Cacheia IDs descobertos (fire-and-forget)
+      if (pageId) {
+        const idsToCache: any = {};
+        if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
+        if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
+        if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
+      }
+
+      const receitas = transacoesResult.totalReceitas;
+      const despesas = transacoesResult.totalDespesas;
+      const saldo = receitas - despesas;
+      const pctGasto = receitas > 0 ? Math.round((despesas / receitas) * 100) : 0;
+
+      const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+      const message = `Oi, ${firstName}! 📋\n\n🟢 Receitas: ${fmt(receitas)}\n🔴 Despesas: ${fmt(despesas)}\n💰 Saldo: ${fmt(saldo)}\n\n📊 ${pctGasto}% da receita já foi gasto`;
+
+      // Registra 0 tokens (não usou IA)
+      if (pageId) logTokenUsage(pageId, 0);
+
+      return NextResponse.json({ success: true, message }, { status: 200 });
+    }
 
     // ── ATALHO: Pré-classificação local para consultas ──
     // Se o texto parece claramente uma pergunta, pulamos direto pro conselheiro (1 chamada ao invés de 2)

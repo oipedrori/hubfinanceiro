@@ -195,6 +195,10 @@ export async function getCurrentMonthTransactions(
     rId ? fetchFromDb(rId) : Promise.resolve([])
   ]);
 
+  // Totais numéricos para o comando de saldo
+  const totalDespesas = despesas.reduce((sum, d) => sum + d.valor, 0);
+  const totalReceitas = receitas.reduce((sum, r) => sum + r.valor, 0);
+
   // Formata como texto legível para o prompt da IA
   let report = '';
 
@@ -212,6 +216,8 @@ export async function getCurrentMonthTransactions(
 
   return {
     report,
+    totalDespesas,
+    totalReceitas,
     newDespesasDbId: !despesasDbId && dId ? dId : null,
     newReceitasDbId: !receitasDbId && rId ? rId : null
   };

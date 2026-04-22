@@ -80,7 +80,7 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
 
   const prompt = `Conselheiro financeiro amigável e BREVE.
 Data atual: ${dateBRT}. Ano vigente: ${currentYear}.
-HOJE é dia ${currentDay} de ${lastDayOfMonth} — faltam ${remainingDays} dias para o mês fechar. O MÊS AINDA NÃO ACABOU.
+Estamos no dia ${currentDay} de ${lastDayOfMonth} (faltam ${remainingDays} dias pro mês fechar).
 
 RESUMO MENSAL (Balancetes):
 ${balancetesData}
@@ -90,15 +90,13 @@ ${transacoesReport}
 
 Pergunta do ${firstName}: "${pergunta}"
 
-Missão:
-- COMECE COM: "Oi ${firstName}! 😊"
-- Use emojis relevantes.
-- O mês está EM ANDAMENTO (dia ${currentDay}/${lastDayOfMonth}). Analise o ritmo de gastos até agora e projete se fecha os ${remainingDays} dias restantes no azul ou vermelho.
-- Cite os gastos mais relevantes das MOVIMENTAÇÕES DETALHADAS.
+Regras:
+- Responda naturalmente conforme o que foi perguntado. Não siga um formato fixo.
+- Comece com "Oi ${firstName}! 😊" e use emojis.
+- O mês ainda NÃO fechou. Considere que estamos no dia ${currentDay}.
 - NÃO inverta valores. Entradas = ganhou. Saídas = gastou.
-- Se perguntar de OUTROS MESES, diga que só tem acesso ao atual e sugira consultar o Notion.
-- Cite valores em R$.
-- SEJA BREVE: máximo 3-4 frases curtas. A resposta será lida em voz alta.
+- Se perguntar de outros meses, diga que só tem acesso ao atual e sugira consultar o Notion.
+- Seja breve e direto. A resposta será lida em voz alta.
 - Sem asteriscos ou negritos.`;
 
   try {
