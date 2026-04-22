@@ -25,7 +25,11 @@ Se você classificar como DESPESA devolva as propriedades:
 - "descricao": título resumido da compra (string)
 - "valor": o valor financeiro limpo de moedas (numero)
 - "data": a data citada no texto (YYYY-MM-DD). Se não falado, use a data de hoje.
-- "tipo_despesa": escolha ESTRITAMENTE: "Móvel", "Recorrente", ou "Parcelada"
+- "tipo_despesa": escolha ESTRITAMENTE entre:
+    • "Móvel" = compras variáveis do dia a dia (mercado, restaurante, farmácia, loja, combustível, etc.)
+    • "Recorrente" = contas fixas mensais com valor igual ou muito parecido todo mês (aluguel, assinatura, plano de celular, internet, academia, etc.)
+    • "Parcelada" = compras divididas em parcelas no cartão (o usuário mencionará parcelas explicitamente)
+    NA DÚVIDA, USE "Móvel".
 - "metodo_pagamento": escolha ESTRITAMENTE: "Crédito", "Pix", "Dinheiro", "Transferência", ou "Débito". SE NÃO MENCIONADO NO TEXTO, USE O PADRÃO: "Crédito".
 - "categoria": escolha ESTRITAMENTE: "Alimentação", "Comunicação", "Doação", "Educação", "Equipamentos", "Impostos", "Investimento", "Lazer", "Moradia", "Pet", "Saúde", "Seguro", "Transporte", "Vestuário", "Doações", "Indeterminado", "Higiene Pessoal", ou "Outros"
 - "num_parcelas": numero inteiro (se for à vista ou não mencionado parcelas, mande 1).
