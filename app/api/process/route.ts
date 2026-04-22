@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCustomerBySecretKey, updateCustomerDbIds, logTokenUsage } from '@/lib/notionAdmin';
 import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
-import { addTransactionToClientNotion, getBalancetesData } from '@/lib/notionClient';
+import { addTransactionToClientNotion, getBalancetesData, getCurrentMonthTransactions } from '@/lib/notionClient';
 
 // ── Pré-classificador local: detecta consultas SEM gastar tokens ──
 // Conservador por design: só retorna true quando é claramente uma pergunta.
@@ -82,13 +82,22 @@ export async function POST(request: Request) {
     if (isLikelyConsulta(text)) {
       console.log(`⚡ Atalho ativado: texto detectado como consulta localmente. Pulando classificação.`);
       
-      const { data: balancetesReport, newDbId } = await getBalancetesData(notionAccessToken, balancetesDbId);
+      // Busca balancetes E movimentações do mês em paralelo
+      const [balancetesResult, transacoesResult] = await Promise.all([
+        getBalancetesData(notionAccessToken, balancetesDbId),
+        getCurrentMonthTransactions(notionAccessToken, despesasDbId, receitasDbId)
+      ]);
       
-      if (newDbId && pageId) {
-        updateCustomerDbIds(pageId, { balancetesDbId: newDbId }); // fire-and-forget
+      // Cacheia IDs descobertos (fire-and-forget)
+      if (pageId) {
+        const idsToCache: any = {};
+        if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
+        if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
+        if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
+        if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
       }
 
-      const adviceResult = await generateFinancialAdvice(text, balancetesReport, firstName);
+      const adviceResult = await generateFinancialAdvice(text, balancetesResult.data, transacoesResult.report, firstName);
       totalTokens += adviceResult.tokensUsed || 0;
 
       console.log('💬 Resposta do Consultor gerada com sucesso (via atalho).');
@@ -103,15 +112,24 @@ export async function POST(request: Request) {
 
     // Caso o classificador detecte uma consulta que o atalho não pegou
     if (aiResult.intent === 'consulta') {
-      console.log(`🤖 Consulta detectada pelo Gemini. Resgatando balancetes de ${name}...`);
-      const { data: balancetesReport, newDbId } = await getBalancetesData(notionAccessToken, balancetesDbId);
+      console.log(`🤖 Consulta detectada pelo Gemini. Resgatando dados de ${name}...`);
       
-      if (newDbId && pageId) {
-        await updateCustomerDbIds(pageId, { balancetesDbId: newDbId });
+      // Busca balancetes E movimentações do mês em paralelo
+      const [balancetesResult, transacoesResult] = await Promise.all([
+        getBalancetesData(notionAccessToken, balancetesDbId),
+        getCurrentMonthTransactions(notionAccessToken, despesasDbId, receitasDbId)
+      ]);
+      
+      if (pageId) {
+        const idsToCache: any = {};
+        if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
+        if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
+        if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
+        if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
       }
       
       console.log('🗣️ Pedindo conselho ao Consultor (Gemini)...');
-      const adviceResult = await generateFinancialAdvice(aiResult.pergunta, balancetesReport, firstName);
+      const adviceResult = await generateFinancialAdvice(aiResult.pergunta, balancetesResult.data, transacoesResult.report, firstName);
       totalTokens += adviceResult.tokensUsed || 0;
       
       console.log('💬 Resposta do Consultor gerada com sucesso.');

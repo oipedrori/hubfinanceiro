@@ -122,3 +122,97 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
 
   return { data: relatorio.join('|'), newDbId: wasSearched ? targetDbId : null };
 }
+
+// ── Busca movimentações do mês atual (despesas + receitas) ──
+// Retorna apenas descrição e valor para alimentar o conselheiro com dados detalhados
+export async function getCurrentMonthTransactions(
+  clientAccessToken: string,
+  despesasDbId?: string | null,
+  receitasDbId?: string | null
+) {
+  // Calcula intervalo do mês atual no fuso de Brasília
+  const now = new Date();
+  const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const year = brNow.getFullYear();
+  const month = brNow.getMonth(); // 0-indexed
+  const startOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  const nextMonth = month === 11 
+    ? `${year + 1}-01-01` 
+    : `${year}-${String(month + 2).padStart(2, '0')}-01`;
+
+  const headers = {
+    'Authorization': `Bearer ${clientAccessToken}`,
+    'Notion-Version': '2022-06-28',
+    'Content-Type': 'application/json'
+  };
+
+  // Busca o ID de uma database pelo nome (caso não esteja em cache)
+  async function findDbId(name: string): Promise<string | null> {
+    try {
+      const res = await fetch('https://api.notion.com/v1/search', {
+        method: 'POST', headers,
+        body: JSON.stringify({ query: name, filter: { value: 'database', property: 'object' } })
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.results.length > 0 ? data.results[0].id : null;
+    } catch { return null; }
+  }
+
+  // Busca transações de um mês específico em uma database
+  async function fetchFromDb(dbId: string): Promise<{ descricao: string, valor: number }[]> {
+    try {
+      const res = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          filter: {
+            and: [
+              { property: 'Data', date: { on_or_after: startOfMonth } },
+              { property: 'Data', date: { before: nextMonth } }
+            ]
+          },
+          page_size: 100
+        })
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.results.map((row: any) => ({
+        descricao: row.properties['Descrição']?.title[0]?.plain_text || 'Sem descrição',
+        valor: row.properties['Valor']?.number || 0
+      }));
+    } catch { return []; }
+  }
+
+  // Resolve IDs em paralelo (usa cache se disponível, senão busca)
+  const [dId, rId] = await Promise.all([
+    despesasDbId || findDbId('Despesas'),
+    receitasDbId || findDbId('Receitas')
+  ]);
+
+  // Busca transações em paralelo
+  const [despesas, receitas] = await Promise.all([
+    dId ? fetchFromDb(dId) : Promise.resolve([]),
+    rId ? fetchFromDb(rId) : Promise.resolve([])
+  ]);
+
+  // Formata como texto legível para o prompt da IA
+  let report = '';
+
+  if (despesas.length > 0) {
+    report += 'DESPESAS DO MÊS:\n';
+    despesas.forEach(d => report += `- ${d.descricao}: R$${d.valor.toFixed(2)}\n`);
+  }
+
+  if (receitas.length > 0) {
+    report += 'RECEITAS DO MÊS:\n';
+    receitas.forEach(r => report += `- ${r.descricao}: R$${r.valor.toFixed(2)}\n`);
+  }
+
+  if (!report) report = 'Nenhuma movimentação registrada neste mês ainda.';
+
+  return {
+    report,
+    newDespesasDbId: !despesasDbId && dId ? dId : null,
+    newReceitasDbId: !receitasDbId && rId ? rId : null
+  };
+}
