@@ -68,8 +68,12 @@ TEXTO DO USUÁRIO A SER PROCESSADO:
 }
 
 export async function generateFinancialAdvice(pergunta: string, balancetesData: string, transacoesReport: string, firstName: string) {
-  // Para a resposta livre falada, NÃO limitamos o JSON. O robô está livre para gerar texto normal.
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  // Thinking desativado + limite de tokens = resposta rápida e curta
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash",
+    generationConfig: { maxOutputTokens: 300 },
+    thinkingConfig: { thinkingBudget: 0 }
+  });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
@@ -79,7 +83,7 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
   const lastDayOfMonth = new Date(brNow.getFullYear(), brNow.getMonth() + 1, 0).getDate();
   const remainingDays = lastDayOfMonth - currentDay;
 
-  const prompt = `Conselheiro financeiro amigável e pontual.
+  const prompt = `Conselheiro financeiro amigável e BREVE.
 Data atual: ${dateBRT}. Ano vigente: ${currentYear}.
 HOJE é dia ${currentDay} de ${lastDayOfMonth} — faltam ${remainingDays} dias para o mês fechar. O MÊS AINDA NÃO ACABOU.
 
@@ -92,15 +96,14 @@ ${transacoesReport}
 Pergunta do ${firstName}: "${pergunta}"
 
 Missão:
-- COMECE SEMPRE COM: "Oi ${firstName}! 😊"
-- Use emojis relevantes ao longo de toda a resposta.
-- IMPORTANTE: O mês ainda está EM ANDAMENTO (dia ${currentDay} de ${lastDayOfMonth}). NÃO trate como mês fechado. Analise o ritmo de gastos ATÉ AGORA e projete se o ${firstName} vai conseguir fechar os ${remainingDays} dias restantes no azul ou no vermelho.
-- Use as MOVIMENTAÇÕES DETALHADAS para dar conselhos específicos (ex: "vi que você gastou bastante em Alimentação" ou "seu maior gasto foi X").
-- ATENÇÃO: NÃO inverta os valores. Entradas são dinheiro que GANHOU. Saídas são dinheiro que GASTOU.
-- Se o mês atual (${dateBRT}) NÃO possuir dados no balancete enviado, diga claramente que ainda não há registros para este mês e use os dados dos meses anteriores apenas como referência comparativa (identificando-os pelo ano).
-- Se o ${firstName} perguntar sobre OUTROS MESES ou meses passados especificamente, diga que você só tem acesso ao mês atual e sugira que ele consulte o Notion diretamente para dados históricos.
-- Cite valores reais (R$) e projete o fechamento do mês (azul ou vermelho). 
-- Use 2-3 parágrafos curtos. Máximo 6 frases. Linguagem pessoal e educada. 
+- COMECE COM: "Oi ${firstName}! 😊"
+- Use emojis relevantes.
+- O mês está EM ANDAMENTO (dia ${currentDay}/${lastDayOfMonth}). Analise o ritmo de gastos até agora e projete se fecha os ${remainingDays} dias restantes no azul ou vermelho.
+- Cite os gastos mais relevantes das MOVIMENTAÇÕES DETALHADAS.
+- NÃO inverta valores. Entradas = ganhou. Saídas = gastou.
+- Se perguntar de OUTROS MESES, diga que só tem acesso ao atual e sugira consultar o Notion.
+- Cite valores em R$.
+- SEJA BREVE: máximo 3-4 frases curtas. A resposta será lida em voz alta.
 - Sem asteriscos ou negritos.`;
 
   try {
