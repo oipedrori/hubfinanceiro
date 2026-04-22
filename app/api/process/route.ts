@@ -95,24 +95,24 @@ export async function POST(request: Request) {
     if (isSaldoQuery(text)) {
       console.log(`📊 Comando de saldo detectado para ${name}. Sem IA.`);
       
-      const transacoesResult = await getCurrentMonthTransactions(notionAccessToken, despesasDbId, receitasDbId);
+      const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
       
-      // Cacheia IDs descobertos (fire-and-forget)
-      if (pageId) {
-        const idsToCache: any = {};
-        if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
-        if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
-        if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
+      if (balancetesResult.newDbId && pageId) {
+        updateCustomerDbIds(pageId, { balancetesDbId: balancetesResult.newDbId }); // fire-and-forget
       }
-
-      const receitas = transacoesResult.totalReceitas;
-      const despesas = transacoesResult.totalDespesas;
-      const saldo = receitas - despesas;
-      const pctGasto = receitas > 0 ? Math.round((despesas / receitas) * 100) : 0;
 
       const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-      const message = `Oi, ${firstName}! 📋\n\n🟢 Receitas: ${fmt(receitas)}\n🔴 Despesas: ${fmt(despesas)}\n💰 Saldo: ${fmt(saldo)}\n\n📊 ${pctGasto}% da receita já foi gasto`;
+      let message: string;
+
+      if (balancetesResult.currentMonth) {
+        const { entradas, saidas, resultado } = balancetesResult.currentMonth;
+        const pctGasto = entradas > 0 ? Math.round((saidas / entradas) * 100) : 0;
+
+        message = `Oi, ${firstName}! 📋\n\n🟢 Receitas: ${fmt(entradas)}\n🔴 Despesas: ${fmt(saidas)}\n💰 Saldo: ${fmt(resultado)}\n\n📊 ${pctGasto}% da receita já foi gasto`;
+      } else {
+        message = `Oi, ${firstName}! 📋\n\nAinda não há dados de balancete registrados para este mês. Registre suas movimentações e o saldo será calculado automaticamente no seu Notion. 🚀`;
+      }
 
       // Registra 0 tokens (não usou IA)
       if (pageId) logTokenUsage(pageId, 0);

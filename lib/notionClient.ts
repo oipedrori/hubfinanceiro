@@ -107,20 +107,30 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
   });
   const rowsData = await rowsRes.json();
 
-  if(rowsData.results.length === 0) return { data: 'O Balancete do cliente não contém meses registrados.', newDbId: wasSearched ? targetDbId : null };
+  if(rowsData.results.length === 0) return { data: 'O Balancete do cliente não contém meses registrados.', newDbId: wasSearched ? targetDbId : null, currentMonth: null };
 
   const currentYear = new Date().getFullYear();
+  // Número do mês atual com zero-pad (ex: "04" para Abril)
+  const brNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const currentMonthPrefix = String(brNow.getMonth() + 1).padStart(2, '0');
+
+  let currentMonthData: { entradas: number, saidas: number, resultado: number } | null = null;
 
   const relatorio = rowsData.results.map((row: any) => {
     const mes = row.properties['Mês']?.title[0]?.plain_text || 'Desconhecido';
     const entradas = row.properties['Entradas']?.rollup?.number || 0;
     const saidas = row.properties['Saídas']?.rollup?.number || 0;
     const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
-    // Adicionamos o ano corrente para a IA não se perder entre ciclos
+
+    // Se este é o mês atual, salvamos os valores brutos
+    if (mes.startsWith(currentMonthPrefix)) {
+      currentMonthData = { entradas, saidas, resultado };
+    }
+
     return `${mes}/${currentYear}: Entradas R$${entradas} | Saídas R$${saidas} | Balanço R$${resultado}`;
   });
 
-  return { data: relatorio.join('|'), newDbId: wasSearched ? targetDbId : null };
+  return { data: relatorio.join('|'), newDbId: wasSearched ? targetDbId : null, currentMonth: currentMonthData };
 }
 
 // ── Busca movimentações do mês atual (despesas + receitas) ──
