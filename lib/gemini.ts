@@ -67,7 +67,13 @@ TEXTO DO USUÁRIO A SER PROCESSADO:
   }
 }
 
-export async function generateFinancialAdvice(pergunta: string, balancetesData: string, transacoesReport: string, firstName: string) {
+export async function generateFinancialAdvice(
+  pergunta: string, 
+  balancetesData: string, 
+  transacoesReport: string, 
+  firstName: string,
+  currentMonthDetails?: { entradas: number, saidas: number, resultado: number } | null
+) {
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
   const now = new Date();
@@ -78,26 +84,36 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
   const lastDayOfMonth = new Date(brNow.getFullYear(), brNow.getMonth() + 1, 0).getDate();
   const remainingDays = lastDayOfMonth - currentDay;
 
+  let currentMonthSection = '';
+  if (currentMonthDetails) {
+    currentMonthSection = `
+DADOS REAIS E ATUAIS (FONTE ÚNICA DE VERDADE):
+- Receitas: R$ ${currentMonthDetails.entradas.toFixed(2)}
+- Despesas: R$ ${currentMonthDetails.saidas.toFixed(2)}
+- Saldo Atual: R$ ${currentMonthDetails.resultado.toFixed(2)}
+`;
+  }
+
   const prompt = `Conselheiro financeiro amigável e BREVE.
 Data atual: ${dateBRT}. Ano vigente: ${currentYear}.
 Estamos no dia ${currentDay} de ${lastDayOfMonth} (faltam ${remainingDays} dias pro mês fechar).
+${currentMonthSection}
 
-RESUMO MENSAL (Balancetes):
+HISTÓRICO MENSAL (Para contexto de meses passados):
 ${balancetesData}
 
-MOVIMENTAÇÕES DETALHADAS DO MÊS ATUAL:
+MOVIMENTAÇÕES DETALHADAS (Para citar exemplos específicos):
 ${transacoesReport}
 
 Pergunta do ${firstName}: "${pergunta}"
 
-Regras:
-- Responda naturalmente conforme o que foi perguntado. Não siga um formato fixo.
-- Comece com "Oi ${firstName}! 😊" e use emojis.
-- O mês ainda NÃO fechou. Considere que estamos no dia ${currentDay}.
-- NÃO inverta valores. Entradas = ganhou. Saídas = gastou.
-- Se perguntar de outros meses, diga que só tem acesso ao atual e sugira consultar o Notion.
-- Seja breve e direto. A resposta será lida em voz alta.
-- Sem asteriscos ou negritos.`;
+Regras Críticas:
+1. USE OS "DADOS REAIS E ATUAIS" COMO VERDADE ABSOLUTA PARA SALDO E TOTAIS.
+2. NUNCA tente recalcular o saldo somando a lista de movimentações detalhadas.
+3. Se o usuário perguntar "quanto tenho", "qual o saldo" ou "quanto posso gastar", responda ESTRITAMENTE com base no Saldo Atual fornecido.
+4. Responda naturalmente. Comece com "Oi ${firstName}! 😊" e use emojis.
+5. Seja breve (máximo 4 frases). A resposta será lida em voz alta.
+6. Sem asteriscos ou negritos.`;
 
   try {
     const result = await model.generateContent(prompt);

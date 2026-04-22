@@ -148,7 +148,13 @@ export async function POST(request: Request) {
         }
       }
 
-      const adviceResult = await generateFinancialAdvice(text, balancetesResult.data, transacoesReport, firstName);
+      const adviceResult = await generateFinancialAdvice(
+        text, 
+        balancetesResult.data, 
+        transacoesReport, 
+        firstName, 
+        balancetesResult.currentMonth
+      );
       totalTokens += adviceResult.tokensUsed || 0;
 
       console.log('💬 Resposta do Consultor gerada com sucesso (via atalho).');
@@ -188,7 +194,13 @@ export async function POST(request: Request) {
       }
       
       console.log('🗣️ Pedindo conselho ao Consultor (Gemini)...');
-      const adviceResult = await generateFinancialAdvice(aiResult.pergunta, balancetesResult.data, transacoesReport, firstName);
+      const adviceResult = await generateFinancialAdvice(
+        aiResult.pergunta, 
+        balancetesResult.data, 
+        transacoesReport, 
+        firstName, 
+        balancetesResult.currentMonth
+      );
       totalTokens += adviceResult.tokensUsed || 0;
       
       console.log('💬 Resposta do Consultor gerada com sucesso.');
