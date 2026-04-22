@@ -73,7 +73,7 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
     model: "gemini-2.5-flash",
     generationConfig: { maxOutputTokens: 300 },
     thinkingConfig: { thinkingBudget: 0 }
-  });
+  } as any);
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
