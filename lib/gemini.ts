@@ -68,12 +68,7 @@ TEXTO DO USUÁRIO A SER PROCESSADO:
 }
 
 export async function generateFinancialAdvice(pergunta: string, balancetesData: string, transacoesReport: string, firstName: string) {
-  // Thinking reduzido + limite de tokens = resposta rápida e curta
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash",
-    generationConfig: { maxOutputTokens: 500 },
-    thinkingConfig: { thinkingBudget: 1024 }
-  } as any);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
