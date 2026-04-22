@@ -129,9 +129,10 @@ export async function POST(request: Request) {
       let transacoesReport = 'Não foi possível encontrar movimentações detalhadas para este mês.';
       
       if (balancetesResult.currentMonth) {
+        const monthInfo = balancetesResult.currentMonth as any;
         const transacoesResult = await getCurrentMonthTransactions(
           notionAccessToken, 
-          balancetesResult.currentMonth.pageId, 
+          monthInfo.pageId, 
           despesasDbId, 
           receitasDbId
         );
@@ -168,9 +169,10 @@ export async function POST(request: Request) {
       let transacoesReport = 'Não foi possível encontrar movimentações detalhadas para este mês.';
 
       if (balancetesResult.currentMonth) {
+        const monthInfo = balancetesResult.currentMonth as any;
         const transacoesResult = await getCurrentMonthTransactions(
           notionAccessToken, 
-          balancetesResult.currentMonth.pageId, 
+          monthInfo.pageId, 
           despesasDbId, 
           receitasDbId
         );
