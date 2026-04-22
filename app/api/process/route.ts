@@ -125,22 +125,29 @@ export async function POST(request: Request) {
     if (isLikelyConsulta(text)) {
       console.log(`⚡ Atalho ativado: texto detectado como consulta localmente. Pulando classificação.`);
       
-      // Busca balancetes E movimentações do mês em paralelo
-      const [balancetesResult, transacoesResult] = await Promise.all([
-        getBalancetesData(notionAccessToken, balancetesDbId),
-        getCurrentMonthTransactions(notionAccessToken, despesasDbId, receitasDbId)
-      ]);
+      const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
+      let transacoesReport = 'Não foi possível encontrar movimentações detalhadas para este mês.';
       
-      // Cacheia IDs descobertos (fire-and-forget)
-      if (pageId) {
-        const idsToCache: any = {};
-        if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
-        if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
-        if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
-        if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
+      if (balancetesResult.currentMonth) {
+        const transacoesResult = await getCurrentMonthTransactions(
+          notionAccessToken, 
+          balancetesResult.currentMonth.pageId, 
+          despesasDbId, 
+          receitasDbId
+        );
+        transacoesReport = transacoesResult.report;
+
+        // Cacheia IDs descobertos (fire-and-forget)
+        if (pageId) {
+          const idsToCache: any = {};
+          if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
+          if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
+          if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
+          if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
+        }
       }
 
-      const adviceResult = await generateFinancialAdvice(text, balancetesResult.data, transacoesResult.report, firstName);
+      const adviceResult = await generateFinancialAdvice(text, balancetesResult.data, transacoesReport, firstName);
       totalTokens += adviceResult.tokensUsed || 0;
 
       console.log('💬 Resposta do Consultor gerada com sucesso (via atalho).');
@@ -157,22 +164,29 @@ export async function POST(request: Request) {
     if (aiResult.intent === 'consulta') {
       console.log(`🤖 Consulta detectada pelo Gemini. Resgatando dados de ${name}...`);
       
-      // Busca balancetes E movimentações do mês em paralelo
-      const [balancetesResult, transacoesResult] = await Promise.all([
-        getBalancetesData(notionAccessToken, balancetesDbId),
-        getCurrentMonthTransactions(notionAccessToken, despesasDbId, receitasDbId)
-      ]);
-      
-      if (pageId) {
-        const idsToCache: any = {};
-        if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
-        if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
-        if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
-        if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
+      const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
+      let transacoesReport = 'Não foi possível encontrar movimentações detalhadas para este mês.';
+
+      if (balancetesResult.currentMonth) {
+        const transacoesResult = await getCurrentMonthTransactions(
+          notionAccessToken, 
+          balancetesResult.currentMonth.pageId, 
+          despesasDbId, 
+          receitasDbId
+        );
+        transacoesReport = transacoesResult.report;
+
+        if (pageId) {
+          const idsToCache: any = {};
+          if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
+          if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
+          if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
+          if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
+        }
       }
       
       console.log('🗣️ Pedindo conselho ao Consultor (Gemini)...');
-      const adviceResult = await generateFinancialAdvice(aiResult.pergunta, balancetesResult.data, transacoesResult.report, firstName);
+      const adviceResult = await generateFinancialAdvice(aiResult.pergunta, balancetesResult.data, transacoesReport, firstName);
       totalTokens += adviceResult.tokensUsed || 0;
       
       console.log('💬 Resposta do Consultor gerada com sucesso.');

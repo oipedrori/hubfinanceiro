@@ -114,7 +114,7 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
   const brNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
   const currentMonthPrefix = String(brNow.getMonth() + 1).padStart(2, '0');
 
-  let currentMonthData: { entradas: number, saidas: number, resultado: number } | null = null;
+  let currentMonthData: { entradas: number, saidas: number, resultado: number, pageId: string } | null = null;
 
   const relatorio = rowsData.results.map((row: any) => {
     const mes = row.properties['Mês']?.title[0]?.plain_text || 'Desconhecido';
@@ -122,9 +122,9 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
     const saidas = row.properties['Saídas']?.rollup?.number || 0;
     const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
 
-    // Se este é o mês atual, salvamos os valores brutos
+    // Se este é o mês atual, salvamos os valores brutos e o ID da página
     if (mes.startsWith(currentMonthPrefix)) {
-      currentMonthData = { entradas, saidas, resultado };
+      currentMonthData = { entradas, saidas, resultado, pageId: row.id };
     }
 
     return `${mes}/${currentYear}: Entradas R$${entradas} | Saídas R$${saidas} | Balanço R$${resultado}`;
@@ -134,22 +134,13 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
 }
 
 // ── Busca movimentações do mês atual (despesas + receitas) ──
-// Retorna apenas descrição e valor para alimentar o conselheiro com dados detalhados
+// Agora filtrando pela RELAÇÃO com o Balancete do mês, para pegar parcelas e recorrentes
 export async function getCurrentMonthTransactions(
   clientAccessToken: string,
+  monthPageId: string,
   despesasDbId?: string | null,
   receitasDbId?: string | null
 ) {
-  // Calcula intervalo do mês atual no fuso de Brasília
-  const now = new Date();
-  const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const year = brNow.getFullYear();
-  const month = brNow.getMonth(); // 0-indexed
-  const startOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-  const nextMonth = month === 11 
-    ? `${year + 1}-01-01` 
-    : `${year}-${String(month + 2).padStart(2, '0')}-01`;
-
   const headers = {
     'Authorization': `Bearer ${clientAccessToken}`,
     'Notion-Version': '2022-06-28',
@@ -169,60 +160,63 @@ export async function getCurrentMonthTransactions(
     } catch { return null; }
   }
 
-  // Busca transações de um mês específico em uma database
-  async function fetchFromDb(dbId: string): Promise<{ descricao: string, valor: number }[]> {
+  // Busca transações vinculadas ao ID do mês do balancete
+  async function fetchFromDb(dbId: string, relationName: string): Promise<{ descricao: string, valor: number }[]> {
     try {
       const res = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
         method: 'POST', headers,
         body: JSON.stringify({
           filter: {
-            and: [
-              { property: 'Data', date: { on_or_after: startOfMonth } },
-              { property: 'Data', date: { before: nextMonth } }
-            ]
+            property: relationName,
+            relation: { contains: monthPageId }
           },
           page_size: 100
         })
       });
       if (!res.ok) return [];
       const data = await res.json();
-      return data.results.map((row: any) => ({
-        descricao: row.properties['Descrição']?.title[0]?.plain_text || 'Sem descrição',
-        valor: row.properties['Valor']?.number || 0
-      }));
+      return data.results.map((row: any) => {
+        // Para despesas, usamos 'Valor para balancete' (que trata parcelas)
+        // Para receitas, usamos o 'Valor' normal
+        const valorProp = row.properties['Valor para balancete'] || row.properties['Valor'];
+        const valor = valorProp?.formula?.number ?? valorProp?.number ?? 0;
+        
+        return {
+          descricao: row.properties['Descrição']?.title[0]?.plain_text || 'Sem descrição',
+          valor: valor
+        };
+      });
     } catch { return []; }
   }
 
-  // Resolve IDs em paralelo (usa cache se disponível, senão busca)
+  // Resolve IDs em paralelo
   const [dId, rId] = await Promise.all([
     despesasDbId || findDbId('Despesas'),
     receitasDbId || findDbId('Receitas')
   ]);
 
-  // Busca transações em paralelo
+  // Busca transações vinculadas ao mês (usando o nome exato da relação que vi no search)
   const [despesas, receitas] = await Promise.all([
-    dId ? fetchFromDb(dId) : Promise.resolve([]),
-    rId ? fetchFromDb(rId) : Promise.resolve([])
+    dId ? fetchFromDb(dId, 'Balancete') : Promise.resolve([]),
+    rId ? fetchFromDb(rId, 'Balancete') : Promise.resolve([])
   ]);
 
-  // Totais numéricos para o comando de saldo
+  // Totais numéricos
   const totalDespesas = despesas.reduce((sum, d) => sum + d.valor, 0);
   const totalReceitas = receitas.reduce((sum, r) => sum + r.valor, 0);
 
-  // Formata como texto legível para o prompt da IA
+  // Formata relatório para a IA
   let report = '';
-
   if (despesas.length > 0) {
-    report += 'DESPESAS DO MÊS:\n';
+    report += 'DESPESAS VINCULADAS A ESTE MÊS (incluindo parcelas e recorrentes):\n';
     despesas.forEach(d => report += `- ${d.descricao}: R$${d.valor.toFixed(2)}\n`);
   }
-
   if (receitas.length > 0) {
-    report += 'RECEITAS DO MÊS:\n';
+    report += 'RECEITAS VINCULADAS A ESTE MÊS:\n';
     receitas.forEach(r => report += `- ${r.descricao}: R$${r.valor.toFixed(2)}\n`);
   }
 
-  if (!report) report = 'Nenhuma movimentação registrada neste mês ainda.';
+  if (!report) report = 'Nenhuma movimentação vinculada a este mês no balancete.';
 
   return {
     report,
