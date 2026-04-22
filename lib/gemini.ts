@@ -71,10 +71,17 @@ export async function generateFinancialAdvice(pergunta: string, balancetesData: 
   // Para a resposta livre falada, NÃO limitamos o JSON. O robô está livre para gerar texto normal.
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
-  const dateBRT = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', month: 'long', year: 'numeric', day: '2-digit' });
-  const currentYear = new Date().getFullYear();
+  const now = new Date();
+  const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const dateBRT = brNow.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', day: '2-digit' });
+  const currentYear = brNow.getFullYear();
+  const currentDay = brNow.getDate();
+  const lastDayOfMonth = new Date(brNow.getFullYear(), brNow.getMonth() + 1, 0).getDate();
+  const remainingDays = lastDayOfMonth - currentDay;
 
-  const prompt = `Conselheiro financeiro amigável e pontual. Data atual: ${dateBRT}. Ano vigente: ${currentYear}. 
+  const prompt = `Conselheiro financeiro amigável e pontual.
+Data atual: ${dateBRT}. Ano vigente: ${currentYear}.
+HOJE é dia ${currentDay} de ${lastDayOfMonth} — faltam ${remainingDays} dias para o mês fechar. O MÊS AINDA NÃO ACABOU.
 
 RESUMO MENSAL (Balancetes):
 ${balancetesData}
@@ -87,7 +94,7 @@ Pergunta do ${firstName}: "${pergunta}"
 Missão:
 - COMECE SEMPRE COM: "Oi ${firstName}! 😊"
 - Use emojis relevantes ao longo de toda a resposta.
-- Analise o fluxo de caixa do Mês Atual (identifique pelo número inicial do mês, ex: 04 para Abril) apenas para o ano de ${currentYear}.
+- IMPORTANTE: O mês ainda está EM ANDAMENTO (dia ${currentDay} de ${lastDayOfMonth}). NÃO trate como mês fechado. Analise o ritmo de gastos ATÉ AGORA e projete se o ${firstName} vai conseguir fechar os ${remainingDays} dias restantes no azul ou no vermelho.
 - Use as MOVIMENTAÇÕES DETALHADAS para dar conselhos específicos (ex: "vi que você gastou bastante em Alimentação" ou "seu maior gasto foi X").
 - ATENÇÃO: NÃO inverta os valores. Entradas são dinheiro que GANHOU. Saídas são dinheiro que GASTOU.
 - Se o mês atual (${dateBRT}) NÃO possuir dados no balancete enviado, diga claramente que ainda não há registros para este mês e use os dados dos meses anteriores apenas como referência comparativa (identificando-os pelo ano).
