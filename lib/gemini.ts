@@ -22,7 +22,7 @@ Sua primeira missão: Identifique se ela é "despesa", "receita", ou "consulta".
 
 Se você classificar como DESPESA devolva as propriedades:
 - "intent": "despesa"
-- "descricao": título resumido da compra (string)
+- "descricao": título CURTO de 1-2 palavras (ex: "Mercado", "Uber", "Aluguel", "Salário"). NÃO use prefixos como "Compra no" ou "Pagamento de".
 - "valor": o valor financeiro limpo de moedas (numero)
 - "data": a data citada no texto (YYYY-MM-DD). Se não falado, use a data de hoje.
 - "tipo_despesa": escolha ESTRITAMENTE entre:
@@ -36,7 +36,7 @@ Se você classificar como DESPESA devolva as propriedades:
 
 Se você classificar como RECEITA devolva as propriedades:
 - "intent": "receita"
-- "descricao": título resumido (string)
+- "descricao": título CURTO de 1-2 palavras (ex: "Salário", "Freela", "Reembolso")
 - "valor": valor financeiro (numero)
 - "data": a data em YYYY-MM-DD. Se não falado, use hoje.
 - "tipo_receita": escolha ESTRITAMENTE: "Salário", "Empréstimo", "Reembolso", ou "Freela"
