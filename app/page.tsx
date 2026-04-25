@@ -114,12 +114,15 @@ function LandingContent() {
   }
 
   const localKey = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : secretKey;
+  
+  // Define a largura máxima do container baseada no estado de login para alinhar perfeitamente
+  const contentMaxWidth = user ? '500px' : '900px';
 
   return (
     <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
       
       {/* Header Comum */}
-      <div className="app-header animate-fade" style={{ position: 'relative', width: '100%', maxWidth: '900px' }}>
+      <div className="app-header animate-fade" style={{ position: 'relative', width: '100%', maxWidth: contentMaxWidth, margin: '0 auto 2rem auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <picture>
             <source srcSet="/icon-dark.png" media="(prefers-color-scheme: dark)" />
