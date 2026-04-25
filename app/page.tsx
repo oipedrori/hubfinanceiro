@@ -107,6 +107,9 @@ function LandingContent() {
       setShortcutSaved(false);
       setTemplateId(null);
       setActiveAccordion(null);
+
+      // Limpa os parâmetros da URL (como ?key=...) para que um F5 não recarregue a chave
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   };
 
