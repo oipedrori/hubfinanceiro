@@ -373,8 +373,8 @@ function LandingContent() {
             <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(1)}>
                 <div className="check-content-title">
-                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center' }}>
-                    <svg width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.96.95-2.04 1.72-3.23 1.72-1.16 0-1.54-.7-2.92-.7-1.39 0-1.81.69-2.92.69-1.12 0-2.2-.77-3.18-1.72-2.04-1.95-3.52-5.52-3.52-8.87 0-3.32 1.73-5.08 3.39-5.08 1.13 0 1.9.64 2.76.64.84 0 1.54-.64 2.8-.64 1.34 0 2.51.58 3.34 1.63-2.79 1.63-2.34 5.37.44 6.64-.78 1.95-1.78 3.73-3.11 5.33zm-1.87-16.14c.6-.72.99-1.72.99-2.73 0-.14-.02-.28-.05-.4-.92.03-2.04.61-2.7 1.37-.58.67-.98 1.69-.98 2.68 0 .15.02.3.06.41.1.01.21.01.32.01.83 0 1.8-.46 2.36-1.34z"/></svg>
+                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="1.2rem" height="1.2rem" viewBox="0 0 256 315" fill="currentColor"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615-.335 1.05-6.568 22.56-21.726 44.713-13.104 19.153-26.705 38.234-48.23 38.633-21.144.39-27.953-12.484-52.179-12.484-24.23 0-31.802 12.1-51.774 12.893-20.741.798-36.316-20.746-49.52-39.823-26.995-39.043-47.568-110.37-19.735-158.606 13.813-24.07 38.53-39.318 65.346-39.712 20.34-.398 39.512 13.685 51.972 13.685 12.464 0 35.592-16.83 60.235-14.326 10.323.43 39.313 4.14 57.91 31.417-1.488.922-34.61 20.155-34.226 60.007zM174.003 44.45c11.066-13.34 18.52-31.902 16.484-50.418-15.894.64-35.08 10.59-46.48 23.93-10.22 11.82-19.143 30.803-16.737 48.91 17.705 1.375 35.66-9.08 46.733-22.422z"/></svg>
                   </span>
                   <div className="check-text">
                     <h4>Salve o atalho [iOS]</h4>
@@ -396,7 +396,7 @@ function LandingContent() {
             <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(2)}>
                 <div className="check-content-title">
-                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center' }}>
+                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="currentColor"><path d="M16 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zM8 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm8.5-5.38L17.61 6.5a.495.495 0 1 0-.7-.7L15.65 7.06A7.476 7.476 0 0 0 12 6a7.476 7.476 0 0 0-3.65 1.06L7.1 5.8a.495.495 0 0 0-.7.7l1.11 1.12c-2.31 1.54-3.51 4-3.51 6.38h16c0-2.38-1.2-4.84-3.5-6.38z"/></svg>
                   </span>
                   <div className="check-text">
