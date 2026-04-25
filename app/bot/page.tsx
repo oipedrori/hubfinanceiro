@@ -9,6 +9,7 @@ export default function VoiceBotPage() {
   const [transcription, setTranscription] = useState('');
   const [response, setResponse] = useState('');
   const [secretKey, setSecretKey] = useState<string | null>(null);
+  const [textInput, setTextInput] = useState('');
 
   const recognitionRef = useRef<any>(null);
 
@@ -44,6 +45,14 @@ export default function VoiceBotPage() {
       setStatus('Seu navegador não suporta reconhecimento de voz.');
     }
   }, []);
+
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textInput.trim()) return;
+    setTranscription(textInput);
+    processVoice(textInput);
+    setTextInput('');
+  };
 
   const startListening = () => {
     if (!recognitionRef.current) return;
@@ -94,8 +103,7 @@ export default function VoiceBotPage() {
   return (
     <main className="main" style={{ justifyContent: 'space-between', padding: '3rem 2rem' }}>
       <div style={{ textAlign: 'center', width: '100%' }}>
-         <h1 className="hero-title" style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Hub Bot <span>Voz</span></h1>
-         <p style={{ color: '#888888', fontSize: '0.9rem' }}>Modo Web App</p>
+         <h1 className="hero-title" style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Hub Financeiro Bot</h1>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', width: '100%' }}>
@@ -139,6 +147,19 @@ export default function VoiceBotPage() {
           </div>
         )}
         
+        <form onSubmit={handleTextSubmit} style={{ marginBottom: '2rem', display: 'flex', gap: '8px' }}>
+          <input 
+            type="text" 
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Ou digite seu gasto aqui..." 
+            style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--foreground)', fontSize: '1rem', outline: 'none' }}
+          />
+          <button type="submit" style={{ background: 'var(--foreground)', color: 'var(--background)', border: 'none', borderRadius: '12px', padding: '0 20px', fontWeight: 'bold', cursor: 'pointer' }}>
+            Enviar
+          </button>
+        </form>
+
         <Link href="/" style={{ color: '#888888', fontSize: '0.9rem', display: 'block', textAlign: 'center' }}>
           Voltar para Home
         </Link>
