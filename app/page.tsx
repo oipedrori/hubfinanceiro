@@ -288,17 +288,10 @@ function LandingContent() {
       ) : (
         /* ================= TELA POST-LOGIN ================= */
         <div className="glass-card animate-fade" style={{ padding: '2rem 2.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
             <h2 className="hero-title" style={{ fontSize: '2rem', marginBottom: 0 }}>
               Olá, <span>{user.displayName?.split(' ')[0] || 'Visitante'}</span>!
             </h2>
-            <button onClick={handleReset} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
-              </svg>
-              Resetar
-            </button>
           </div>
           
           <p className="subtitle" style={{ fontSize: '1rem', marginBottom: '2rem' }}>
@@ -394,8 +387,19 @@ function LandingContent() {
           </div>
         </div>
       )}
-      
-      <footer style={{ marginTop: '3rem', color: '#888888', fontSize: '0.8rem', textAlign: 'center' }}>
+      {user && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+          <button onClick={handleReset} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+            Resetar meu progresso
+          </button>
+        </div>
+      )}
+
+      <footer style={{ marginTop: '1.5rem', color: '#888888', fontSize: '0.8rem', textAlign: 'center' }}>
         © 2026 Hub Financeiro Bot
       </footer>
     </main>
