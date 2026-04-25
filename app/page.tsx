@@ -123,7 +123,7 @@ function LandingContent() {
   };
 
   if (loadingAuth) {
-    return <div className="main"><p>Carregando...</p></div>;
+    return <div className="main" style={{ minHeight: '100vh' }}><div className="spinner"></div></div>;
   }
 
   const localKey = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : secretKey;
@@ -384,13 +384,13 @@ function LandingContent() {
               </div>
             </div>
 
-            {/* Etapa 3: PWA Android */}
+            {/* Etapa 3: Atalho Android */}
             <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(2)}>
                 <div className="check-content-title">
                   <span className="check-icon">🤖</span>
                   <div className="check-text">
-                    <h4>Salve o atalho [Android / PWA]</h4>
+                    <h4>Salve o atalho [Android]</h4>
                   </div>
                 </div>
                 <div className="check-circle"></div>
@@ -441,7 +441,7 @@ function LandingContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="main"><p>Carregando...</p></div>}>
+    <Suspense fallback={<div className="main" style={{ minHeight: '100vh' }}><div className="spinner"></div></div>}>
       <LandingContent />
     </Suspense>
   );

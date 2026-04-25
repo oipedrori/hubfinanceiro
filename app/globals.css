@@ -858,3 +858,22 @@ a {
     font-size: 2.5rem;
   }
 }
+
+/* =========================================
+   LOADING SPINNER
+========================================= */
+@keyframes slingshot {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--foreground);
+  border-radius: 50%;
+  animation: slingshot 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}

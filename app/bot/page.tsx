@@ -134,7 +134,10 @@ export default function VoiceBotPage() {
         </div>
 
         <div style={{ textAlign: 'center', minHeight: '80px' }}>
-          <p style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '8px' }}>{status}</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
+            {status === 'Processando...' && <span className="spinner" style={{ width: '16px', height: '16px' }}></span>}
+            <p style={{ fontWeight: 600, fontSize: '1.1rem', margin: 0 }}>{status}</p>
+          </div>
           <p style={{ color: '#666666', fontStyle: 'italic', fontSize: '0.95rem' }}>
             {transcription && `"${transcription}"`}
           </p>
