@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCustomerBySecretKey, updateCustomerDbIds, logTokenUsage } from '@/lib/notionAdmin';
+import { getCustomerBySecretKey, updateCustomerDbIds, logTokenUsage } from '@/lib/firebaseAdmin';
 import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
 import { addTransactionToClientNotion, getBalancetesData, getCurrentMonthTransactions } from '@/lib/notionClient';
 

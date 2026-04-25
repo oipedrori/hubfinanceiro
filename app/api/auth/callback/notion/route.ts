@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createNewCustomer } from '@/lib/notionAdmin';
+import { createNewCustomer } from '@/lib/firebaseAdmin';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
