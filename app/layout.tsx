@@ -18,8 +18,14 @@ export const metadata: Metadata = {
      statusBarStyle: "black-translucent"
   },
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+    icon: [
+      { url: "/icons/favicon-dark.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/icons/favicon-light.png", media: "(prefers-color-scheme: light)" },
+    ],
+    apple: [
+      { url: "/icons/favicon-dark.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/icons/favicon-light.png", media: "(prefers-color-scheme: light)" },
+    ]
   }
 };
 
