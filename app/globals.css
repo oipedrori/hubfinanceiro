@@ -3,18 +3,18 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  --primary: #0085E6;
+  --primary: #000000;
   --card-bg: #ffffff;
-  --border: #e2e8f0;
+  --border: #dfdfde;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #000000;
     --foreground: #ffffff;
-    --primary: #0085E6;
+    --primary: #ffffff;
     --card-bg: #000000;
-    --border: #1e293b;
+    --border: #2f2f2f;
   }
 }
 
@@ -84,7 +84,7 @@ a {
 
 .subtitle {
   font-size: 1.25rem;
-  color: #94a3b8;
+  color: #666666;
   margin-bottom: 2.5rem;
   line-height: 1.6;
 }
@@ -96,21 +96,20 @@ a {
   justify-content: center;
   gap: 0.75rem;
   background: var(--primary);
-  color: #ffffff;
+  color: var(--background);
   padding: 0.8rem 2.5rem;
   border-radius: 12px; /* Curved corners instead of pill */
   font-weight: 600;
   font-size: 1rem;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
   border: none;
   width: 100%;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-  box-shadow: 0 15px 30px var(--primary-glow);
+  transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 .btn-notion {

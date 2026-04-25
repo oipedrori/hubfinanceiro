@@ -95,7 +95,7 @@ export default function VoiceBotPage() {
     <main className="main" style={{ justifyContent: 'space-between', padding: '3rem 2rem' }}>
       <div style={{ textAlign: 'center', width: '100%' }}>
          <h1 className="hero-title" style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Hub Bot <span>Voz</span></h1>
-         <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Modo Web App</p>
+         <p style={{ color: '#888888', fontSize: '0.9rem' }}>Modo Web App</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', width: '100%' }}>
@@ -106,13 +106,13 @@ export default function VoiceBotPage() {
             height: '180px',
             borderRadius: '50%',
             background: isListening ? 'var(--primary)' : 'transparent',
-            border: `4px solid ${isListening ? 'var(--primary)' : '#1e293b'}`,
+            border: `4px solid ${isListening ? 'var(--primary)' : 'var(--border)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
             transition: 'all 0.4s ease',
-            boxShadow: isListening ? '0 0 40px var(--primary)' : 'none'
+            boxShadow: 'none'
           }}
         >
           <div style={{ 
@@ -126,7 +126,7 @@ export default function VoiceBotPage() {
 
         <div style={{ textAlign: 'center', minHeight: '80px' }}>
           <p style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '8px' }}>{status}</p>
-          <p style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '0.95rem' }}>
+          <p style={{ color: '#666666', fontStyle: 'italic', fontSize: '0.95rem' }}>
             {transcription && `"${transcription}"`}
           </p>
         </div>
@@ -139,7 +139,7 @@ export default function VoiceBotPage() {
           </div>
         )}
         
-        <Link href="/" style={{ color: '#64748b', fontSize: '0.9rem', display: 'block', textAlign: 'center' }}>
+        <Link href="/" style={{ color: '#888888', fontSize: '0.9rem', display: 'block', textAlign: 'center' }}>
           Voltar para Home
         </Link>
       </div>

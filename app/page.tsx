@@ -54,9 +54,9 @@ function LandingContent() {
             {platform === 'ios' && (
               <div style={{ marginBottom: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                 <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '1rem' }}>Como configurar no iPhone:</p>
-                <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6' }}>
+                <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#888888', lineHeight: '1.6' }}>
                   <li style={{ marginBottom: '8px' }}>Copie sua chave secreta gerada logo abaixo.</li>
-                  <li style={{ marginBottom: '8px' }}>Clique no botão azul "Baixar Atalho" no final desta página.</li>
+                  <li style={{ marginBottom: '8px' }}>Clique no botão "Baixar Atalho" no final desta página.</li>
                   <li style={{ marginBottom: '8px' }}>Ao adicionar o seu Atalho, ele solicitará o seu código. Basta colar a chave que você copiou.</li>
                   <li>Adicione o atalho na página inicial do seu celular para ter o Hub Financeiro sempre à mão.</li>
                 </ol>
@@ -92,7 +92,7 @@ function LandingContent() {
               
               <button 
                 onClick={() => window.location.href = '/'}
-                style={{ background: 'none', border: '1px solid var(--border)', color: '#94a3b8', padding: '0.8rem 2.5rem', borderRadius: '12px', cursor: 'pointer', width: '100%', fontWeight: 600 }}
+                style={{ background: 'none', border: '1px solid var(--border)', color: '#666666', padding: '0.8rem 2.5rem', borderRadius: '12px', cursor: 'pointer', width: '100%', fontWeight: 600 }}
               >
                 Voltar ao início
               </button>
@@ -126,7 +126,7 @@ function LandingContent() {
         )}
       </div>
 
-      <footer style={{ marginTop: '4rem', color: '#64748b', fontSize: '0.8rem' }}>
+      <footer style={{ marginTop: '4rem', color: '#888888', fontSize: '0.8rem' }}>
         © 2026 Hub Financeiro Bot. Todos os direitos reservados.
       </footer>
     </main>
