@@ -345,50 +345,46 @@ function LandingContent() {
             </div>
 
             {/* Etapa 2: Atalho iOS */}
-            {(platform === 'ios' || platform === 'other') && (
-              <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
-                <div className="check-header" onClick={() => toggleAccordion(1)}>
-                  <div className="check-content-title">
-                    <span className="check-icon">📱</span>
-                    <div className="check-text">
-                      <h4>Salve o atalho [iOS]</h4>
-                    </div>
+            <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
+              <div className="check-header" onClick={() => toggleAccordion(1)}>
+                <div className="check-content-title">
+                  <span className="check-icon">📱</span>
+                  <div className="check-text">
+                    <h4>Salve o atalho [iOS]</h4>
                   </div>
-                  <div className="check-circle"></div>
                 </div>
-                <div className={`accordion-content ${activeAccordion === 1 ? 'expanded' : ''}`}>
-                  <p className="accordion-text">
-                    Tenha o Hub Financeiro integrado direto no seu iPhone usando o aplicativo "Atalhos". Ao baixar, ele pedirá sua Chave de Segurança (aquela que geramos no passo anterior).
-                  </p>
-                  <button onClick={handleShortcutClick} className="accordion-btn">
-                    Baixar Atalho iOS
-                  </button>
-                </div>
+                <div className="check-circle"></div>
               </div>
-            )}
+              <div className={`accordion-content ${activeAccordion === 1 ? 'expanded' : ''}`}>
+                <p className="accordion-text">
+                  Tenha o Hub Financeiro integrado direto no seu iPhone usando o aplicativo "Atalhos". Ao baixar, ele pedirá sua Chave de Segurança (aquela que geramos no passo anterior).
+                </p>
+                <button onClick={handleShortcutClick} className="accordion-btn">
+                  Baixar Atalho iOS
+                </button>
+              </div>
+            </div>
 
             {/* Etapa 3: PWA Android */}
-            {(platform === 'android' || platform === 'other') && (
-              <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
-                <div className="check-header" onClick={() => toggleAccordion(2)}>
-                  <div className="check-content-title">
-                    <span className="check-icon">🤖</span>
-                    <div className="check-text">
-                      <h4>Salve o atalho [Android]</h4>
-                    </div>
+            <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
+              <div className="check-header" onClick={() => toggleAccordion(2)}>
+                <div className="check-content-title">
+                  <span className="check-icon">🤖</span>
+                  <div className="check-text">
+                    <h4>Salve o atalho [Android / PWA]</h4>
                   </div>
-                  <div className="check-circle"></div>
                 </div>
-                <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
-                  <p className="accordion-text">
-                    Para usar no Android, acesse o Bot de Voz. No Google Chrome, clique nos três pontinhos no canto superior direito e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub no seu celular!
-                  </p>
-                  <button onClick={handleAndroidPWA} className="accordion-btn">
-                    Acessar Bot de Voz
-                  </button>
-                </div>
+                <div className="check-circle"></div>
               </div>
-            )}
+              <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
+                <p className="accordion-text">
+                  Para testar o PWA, acesse o Bot de Voz. No Google Chrome/Safari, clique em Compartilhar e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub no seu celular!
+                </p>
+                <button onClick={handleAndroidPWA} className="accordion-btn">
+                  Acessar Bot de Voz
+                </button>
+              </div>
+            </div>
 
           </div>
         </div>
