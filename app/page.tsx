@@ -266,12 +266,6 @@ function LandingContent() {
             </div>
           </div>
 
-          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', marginBottom: '2rem'}}>
-            <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
-              <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub roda na Web, Android e iOS. A automação por voz funciona via aplicativo "Atalhos" no iOS (iPhone) e via PWA (Web App) no Android.
-            </p>
-          </div>
-
           {/* Final CTA Box */}
           <div className="cta-box">
             <h2 className="cta-title">Pronto para assumir o controle?</h2>
@@ -283,6 +277,12 @@ function LandingContent() {
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </button>
+          </div>
+
+          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', marginBottom: '4rem', maxWidth: '800px', margin: '0 auto 4rem auto'}}>
+            <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
+              <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub roda na Web, Android e iOS. A automação por voz funciona via aplicativo "Atalhos" no iOS (iPhone) e via PWA (Web App) no Android.
+            </p>
           </div>
 
         </div>
