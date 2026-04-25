@@ -166,12 +166,17 @@ function LandingContent() {
             </div>
           </div>
 
-          {/* Interactive Intro Card */}
-          <div className="intro-card">
-            <span className="intro-icon">✨</span>
-            <p className="intro-text">
-              Mais de 80% das pessoas desistem de anotar os gastos no segundo mês. O Hub Financeiro inverte essa lógica: aqui você não precisa abrir seu Notion para preencher tabelas chatas, <span className="intro-highlight">você apenas fala no celular e a IA anota no seu sistema</span>.
-            </p>
+          {/* Interactive Data Block - No Card */}
+          <div className="data-showcase">
+            <div className="data-stat">
+              <span className="data-number">80<span style={{fontSize: '0.6em'}}><span style={{WebkitTextFillColor: 'initial', color: 'var(--foreground)'}}>%</span></span></span>
+              <p className="data-label">das pessoas abandonam planilhas no 2º mês.</p>
+            </div>
+            <div className="data-divider"></div>
+            <div className="data-solution">
+              <h3>O Hub inverte a estatística.</h3>
+              <p>Aqui você não precisa abrir seu Notion para preencher tabelas chatas. Você apenas manda um áudio e a IA organiza tudo por você em <strong>milissegundos</strong>.</p>
+            </div>
           </div>
 
           <div className="lp-divider" style={{margin: '4rem 0'}}></div>
@@ -279,7 +284,7 @@ function LandingContent() {
             </button>
           </div>
 
-          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', marginBottom: '4rem', maxWidth: '800px', margin: '0 auto 4rem auto'}}>
+          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', width: '100%', marginBottom: '4rem'}}>
             <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
               <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub roda na Web, Android e iOS. A automação por voz funciona via aplicativo "Atalhos" no iOS (iPhone) e via PWA (Web App) no Android.
             </p>
