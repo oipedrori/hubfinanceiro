@@ -216,7 +216,7 @@ function LandingContent() {
           <div className="lp-divider" style={{margin: '4rem 0'}}></div>
 
           {/* Features Expandidas e Mais Persuasivas */}
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem', marginBottom: '4rem'}}>
+          <div className="features-grid">
             <div>
               <span style={{fontSize: '2rem', display: 'block', marginBottom: '0.5rem'}}>🎙️</span>
               <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>O Fim da Digitação Manual</h3>

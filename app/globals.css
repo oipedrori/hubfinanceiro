@@ -353,6 +353,18 @@ a {
   }
 }
 
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+@media (min-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .lp-3d-wrapper {
   perspective: 1200px;
   display: flex;
