@@ -307,7 +307,7 @@ function LandingContent() {
 
           <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', width: '100%', marginBottom: '4rem'}}>
             <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
-              <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub é construído sobre o Notion, o que permite que ele funcione nativamente na Web, Android e iOS. A automação por voz utiliza o aplicativo "Atalhos" no iOS (iPhone) e funciona via WebApp no Android.
+              <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub Financeiro é construído sobre o Notion, o que permite que ele funcione nativamente na Web, Android e iOS. A automação por voz utiliza o aplicativo "Atalhos" no iOS (iPhone) e funciona via WebApp no Android.
             </p>
           </div>
 
