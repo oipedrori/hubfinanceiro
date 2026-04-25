@@ -7,12 +7,10 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 
 function LandingContent() {
   const searchParams = useSearchParams();
-  const success = searchParams.get('success');
   const secretKey = searchParams.get('key');
   
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  
   const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other');
   
   // Estado para os acordeões
@@ -43,7 +41,7 @@ function LandingContent() {
     if (secretKey) {
       localStorage.setItem('zimbroo_secret_key', secretKey);
       setNotionConnected(true);
-      setActiveAccordion(1); // Abre o acordeão do "Conectar o Bot" para mostrar a chave
+      setActiveAccordion(1);
     } else if (localStorage.getItem('zimbroo_secret_key')) {
       setNotionConnected(true);
     }
@@ -114,9 +112,7 @@ function LandingContent() {
   }
 
   const localKey = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : secretKey;
-  
-  // Define a largura máxima do container baseada no estado de login para alinhar perfeitamente
-  const contentMaxWidth = user ? '500px' : '900px';
+  const contentMaxWidth = user ? '500px' : '1000px';
 
   return (
     <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
@@ -139,31 +135,41 @@ function LandingContent() {
 
       {!user ? (
         /* ================= TELA PRE-LOGIN (LANDING PAGE) ================= */
-        <div className="lp-container animate-fade">
-          <h1 className="lp-hero-title">Hub Financeiro: O Sistema Inteligente para Controlar seu Dinheiro</h1>
-          <h2 className="lp-hero-subtitle">Você não precisa ganhar rios de dinheiro para ser organizado.</h2>
-          <p className="lp-text">Você só precisa do sistema certo.</p>
+        <div className="lp-container animate-fade" style={{maxWidth: '1000px'}}>
           
-          <img src="/app-dashboard.png" alt="Dashboard do Hub Financeiro" className="lp-hero-image" />
+          {/* Nova Hero Section: 2 Colunas */}
+          <div className="lp-hero-grid">
+            <div className="lp-3d-wrapper">
+              <img src="/app-dashboard.png" alt="Dashboard do Hub Financeiro" className="lp-3d-image" />
+            </div>
+            
+            <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+              <h1 className="lp-hero-title">O Sistema Inteligente para Controlar seu Dinheiro</h1>
+              <p className="lp-text" style={{fontSize: '1.2rem', marginBottom: '2rem'}}>
+                Esqueça planilhas complicadas. Automatize sua vida financeira em um único lugar, visual e direto ao ponto.
+              </p>
+              
+              <button onClick={handleLogin} className="btn-primary" style={{ background: 'var(--foreground)', color: 'var(--background)', width: '100%', padding: '1.2rem' }}>
+                Entre e faça sua assinatura
+              </button>
+            </div>
+          </div>
 
-          <p className="lp-text">
-            Cansado de planilhas complicadas que você começa em janeiro e abandona em fevereiro? O <span className="lp-highlight">Hub Financeiro</span> foi desenhado com um único objetivo: tirar o peso da gestão financeira das suas costas e transformá-la em algo simples, visual e — o melhor de tudo — <span className="lp-highlight">automático</span>.
-          </p>
+          <div className="lp-divider" style={{margin: '4rem 0'}}></div>
 
-          <h2 className="lp-hero-subtitle" style={{marginTop: '2.5rem'}}>Este não é apenas mais um template de Notion.</h2>
-          <p className="lp-text">É o seu sistema operacional financeiro para o ano todo.</p>
+          <h2 className="lp-hero-subtitle" style={{textAlign: 'center', marginBottom: '3rem', fontSize: '1.8rem'}}>Planos para qualquer objetivo</h2>
 
+          {/* Pricing Grid */}
           <div className="pricing-grid">
             {/* PLANO BÁSICO */}
             <div className="pricing-card">
               <h3 className="pricing-title">Básico</h3>
-              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>O alicerce da sua organização.</p>
+              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>Apenas o sistema no Notion.</p>
               <div className="pricing-price">R$ 49,90 <span className="pricing-period">/ único</span></div>
               <ul className="pricing-features">
-                <li><span style={{fontSize:'1rem'}}>✅</span> Template Notion Original</li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Visão anual centralizada</li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Gráficos de balancete</li>
-                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem comandos de voz</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Template Notion Premium</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Visão anual em uma tela</li>
+                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem automação por voz</li>
                 <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem Inteligência Artificial</li>
               </ul>
               <button onClick={handleLogin} className="pricing-btn btn-outline">
@@ -173,17 +179,16 @@ function LandingContent() {
 
             {/* PLANO IA PLUS */}
             <div className="pricing-card featured">
-              <div style={{position:'absolute', top:'-12px', right:'2rem', background:'#f59e0b', color:'#000', fontSize:'0.7rem', fontWeight:800, padding:'4px 12px', borderRadius:'12px', letterSpacing:'0.5px', textTransform:'uppercase'}}>Mais Popular</div>
+              <div style={{position:'absolute', top:'-12px', right:'2rem', background:'#0085E6', color:'#ffffff', fontSize:'0.75rem', fontWeight:800, padding:'6px 14px', borderRadius:'12px', letterSpacing:'0.5px', textTransform:'uppercase'}}>Mais Popular</div>
               <h3 className="pricing-title">IA Plus</h3>
-              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>Seu assistente de bolso.</p>
+              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>Automação no seu celular.</p>
               <div className="pricing-price">R$ 14,90 <span className="pricing-period">/ mês</span></div>
               <p style={{fontSize:'0.8rem', opacity:0.6, marginTop:'-10px', marginBottom:'15px'}}>ou R$ 149,00 / ano</p>
               <ul className="pricing-features">
-                <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do plano Básico</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do Básico</li>
                 <li><span style={{fontSize:'1rem'}}>🚀</span> <strong>Automação por Voz</strong></li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Lance despesas sem digitar nada</li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Integração de atalhos (iOS/Android)</li>
-                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem conselheiro financeiro VIP</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Adicione gastos sem digitar</li>
+                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem análises e conselhos</li>
               </ul>
               <button onClick={handleLogin} className="pricing-btn btn-outline">
                 Testar IA Plus
@@ -193,15 +198,14 @@ function LandingContent() {
             {/* PLANO IA PRO */}
             <div className="pricing-card">
               <h3 className="pricing-title">IA Pro</h3>
-              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>Seu conselheiro financeiro VIP.</p>
+              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>Seu consultor financeiro VIP.</p>
               <div className="pricing-price">R$ 24,90 <span className="pricing-period">/ mês</span></div>
               <p style={{fontSize:'0.8rem', opacity:0.6, marginTop:'-10px', marginBottom:'15px'}}>ou R$ 249,00 / ano</p>
               <ul className="pricing-features">
-                <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do plano Plus</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do IA Plus</li>
                 <li><span style={{fontSize:'1rem'}}>🧠</span> <strong>Conselheiro IA Avançado</strong></li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Dicas para economizar</li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Análises profundas de gastos</li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Conversas e tira-dúvidas</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Dicas de economia reais</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Análise de perfil de gastos</li>
               </ul>
               <button onClick={handleLogin} className="pricing-btn btn-outline">
                 Conhecer IA Pro
@@ -209,48 +213,23 @@ function LandingContent() {
             </div>
           </div>
 
-          <div className="lp-divider"></div>
+          <div className="lp-divider" style={{margin: '4rem 0'}}></div>
 
-          <div className="lp-aside">
-            <h3>O que você vai encontrar aqui:</h3>
-            <ul>
-              <li><span style={{fontSize:'1.1rem'}}>✅</span> <span><strong>Visão Anual em Uma Tela:</strong> Chega de abas infinitas. Controle seus 12 meses em um único painel intuitivo.</span></li>
-              <li><span style={{fontSize:'1.1rem'}}>✅</span> <span><strong>Feedback Visual Imediato:</strong> O sistema te avisa com cores.</span></li>
-              <li><span style={{fontSize:'1.1rem'}}>✅</span> <span><strong>Botões que fazem tudo sozinhos:</strong> O sistema já vincula suas movimentações aos meses corretamente.</span></li>
-              <li><span style={{fontSize:'1.1rem'}}>✅</span> <span><strong>Uma IA que faz todo o trabalho chato:</strong> Basta falar qual foi sua despesa ou receita e a IA adiciona tudo no seu Notion.</span></li>
-            </ul>
+          {/* Features e Bonus Ultra-Minimalistas */}
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem', marginBottom: '4rem'}}>
+            <div>
+              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>O Fim do Preenchimento Manual</h3>
+              <p className="lp-text">O maior inimigo da organização é a preguiça de anotar. Você fala, a IA entende e o Hub Financeiro organiza. Simples assim.</p>
+            </div>
+            <div>
+              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>Visão Imediata</h3>
+              <p className="lp-text">Sem dezenas de abas e cálculos perdidos. Tenha a clareza exata de quanto você pode gastar, com feedbacks em cores no seu balancete.</p>
+            </div>
           </div>
 
-          <img src="/app-dashboard.png" alt="Visão Geral do Hub Financeiro" className="lp-hero-image" />
-
-          <div className="lp-divider"></div>
-
-          <h2 className="lp-hero-subtitle">🚀 BÔNUS EXCLUSIVO: Sua Própria IA Financeira</h2>
-          <p className="lp-text" style={{fontWeight: 700}}>O Fim do Preenchimento Manual</p>
-          <p className="lp-text">
-            O maior inimigo da organização é a preguiça de anotar os gastos. Por isso, criei uma solução definitiva.
-          </p>
-          <p className="lp-text">
-            Você terá acesso ao <span className="lp-highlight">Tutorial de Integração Notion + IA</span>. Um passo a passo detalhado onde ensino como transformar seu celular em um assistente pessoal que registra tudo por comando de voz.
-          </p>
-          <p className="lp-text" style={{fontSize: '1.1rem', fontWeight: 700, color: 'var(--foreground)'}}>
-            Você fala, a IA entende e o Hub Financeiro organiza. Simples assim.
-          </p>
-
-          <div className="lp-divider"></div>
-
-          <div className="lp-aside" style={{borderLeftColor: '#888'}}>
-            <h3>Para quem é isso?</h3>
-            <ul>
-              <li><span style={{color: '#888'}}>•</span> <span>Para quem ama organização, mas odeia perder tempo preenchendo células de Excel.</span></li>
-              <li><span style={{color: '#888'}}>•</span> <span>Para quem quer ter paz mental ao olhar para a conta bancária.</span></li>
-              <li><span style={{color: '#888'}}>•</span> <span>Para quem quer usar a tecnologia (e a IA) para facilitar a vida adulta.</span></li>
-            </ul>
-          </div>
-
-          <div className="lp-aside" style={{background: 'rgba(255,150,0,0.05)', borderLeftColor: '#f59e0b'}}>
-            <p style={{fontSize: '0.9rem', color: '#888', lineHeight: 1.5}}>
-              <strong style={{color: '#f59e0b'}}>⚠️ Requisitos do Sistema:</strong> O Hub Financeiro funciona em qualquer dispositivo (Web, Android e iOS). O <strong>Bônus de Automação com IA</strong> utiliza o recurso "Atalhos", exclusivo para <strong>iPhone/iOS</strong> no momento. Versão para Android em desenvolvimento.
+          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', marginBottom: '4rem'}}>
+            <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
+              <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub roda na Web, Android e iOS. A automação por voz funciona via aplicativo "Atalhos" no iOS (iPhone) e via PWA (Web App) no Android.
             </p>
           </div>
 
