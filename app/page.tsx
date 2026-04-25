@@ -149,6 +149,12 @@ function LandingContent() {
             </div>
             
             <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+              
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(150,150,150,0.08)', padding: '6px 14px', borderRadius: '20px', marginBottom: '1.2rem', border: '1px solid var(--border)', width: 'fit-content' }}>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" alt="Notion" width="16" height="16" style={{ borderRadius: '4px' }} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--foreground)' }}>Construído no Notion</span>
+              </div>
+
               <h1 className="lp-hero-title">O Sistema Inteligente para Controlar seu Dinheiro</h1>
               <p className="lp-text" style={{fontSize: '1.2rem', marginBottom: '2rem'}}>
                 Esqueça planilhas complicadas. Automatize sua vida financeira em um único lugar, visual e direto ao ponto.
@@ -164,7 +170,7 @@ function LandingContent() {
           <div className="intro-card">
             <span className="intro-icon">✨</span>
             <p className="intro-text">
-              Mais de 80% das pessoas desistem de anotar os gastos no segundo mês. O Hub Financeiro inverte essa lógica: aqui você não preenche tabelas chatas, <span className="intro-highlight">você apenas fala no celular e o sistema trabalha por você</span>.
+              Mais de 80% das pessoas desistem de anotar os gastos no segundo mês. O Hub Financeiro inverte essa lógica: aqui você não precisa abrir seu Notion para preencher tabelas chatas, <span className="intro-highlight">você apenas fala no celular e a IA anota no seu sistema</span>.
             </p>
           </div>
 
