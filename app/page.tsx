@@ -326,7 +326,7 @@ function LandingContent() {
                 <div className="check-content-title">
                   <span className="check-icon">🤖</span>
                   <div className="check-text">
-                    <h4>Conecte e Crie seu Sistema</h4>
+                    <h4>Crie e Conecte seu Sistema</h4>
                   </div>
                 </div>
                 <div className="check-circle"></div>
@@ -412,7 +412,18 @@ function LandingContent() {
             <button 
               onClick={handleOpenNotion}
               className="accordion-btn"
-              style={{ margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', maxWidth: '300px' }}
+              style={{ 
+                margin: '0 auto', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                maxWidth: '300px',
+                opacity: notionConnected ? 1 : 0.4,
+                cursor: notionConnected ? 'pointer' : 'not-allowed',
+                pointerEvents: notionConnected ? 'auto' : 'none'
+              }}
+              disabled={!notionConnected}
             >
               <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" alt="Notion Logo" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
               Acessar meu Hub Financeiro
