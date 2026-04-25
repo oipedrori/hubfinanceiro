@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     }
 
     const data = await res.json();
-    const { access_token, workspace_id, owner } = data;
+    const { access_token, workspace_id, owner, duplicated_template_id } = data;
 
     // 2. Registrar no nosso Banco de Dados de Admin
     const userName = owner?.user?.name || 'Novo Usuário Zimbroo';
@@ -57,8 +57,8 @@ export async function GET(request: Request) {
       workspaceId: workspace_id
     });
 
-    // 3. Sucesso! Redirecionar para a home com a chave para o usuário copiar
-    return NextResponse.redirect(new URL(`/?success=true&key=${secretKey}&name=${encodeURIComponent(userName)}`, request.url));
+    // 3. Sucesso! Redirecionar para a home com a chave e template_id
+    return NextResponse.redirect(new URL(`/?success=true&key=${secretKey}&name=${encodeURIComponent(userName)}&template_id=${duplicated_template_id || ''}`, request.url));
 
   } catch (err) {
     console.error('Erro no fluxo OAuth:', err);

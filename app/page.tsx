@@ -8,6 +8,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 function LandingContent() {
   const searchParams = useSearchParams();
   const secretKey = searchParams.get('key');
+  const templateIdParam = searchParams.get('template_id');
   
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -19,6 +20,7 @@ function LandingContent() {
   // Estados do Checklist
   const [notionConnected, setNotionConnected] = useState(false);
   const [shortcutSaved, setShortcutSaved] = useState(false);
+  const [templateId, setTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     // Detectar plataforma
@@ -38,10 +40,15 @@ function LandingContent() {
     // Se houver chave na URL, salva no localstorage, marca como conectado e abre o acordeão do Notion
     if (secretKey) {
       localStorage.setItem('zimbroo_secret_key', secretKey);
+      if (templateIdParam) {
+        localStorage.setItem('hub_template_id', templateIdParam);
+        setTemplateId(templateIdParam);
+      }
       setNotionConnected(true);
       setActiveAccordion(0); // Mantém o acordeão da chave aberto para copiar
     } else if (localStorage.getItem('zimbroo_secret_key')) {
       setNotionConnected(true);
+      setTemplateId(localStorage.getItem('hub_template_id'));
     }
 
     // Monitorar Autenticação
@@ -95,9 +102,20 @@ function LandingContent() {
     if (confirm('Tem certeza que deseja resetar todo o progresso do checklist e limpar a chave atual?')) {
       localStorage.removeItem('zimbroo_secret_key');
       localStorage.removeItem('hub_shortcut_done');
+      localStorage.removeItem('hub_template_id');
       setNotionConnected(false);
       setShortcutSaved(false);
+      setTemplateId(null);
       setActiveAccordion(null);
+    }
+  };
+
+  const handleOpenNotion = () => {
+    if (templateId) {
+      const cleanId = templateId.replace(/-/g, '');
+      window.open(`https://www.notion.so/${cleanId}`, '_blank');
+    } else {
+      window.open('https://www.notion.so/', '_blank');
     }
   };
 
@@ -389,7 +407,7 @@ function LandingContent() {
 
           <div style={{ marginTop: '3rem', textAlign: 'center' }}>
             <button 
-              onClick={() => window.open('https://www.notion.so/', '_blank')}
+              onClick={handleOpenNotion}
               className="accordion-btn"
               style={{ margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', maxWidth: '300px' }}
             >
