@@ -16,13 +16,13 @@ function LandingContent() {
   const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other');
   const [activeSlide, setActiveSlide] = useState(0);
   
+  // Estado para os acordeões
+  const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
+  
   // Estados do Checklist
   const [templateDuplicated, setTemplateDuplicated] = useState(false);
   const [notionConnected, setNotionConnected] = useState(false);
   const [shortcutSaved, setShortcutSaved] = useState(false);
-  
-  // Modal PWA Android
-  const [showAndroidPWA, setShowAndroidPWA] = useState(false);
 
   const slides = [
     { title: "Controle seus dados", desc: "Totalmente privado e no seu Notion" },
@@ -47,10 +47,11 @@ function LandingContent() {
     setTemplateDuplicated(localStorage.getItem('hub_template_done') === 'true');
     setShortcutSaved(localStorage.getItem('hub_shortcut_done') === 'true');
 
-    // Se houver chave na URL, salva no localstorage e marca como conectado
+    // Se houver chave na URL, salva no localstorage, marca como conectado e abre o acordeão do Notion
     if (secretKey) {
       localStorage.setItem('zimbroo_secret_key', secretKey);
       setNotionConnected(true);
+      setActiveAccordion(1); // Abre o acordeão do "Conectar o Bot" para mostrar a chave
     } else if (localStorage.getItem('zimbroo_secret_key')) {
       setNotionConnected(true);
     }
@@ -80,10 +81,15 @@ function LandingContent() {
     }
   };
 
+  const toggleAccordion = (index: number) => {
+    setActiveAccordion(prev => prev === index ? null : index);
+  };
+
   const handleDuplication = () => {
     window.open('https://www.notion.so/pedrori/Template-Finan-as-144ad1f2859080a08eb9c4d2f2907c7a', '_blank');
     localStorage.setItem('hub_template_done', 'true');
     setTemplateDuplicated(true);
+    setActiveAccordion(1); // Avança para o próximo passo
   };
 
   const handleNotionConnect = () => {
@@ -95,16 +101,23 @@ function LandingContent() {
   const handleShortcutClick = () => {
     if (platform === 'ios') {
       window.open('https://www.icloud.com/shortcuts/f6a018a3e2694c7d819d5370a95c40fc', '_blank');
-    } else {
-      setShowAndroidPWA(true);
+      localStorage.setItem('hub_shortcut_done', 'true');
+      setShortcutSaved(true);
+      setActiveAccordion(null);
     }
+  };
+
+  const handleAndroidPWA = () => {
     localStorage.setItem('hub_shortcut_done', 'true');
     setShortcutSaved(true);
+    window.location.href = '/bot';
   };
 
   if (loadingAuth) {
     return <div className="main"><p>Carregando...</p></div>;
   }
+
+  const localKey = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : secretKey;
 
   return (
     <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
@@ -157,71 +170,121 @@ function LandingContent() {
           </div>
           
           <p className="subtitle" style={{ fontSize: '1rem', marginBottom: '2rem' }}>
-            Complete as etapas abaixo para configurar seu Hub.
+            Siga os passos abaixo para preparar seu ambiente financeiro.
           </p>
 
           <div className="checklist">
-            {/* Etapa 1 */}
-            <div className={`check-item ${templateDuplicated ? 'completed' : ''}`} onClick={handleDuplication}>
-              <div className="check-content">
-                <span className="check-icon">📝</span>
-                <div className="check-text">
-                  <h4>Duplique o template</h4>
-                  <p>Copie o template do Hub para o seu Notion</p>
+            {/* Etapa 1: Template */}
+            <div className={`check-item ${templateDuplicated ? 'completed' : ''}`}>
+              <div className="check-header" onClick={() => toggleAccordion(0)}>
+                <div className="check-content-title">
+                  <span className="check-icon">📝</span>
+                  <div className="check-text">
+                    <h4>Duplique o template</h4>
+                  </div>
                 </div>
+                <div className="check-circle"></div>
               </div>
-              <div className="check-circle"></div>
+              <div className={`accordion-content ${activeAccordion === 0 ? 'expanded' : ''}`}>
+                <p className="accordion-text">
+                  Para o sistema funcionar, você precisa ter a estrutura do banco de dados na sua conta do Notion. Clique no botão abaixo para abrir a página e, no canto superior direito, clique em "Duplicate" ou "Duplicar".
+                </p>
+                <button onClick={handleDuplication} className="accordion-btn">
+                  Acessar Template
+                </button>
+              </div>
             </div>
 
-            {/* Etapa 2 */}
-            <div className={`check-item ${notionConnected ? 'completed' : ''}`} onClick={handleNotionConnect}>
-              <div className="check-content">
-                <span className="check-icon">🤖</span>
-                <div className="check-text">
-                  <h4>Conecte o Bot</h4>
-                  <p>Integre a Inteligência Artificial ao seu Notion</p>
+            {/* Etapa 2: Conectar Bot */}
+            <div className={`check-item ${notionConnected ? 'completed' : ''}`}>
+              <div className="check-header" onClick={() => toggleAccordion(1)}>
+                <div className="check-content-title">
+                  <span className="check-icon">🤖</span>
+                  <div className="check-text">
+                    <h4>Conecte o Bot</h4>
+                  </div>
                 </div>
+                <div className="check-circle"></div>
               </div>
-              <div className="check-circle"></div>
+              <div className={`accordion-content ${activeAccordion === 1 ? 'expanded' : ''}`}>
+                <p className="accordion-text">
+                  {notionConnected 
+                    ? "Excelente! Seu Notion está conectado. Abaixo está sua chave de segurança gerada automaticamente. Ela já está salva no seu navegador, mas é bom você tê-la caso precise configurar outro dispositivo."
+                    : "Agora precisamos que você dê permissão para o nosso robô ler e escrever as informações financeiras no template que você acabou de duplicar."}
+                </p>
+                
+                {notionConnected && localKey ? (
+                  <div style={{ marginBottom: '1.2rem' }}>
+                    <code style={{ fontSize: '0.8rem', background: 'rgba(150,150,150,0.1)', padding: '0.8rem', borderRadius: '8px', display: 'block', wordBreak: 'break-all', border: '1px dashed var(--border)' }}>
+                      {localKey}
+                    </code>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(localKey);
+                        alert('Chave copiada!');
+                        setActiveAccordion(platform === 'ios' ? 2 : 3);
+                      }}
+                      className="accordion-btn"
+                      style={{ marginTop: '0.8rem', background: 'none', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                    >
+                      Copiar e Avançar
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={handleNotionConnect} className="accordion-btn">
+                    Conectar Notion
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Etapa 3 */}
-            <div className={`check-item ${shortcutSaved ? 'completed' : ''}`} onClick={handleShortcutClick}>
-              <div className="check-content">
-                <span className="check-icon">📱</span>
-                <div className="check-text">
-                  <h4>Salve o atalho</h4>
-                  <p>Adicione o app na tela inicial do seu {platform === 'ios' ? 'iOS' : 'Android'}</p>
+            {/* Etapa 3: Atalho iOS (só aparece no iOS/Mac por clareza, ou mostra condicional) */}
+            {(platform === 'ios' || platform === 'other') && (
+              <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
+                <div className="check-header" onClick={() => toggleAccordion(2)}>
+                  <div className="check-content-title">
+                    <span className="check-icon">📱</span>
+                    <div className="check-text">
+                      <h4>Salve o atalho [iOS]</h4>
+                    </div>
+                  </div>
+                  <div className="check-circle"></div>
+                </div>
+                <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
+                  <p className="accordion-text">
+                    Tenha o Hub Financeiro integrado direto no seu iPhone usando o aplicativo "Atalhos". Ao baixar, ele pedirá sua Chave de Segurança (aquela que geramos no passo anterior).
+                  </p>
+                  <button onClick={handleShortcutClick} className="accordion-btn">
+                    Baixar Atalho iOS
+                  </button>
                 </div>
               </div>
-              <div className="check-circle"></div>
-            </div>
+            )}
+
+            {/* Etapa 4: PWA Android */}
+            {(platform === 'android' || platform === 'other') && (
+              <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
+                <div className="check-header" onClick={() => toggleAccordion(3)}>
+                  <div className="check-content-title">
+                    <span className="check-icon">🤖</span>
+                    <div className="check-text">
+                      <h4>Salve o atalho [Android]</h4>
+                    </div>
+                  </div>
+                  <div className="check-circle"></div>
+                </div>
+                <div className={`accordion-content ${activeAccordion === 3 ? 'expanded' : ''}`}>
+                  <p className="accordion-text">
+                    Para usar no Android, acesse o Bot de Voz. No Google Chrome, clique nos três pontinhos no canto superior direito e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub no seu celular!
+                  </p>
+                  <button onClick={handleAndroidPWA} className="accordion-btn">
+                    Acessar Bot de Voz
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
-
-          {showAndroidPWA && platform !== 'ios' && (
-            <div className="animate-fade" style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(150,150,150,0.05)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--foreground)' }}>Como instalar no Android:</p>
-              <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#888888', lineHeight: '1.6' }}>
-                <li>Abra o navegador Chrome.</li>
-                <li>Acesse o endereço: <strong>hubfinanceirobot.vercel.app/bot</strong></li>
-                <li>Clique nos três pontinhos no canto superior direito.</li>
-                <li>Selecione <strong>"Adicionar à tela inicial"</strong>.</li>
-              </ol>
-              <button onClick={() => setShowAndroidPWA(false)} style={{ marginTop: '1rem', background: 'none', border: 'none', color: 'var(--foreground)', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                Entendi
-              </button>
-            </div>
-          )}
-
-          {/* Área Secreta caso o usuário queira ver a chave */}
-          {notionConnected && secretKey && (
-            <div style={{ marginTop: '3rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
-              <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.5rem' }}>Sua chave de conexão (já salva automaticamente):</p>
-              <code style={{ fontSize: '0.8rem', background: 'rgba(150,150,150,0.1)', padding: '0.5rem', borderRadius: '8px', display: 'block', wordBreak: 'break-all' }}>
-                {secretKey}
-              </code>
-            </div>
-          )}
         </div>
       )}
       

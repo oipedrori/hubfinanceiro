@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Noto_Sans } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const noto = Noto_Sans({
+const googleSansEquivalent = DM_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "600", "800"],
-  variable: "--font-noto",
+  weight: ["400", "500", "700"],
+  variable: "--font-dm-sans",
 });
 
 export const metadata: Metadata = {
@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={noto.variable}>
+    <html lang="pt-BR" className={googleSansEquivalent.variable}>
       <body>{children}</body>
     </html>
   );
