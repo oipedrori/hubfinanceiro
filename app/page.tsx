@@ -148,11 +148,7 @@ function LandingContent() {
           <h1 style={{ margin: 0 }}>Hub Financeiro</h1>
         </div>
         
-        {user ? (
-          <button onClick={logout} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
-            Sair
-          </button>
-        ) : (
+        {!user && (
           <button onClick={handleLogin} className="btn-outline" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem', borderRadius: '8px', cursor: 'pointer' }}>
             Login
           </button>
