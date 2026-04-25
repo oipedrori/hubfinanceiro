@@ -98,7 +98,7 @@ export async function POST(request: Request) {
       const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
       
       if (balancetesResult.newDbId && pageId) {
-        updateCustomerDbIds(pageId, { balancetesDbId: balancetesResult.newDbId }); // fire-and-forget
+        updateCustomerDbIds(pageId, { balancetesId: balancetesResult.newDbId }); // fire-and-forget
       }
 
       const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
@@ -141,9 +141,9 @@ export async function POST(request: Request) {
         // Cacheia IDs descobertos (fire-and-forget)
         if (pageId) {
           const idsToCache: any = {};
-          if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
-          if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
-          if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
+          if (balancetesResult.newDbId) idsToCache.balancetesId = balancetesResult.newDbId;
+          if (transacoesResult.newDespesasDbId) idsToCache.despesasId = transacoesResult.newDespesasDbId;
+          if (transacoesResult.newReceitasDbId) idsToCache.receitasId = transacoesResult.newReceitasDbId;
           if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
         }
       }
@@ -186,9 +186,9 @@ export async function POST(request: Request) {
 
         if (pageId) {
           const idsToCache: any = {};
-          if (balancetesResult.newDbId) idsToCache.balancetesDbId = balancetesResult.newDbId;
-          if (transacoesResult.newDespesasDbId) idsToCache.despesasDbId = transacoesResult.newDespesasDbId;
-          if (transacoesResult.newReceitasDbId) idsToCache.receitasDbId = transacoesResult.newReceitasDbId;
+          if (balancetesResult.newDbId) idsToCache.balancetesId = balancetesResult.newDbId;
+          if (transacoesResult.newDespesasDbId) idsToCache.despesasId = transacoesResult.newDespesasDbId;
+          if (transacoesResult.newReceitasDbId) idsToCache.receitasId = transacoesResult.newReceitasDbId;
           if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
         }
       }
@@ -219,8 +219,8 @@ export async function POST(request: Request) {
 
     // Salva no cache se for a primeira vez
     if (newDbId && pageId) {
-      if (isDespesa) await updateCustomerDbIds(pageId, { despesasDbId: newDbId });
-      else await updateCustomerDbIds(pageId, { receitasDbId: newDbId });
+      if (isDespesa) await updateCustomerDbIds(pageId, { despesasId: newDbId });
+      else await updateCustomerDbIds(pageId, { receitasId: newDbId });
     }
 
     // 5. Gerar Resposta Humanizada
