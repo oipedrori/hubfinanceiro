@@ -17,7 +17,6 @@ function LandingContent() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
   
   // Estados do Checklist
-  const [templateDuplicated, setTemplateDuplicated] = useState(false);
   const [notionConnected, setNotionConnected] = useState(false);
   const [shortcutSaved, setShortcutSaved] = useState(false);
 
@@ -34,14 +33,13 @@ function LandingContent() {
     }
 
     // Carregar estado do checklist salvo localmente
-    setTemplateDuplicated(localStorage.getItem('hub_template_done') === 'true');
     setShortcutSaved(localStorage.getItem('hub_shortcut_done') === 'true');
 
     // Se houver chave na URL, salva no localstorage, marca como conectado e abre o acordeão do Notion
     if (secretKey) {
       localStorage.setItem('zimbroo_secret_key', secretKey);
       setNotionConnected(true);
-      setActiveAccordion(1);
+      setActiveAccordion(0); // Mantém o acordeão da chave aberto para copiar
     } else if (localStorage.getItem('zimbroo_secret_key')) {
       setNotionConnected(true);
     }
@@ -67,13 +65,6 @@ function LandingContent() {
     setActiveAccordion(prev => prev === index ? null : index);
   };
 
-  const handleDuplication = () => {
-    window.open('https://www.notion.so/pedrori/Template-Finan-as-144ad1f2859080a08eb9c4d2f2907c7a', '_blank');
-    localStorage.setItem('hub_template_done', 'true');
-    setTemplateDuplicated(true);
-    setActiveAccordion(1); // Avança para o próximo passo
-  };
-
   const handleNotionConnect = () => {
     const clientId = '31ed872b-594c-81a0-8494-0037918ae6cc';
     const redirectUri = 'https://hubfinanceirobot.vercel.app/api/auth/callback/notion';
@@ -97,10 +88,8 @@ function LandingContent() {
 
   const handleReset = () => {
     if (confirm('Tem certeza que deseja resetar todo o progresso do checklist e limpar a chave atual?')) {
-      localStorage.removeItem('hub_template_done');
       localStorage.removeItem('zimbroo_secret_key');
       localStorage.removeItem('hub_shortcut_done');
-      setTemplateDuplicated(false);
       setNotionConnected(false);
       setShortcutSaved(false);
       setActiveAccordion(null);
@@ -312,43 +301,22 @@ function LandingContent() {
           </p>
 
           <div className="checklist">
-            {/* Etapa 1: Template */}
-            <div className={`check-item ${templateDuplicated ? 'completed' : ''}`}>
+            {/* Etapa 1: Conectar Bot e Duplicar */}
+            <div className={`check-item ${notionConnected ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(0)}>
                 <div className="check-content-title">
-                  <span className="check-icon">📝</span>
+                  <span className="check-icon">🤖</span>
                   <div className="check-text">
-                    <h4>Duplique o template do Notion</h4>
+                    <h4>Conecte e Crie seu Sistema</h4>
                   </div>
                 </div>
                 <div className="check-circle"></div>
               </div>
               <div className={`accordion-content ${activeAccordion === 0 ? 'expanded' : ''}`}>
                 <p className="accordion-text">
-                  Para o sistema funcionar, você precisa ter a estrutura do banco de dados na sua conta do Notion. Clique no botão abaixo para abrir a página e, no canto superior direito, clique em "Duplicate" ou "Duplicar".
-                </p>
-                <button onClick={handleDuplication} className="accordion-btn">
-                  Acessar Template
-                </button>
-              </div>
-            </div>
-
-            {/* Etapa 2: Conectar Bot */}
-            <div className={`check-item ${notionConnected ? 'completed' : ''}`}>
-              <div className="check-header" onClick={() => toggleAccordion(1)}>
-                <div className="check-content-title">
-                  <span className="check-icon">🤖</span>
-                  <div className="check-text">
-                    <h4>Conecte o Bot</h4>
-                  </div>
-                </div>
-                <div className="check-circle"></div>
-              </div>
-              <div className={`accordion-content ${activeAccordion === 1 ? 'expanded' : ''}`}>
-                <p className="accordion-text">
                   {notionConnected 
-                    ? "Excelente! Seu Notion está conectado. Abaixo está sua chave de segurança gerada automaticamente. Ela já está salva no seu navegador, mas é bom você tê-la caso precise configurar outro dispositivo."
-                    : "Agora precisamos que você dê permissão para o nosso robô ler e escrever as informações financeiras no template que você acabou de duplicar."}
+                    ? "Excelente! Seu banco de dados foi criado e conectado. Abaixo está sua chave de segurança. Ela já está salva neste navegador, mas copie-a para a próxima etapa."
+                    : "Ao clicar abaixo, o Notion vai pedir sua permissão. Ele criará automaticamente o template financeiro na sua conta e conectará nosso robô a ele em um único passo!"}
                 </p>
                 
                 {notionConnected && localKey ? (
@@ -360,7 +328,7 @@ function LandingContent() {
                       onClick={() => {
                         navigator.clipboard.writeText(localKey);
                         alert('Chave copiada!');
-                        setActiveAccordion(platform === 'ios' ? 2 : 3);
+                        setActiveAccordion(platform === 'ios' ? 1 : 2);
                       }}
                       className="accordion-btn"
                       style={{ marginTop: '0.8rem', background: 'none', border: '1px solid var(--border)', color: 'var(--foreground)' }}
@@ -370,16 +338,16 @@ function LandingContent() {
                   </div>
                 ) : (
                   <button onClick={handleNotionConnect} className="accordion-btn">
-                    Conectar Notion
+                    Conectar com Notion
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Etapa 3: Atalho iOS */}
+            {/* Etapa 2: Atalho iOS */}
             {(platform === 'ios' || platform === 'other') && (
               <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
-                <div className="check-header" onClick={() => toggleAccordion(2)}>
+                <div className="check-header" onClick={() => toggleAccordion(1)}>
                   <div className="check-content-title">
                     <span className="check-icon">📱</span>
                     <div className="check-text">
@@ -388,7 +356,7 @@ function LandingContent() {
                   </div>
                   <div className="check-circle"></div>
                 </div>
-                <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
+                <div className={`accordion-content ${activeAccordion === 1 ? 'expanded' : ''}`}>
                   <p className="accordion-text">
                     Tenha o Hub Financeiro integrado direto no seu iPhone usando o aplicativo "Atalhos". Ao baixar, ele pedirá sua Chave de Segurança (aquela que geramos no passo anterior).
                   </p>
@@ -399,10 +367,10 @@ function LandingContent() {
               </div>
             )}
 
-            {/* Etapa 4: PWA Android */}
+            {/* Etapa 3: PWA Android */}
             {(platform === 'android' || platform === 'other') && (
               <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
-                <div className="check-header" onClick={() => toggleAccordion(3)}>
+                <div className="check-header" onClick={() => toggleAccordion(2)}>
                   <div className="check-content-title">
                     <span className="check-icon">🤖</span>
                     <div className="check-text">
@@ -411,7 +379,7 @@ function LandingContent() {
                   </div>
                   <div className="check-circle"></div>
                 </div>
-                <div className={`accordion-content ${activeAccordion === 3 ? 'expanded' : ''}`}>
+                <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
                   <p className="accordion-text">
                     Para usar no Android, acesse o Bot de Voz. No Google Chrome, clique nos três pontinhos no canto superior direito e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub no seu celular!
                   </p>
