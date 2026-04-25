@@ -263,6 +263,22 @@ a {
   color: var(--foreground);
 }
 
+.logout-btn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  color: #ef4444 !important;
+}
+
 .check-circle {
   width: 24px;
   height: 24px;

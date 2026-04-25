@@ -113,6 +113,12 @@ function LandingContent() {
     }
   };
 
+  const handleLogout = () => {
+    if (confirm('Tem certeza que deseja sair da sua conta?')) {
+      auth.signOut();
+    }
+  };
+
   const handleOpenNotion = () => {
     if (templateId) {
       const cleanId = templateId.replace(/-/g, '');
@@ -367,8 +373,8 @@ function LandingContent() {
             <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(1)}>
                 <div className="check-content-title">
-                  <span className="check-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.9 }}><path d="M17.05 20.28c-.96.95-2.04 1.72-3.23 1.72-1.16 0-1.54-.7-2.92-.7-1.39 0-1.81.69-2.92.69-1.12 0-2.2-.77-3.18-1.72-2.04-1.95-3.52-5.52-3.52-8.87 0-3.32 1.73-5.08 3.39-5.08 1.13 0 1.9.64 2.76.64.84 0 1.54-.64 2.8-.64 1.34 0 2.51.58 3.34 1.63-2.79 1.63-2.34 5.37.44 6.64-.78 1.95-1.78 3.73-3.11 5.33zm-1.87-16.14c.6-.72.99-1.72.99-2.73 0-.14-.02-.28-.05-.4-.92.03-2.04.61-2.7 1.37-.58.67-.98 1.69-.98 2.68 0 .15.02.3.06.41.1.01.21.01.32.01.83 0 1.8-.46 2.36-1.34z"/></svg>
+                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center' }}>
+                    <svg width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.96.95-2.04 1.72-3.23 1.72-1.16 0-1.54-.7-2.92-.7-1.39 0-1.81.69-2.92.69-1.12 0-2.2-.77-3.18-1.72-2.04-1.95-3.52-5.52-3.52-8.87 0-3.32 1.73-5.08 3.39-5.08 1.13 0 1.9.64 2.76.64.84 0 1.54-.64 2.8-.64 1.34 0 2.51.58 3.34 1.63-2.79 1.63-2.34 5.37.44 6.64-.78 1.95-1.78 3.73-3.11 5.33zm-1.87-16.14c.6-.72.99-1.72.99-2.73 0-.14-.02-.28-.05-.4-.92.03-2.04.61-2.7 1.37-.58.67-.98 1.69-.98 2.68 0 .15.02.3.06.41.1.01.21.01.32.01.83 0 1.8-.46 2.36-1.34z"/></svg>
                   </span>
                   <div className="check-text">
                     <h4>Salve o atalho [iOS]</h4>
@@ -390,8 +396,8 @@ function LandingContent() {
             <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(2)}>
                 <div className="check-content-title">
-                  <span className="check-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.9 }}><path d="M17.523 15.3414C17.398 15.558 17.159 15.69 16.906 15.69C16.755 15.69 16.606 15.643 16.48 15.551C15.551 14.872 14.394 14.5 13.2 14.5C12.006 14.5 10.849 14.872 9.92 15.551C9.794 15.643 9.645 15.69 9.494 15.69C9.241 15.69 9.002 15.558 8.877 15.3414C8.752 15.1248 8.761 14.8614 8.899 14.6547C9.99 13.018 11.892 12.1 13.9 12.1C15.908 12.1 17.81 13.018 18.901 14.6547C19.039 14.8614 19.048 15.1248 18.923 15.3414H17.523ZM16.5 11.5C16.2239 11.5 16 11.2761 16 11C16 10.7239 16.2239 10.5 16.5 10.5C16.7761 10.5 17 10.7239 17 11C17 11.2761 16.7761 11.5 16.5 11.5ZM11.5 11.5C11.2239 11.5 11 11.2761 11 11C11 10.7239 11.2239 10.5 11.5 10.5C11.7761 10.5 12 10.7239 12 11C12 11.2761 11.7761 11.5 11.5 11.5ZM13.75 3.33333C14.1642 3.33333 14.5 3.66912 14.5 4.08333V6.25H13V4.08333C13 3.66912 13.3358 3.33333 13.75 3.33333ZM13 18.3333V20.5C13 20.9142 12.6642 21.25 12.25 21.25C11.8358 21.25 11.5 20.9142 11.5 20.5V18.3333H13ZM18.25 10.25H19.5V11.75H18.25V10.25ZM8.5 10.25H9.75V11.75H8.5V10.25ZM14 6.75V17.8333C14 18.1095 13.7761 18.3333 13.5 18.3333H12.5C12.2239 18.3333 12 18.1095 12 17.8333V6.75C12 6.47386 12.2239 6.25 12.5 6.25H13.5C13.7761 6.25 14 6.47386 14 6.75Z"/></svg>
+                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center' }}>
+                    <svg width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="currentColor"><path d="M16 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zM8 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm8.5-5.38L17.61 6.5a.495.495 0 1 0-.7-.7L15.65 7.06A7.476 7.476 0 0 0 12 6a7.476 7.476 0 0 0-3.65 1.06L7.1 5.8a.495.495 0 0 0-.7.7l1.11 1.12c-2.31 1.54-3.51 4-3.51 6.38h16c0-2.38-1.2-4.84-3.5-6.38z"/></svg>
                   </span>
                   <div className="check-text">
                     <h4>Salve o atalho [Android]</h4>
@@ -422,27 +428,38 @@ function LandingContent() {
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 gap: '8px', 
-                maxWidth: '300px',
+                width: '100%',
+                padding: '1.2rem',
+                fontSize: '1.05rem',
                 opacity: notionConnected ? 1 : 0.4,
                 cursor: notionConnected ? 'pointer' : 'not-allowed',
                 pointerEvents: notionConnected ? 'auto' : 'none'
               }}
               disabled={!notionConnected}
             >
-              <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" alt="Notion Logo" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" alt="Notion Logo" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
               Acessar meu Hub Financeiro
             </button>
           </div>
         </div>
       )}
       {user && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', marginTop: '3rem' }}>
           <button onClick={handleReset} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
             </svg>
             Resetar meu progresso
+          </button>
+
+          <button onClick={handleLogout} className="logout-btn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Sair
           </button>
         </div>
       )}
