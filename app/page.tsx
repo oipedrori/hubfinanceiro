@@ -97,6 +97,18 @@ function LandingContent() {
     window.location.href = '/bot';
   };
 
+  const handleReset = () => {
+    if (confirm('Tem certeza que deseja resetar todo o progresso do checklist e limpar a chave atual?')) {
+      localStorage.removeItem('hub_template_done');
+      localStorage.removeItem('zimbroo_secret_key');
+      localStorage.removeItem('hub_shortcut_done');
+      setTemplateDuplicated(false);
+      setNotionConnected(false);
+      setShortcutSaved(false);
+      setActiveAccordion(null);
+    }
+  };
+
   if (loadingAuth) {
     return <div className="main"><p>Carregando...</p></div>;
   }
@@ -107,12 +119,19 @@ function LandingContent() {
     <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
       
       {/* Header Comum */}
-      <div className="app-header animate-fade">
-        <picture>
-          <source srcSet="/icon-dark.png" media="(prefers-color-scheme: dark)" />
-          <img src="/icon-light.png" alt="Logo" width={48} height={48} style={{ objectFit: 'contain' }} />
-        </picture>
-        <h1>Hub Financeiro</h1>
+      <div className="app-header animate-fade" style={{ position: 'relative', width: '100%', maxWidth: '900px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <picture>
+            <source srcSet="/icon-dark.png" media="(prefers-color-scheme: dark)" />
+            <img src="/icon-light.png" alt="Logo" width={48} height={48} style={{ objectFit: 'contain' }} />
+          </picture>
+          <h1>Hub Financeiro</h1>
+        </div>
+        {user && (
+          <button onClick={logout} style={{ position: 'absolute', right: 0, background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+            Sair
+          </button>
+        )}
       </div>
 
       {!user ? (
@@ -240,8 +259,12 @@ function LandingContent() {
             <h2 className="hero-title" style={{ fontSize: '2rem', marginBottom: 0 }}>
               Olá, <span>{user.displayName?.split(' ')[0] || 'Visitante'}</span>!
             </h2>
-            <button onClick={logout} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem' }}>
-              Sair
+            <button onClick={handleReset} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              Resetar
             </button>
           </div>
           
