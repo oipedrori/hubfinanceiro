@@ -215,15 +215,35 @@ function LandingContent() {
 
           <div className="lp-divider" style={{margin: '4rem 0'}}></div>
 
-          {/* Features e Bonus Ultra-Minimalistas */}
+          {/* Features Expandidas e Mais Persuasivas */}
           <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem', marginBottom: '4rem'}}>
             <div>
-              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>O Fim do Preenchimento Manual</h3>
-              <p className="lp-text">O maior inimigo da organização é a preguiça de anotar. Você fala, a IA entende e o Hub Financeiro organiza. Simples assim.</p>
+              <span style={{fontSize: '2rem', display: 'block', marginBottom: '0.5rem'}}>🎙️</span>
+              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>O Fim da Digitação Manual</h3>
+              <p className="lp-text">
+                A preguiça de anotar os gastos é o maior inimigo da sua conta bancária. Com a nossa automação, <strong>você apenas fala no celular</strong> (ex: "gastei 50 no ifood"). A IA entende a categoria, a data e o valor, e o Hub organiza tudo para você na hora.
+              </p>
             </div>
             <div>
-              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>Visão Imediata</h3>
-              <p className="lp-text">Sem dezenas de abas e cálculos perdidos. Tenha a clareza exata de quanto você pode gastar, com feedbacks em cores no seu balancete.</p>
+              <span style={{fontSize: '2rem', display: 'block', marginBottom: '0.5rem'}}>📊</span>
+              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>Visão Anual Panorâmica</h3>
+              <p className="lp-text">
+                Sem dezenas de abas soltas e cálculos perdidos. Saiba exatamente de onde vem o seu dinheiro e para onde ele vai ao longo dos 12 meses, tudo na mesma tela, com <strong>feedbacks em cores</strong> que mostram se você está no azul ou no vermelho.
+              </p>
+            </div>
+            <div>
+              <span style={{fontSize: '2rem', display: 'block', marginBottom: '0.5rem'}}>🗂️</span>
+              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>Categorização Inteligente</h3>
+              <p className="lp-text">
+                Para controlar o dinheiro, você precisa saber por onde ele escapa. O Hub separa e totaliza seus gastos (Moradia, Lazer, Educação) e monta gráficos limpos para você <strong>encontrar o gargalo financeiro</strong> do seu mês.
+              </p>
+            </div>
+            <div>
+              <span style={{fontSize: '2rem', display: 'block', marginBottom: '0.5rem'}}>🧠</span>
+              <h3 style={{fontSize: '1.2rem', marginBottom: '1rem'}}>Conselhos Personalizados</h3>
+              <p className="lp-text">
+                Não sabe se pode assumir aquela parcela? Pergunte à IA. Com o plano Pro, a Inteligência Artificial <strong>lê seu balancete</strong> e atua como seu conselheiro financeiro VIP, dando dicas reais sobre sua saúde financeira.
+              </p>
             </div>
           </div>
 

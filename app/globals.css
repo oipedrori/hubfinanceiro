@@ -368,7 +368,6 @@ a {
   box-shadow: -15px 25px 50px rgba(0, 0, 0, 0.15);
   transform: rotateY(15deg) rotateX(5deg);
   transition: transform 0.5s ease;
-  border: 1px solid var(--border);
   margin-left: -10%; /* Pull slightly out of bounds for effect */
 }
 
@@ -538,7 +537,6 @@ a {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   margin: 2.5rem 0;
-  border: 1px solid var(--border);
 }
 
 .lp-aside {
