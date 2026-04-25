@@ -1,0 +1,2 @@
+# A imagem será salva via sistema pelo processo de upload
+# Como sou uma IA, vou usar o comando para mover/sobrescrever os arquivos baseados no input visual que recebi.
