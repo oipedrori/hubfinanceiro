@@ -12,8 +12,6 @@ export const metadata: Metadata = {
   title: "Hub Financeiro Bot",
   description: "Gerencie suas finanças com o poder da voz e Inteligência Artificial.",
   manifest: "/manifest.json",
-  themeColor: "#000000",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   appleWebApp: {
      capable: true,
      title: "Hub Bot",
@@ -23,6 +21,13 @@ export const metadata: Metadata = {
     icon: "/icon.png",
     apple: "/icon.png",
   }
+};
+
+export const viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
