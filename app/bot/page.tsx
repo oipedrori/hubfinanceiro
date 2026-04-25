@@ -65,7 +65,8 @@ export default function VoiceBotPage() {
   };
 
   const processVoice = async (text: string) => {
-    if (!secretKey) {
+    const currentKey = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : secretKey;
+    if (!currentKey) {
       setStatus('Erro: Você precisa conectar seu Notion na página principal primeiro!');
       return;
     }
@@ -76,7 +77,7 @@ export default function VoiceBotPage() {
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secretKey, text })
+        body: JSON.stringify({ secretKey: currentKey, text })
       });
 
       const data = await res.json();
