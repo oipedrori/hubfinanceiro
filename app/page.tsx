@@ -118,17 +118,22 @@ function LandingContent() {
     <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
       
       {/* Header Comum */}
-      <div className="app-header animate-fade" style={{ position: 'relative', width: '100%', maxWidth: contentMaxWidth, margin: '0 auto 2rem auto' }}>
+      <div className="app-header animate-fade" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: contentMaxWidth, margin: '0 auto 2rem auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <picture>
             <source srcSet="/icon-dark.png" media="(prefers-color-scheme: dark)" />
             <img src="/icon-light.png" alt="Logo" width={48} height={48} style={{ objectFit: 'contain' }} />
           </picture>
-          <h1>Hub Financeiro</h1>
+          <h1 style={{ margin: 0 }}>Hub Financeiro</h1>
         </div>
-        {user && (
-          <button onClick={logout} style={{ position: 'absolute', right: 0, background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+        
+        {user ? (
+          <button onClick={logout} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
             Sair
+          </button>
+        ) : (
+          <button onClick={handleLogin} className="btn-outline" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem', borderRadius: '8px', cursor: 'pointer' }}>
+            Login
           </button>
         )}
       </div>
@@ -153,6 +158,14 @@ function LandingContent() {
                 Entre e faça sua assinatura
               </button>
             </div>
+          </div>
+
+          {/* Interactive Intro Card */}
+          <div className="intro-card">
+            <span className="intro-icon">✨</span>
+            <p className="intro-text">
+              Mais de 80% das pessoas desistem de anotar os gastos no segundo mês. O Hub Financeiro inverte essa lógica: aqui você não preenche tabelas chatas, <span className="intro-highlight">você apenas fala no celular e o sistema trabalha por você</span>.
+            </p>
           </div>
 
           <div className="lp-divider" style={{margin: '4rem 0'}}></div>

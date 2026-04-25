@@ -374,15 +374,83 @@ a {
 }
 
 .lp-3d-image {
-  width: 120%;
+  width: 100%;
   max-width: none;
   transform: rotateY(15deg) rotateX(5deg);
   transition: transform 0.5s ease;
-  margin-left: -10%; /* Pull slightly out of bounds for effect */
+  margin: 0 auto;
+  display: block;
+}
+
+@media (min-width: 900px) {
+  .lp-3d-image {
+    width: 120%;
+    margin-left: -10%;
+  }
 }
 
 .lp-3d-image:hover {
   transform: rotateY(10deg) rotateX(2deg) translateY(-5px);
+}
+
+/* Interactive Intro Card */
+.intro-card {
+  background: rgba(150, 150, 150, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  margin: 0 auto 5rem auto;
+  max-width: 750px;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.intro-card::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at center, rgba(0, 133, 230, 0.08) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.intro-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(0, 133, 230, 0.5);
+  box-shadow: 0 15px 35px rgba(0, 133, 230, 0.1);
+}
+
+.intro-card:hover::before {
+  opacity: 1;
+}
+
+.intro-icon {
+  font-size: 2.8rem;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.intro-card:hover .intro-icon {
+  transform: scale(1.2) rotate(15deg);
+}
+
+.intro-text {
+  font-size: 1.2rem;
+  line-height: 1.7;
+  color: var(--foreground);
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+.intro-highlight {
+  color: #0085E6;
+  font-weight: 800;
 }
 
 .lp-hero-title {
