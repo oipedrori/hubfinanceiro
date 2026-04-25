@@ -380,6 +380,123 @@ a {
   margin-bottom: 1rem;
 }
 
+/* Pricing Grid (3 Columns) */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin: 3rem 0;
+}
+
+@media (min-width: 768px) {
+  .pricing-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .lp-container {
+    max-width: 900px; /* Widened to fit the 3 columns beautifully */
+  }
+}
+
+.pricing-card {
+  background: rgba(150, 150, 150, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.pricing-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--foreground);
+}
+
+.pricing-card.featured {
+  background: var(--foreground);
+  color: var(--background);
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.pricing-card.featured .lp-text,
+.pricing-card.featured li {
+  color: rgba(255, 255, 255, 0.8);
+}
+@media (prefers-color-scheme: dark) {
+  .pricing-card.featured .lp-text,
+  .pricing-card.featured li {
+    color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+.pricing-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.pricing-price {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 1rem 0 0.5rem;
+}
+
+.pricing-period {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+  flex-grow: 1;
+}
+
+.pricing-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.pricing-btn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--foreground);
+}
+.btn-outline:hover {
+  border-color: var(--foreground);
+}
+
+.pricing-card.featured .btn-outline {
+  background: var(--background);
+  color: var(--foreground);
+  border: none;
+}
+
+.lp-hero-image {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  margin: 2.5rem 0;
+  border: 1px solid var(--border);
+}
+
 .lp-aside {
   background: rgba(150, 150, 150, 0.03);
   border-left: 4px solid var(--foreground);

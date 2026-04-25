@@ -122,11 +122,7 @@ function LandingContent() {
           <h2 className="lp-hero-subtitle">Você não precisa ganhar rios de dinheiro para ser organizado.</h2>
           <p className="lp-text">Você só precisa do sistema certo.</p>
           
-          {/* Imagem 1 Placeholder */}
-          <div className="lp-image-placeholder">
-            <span style={{fontSize: '2rem'}}>🖼️</span>
-            <p>Substitua pela sua Imagem 1 aqui</p>
-          </div>
+          <img src="/app-dashboard.png" alt="Dashboard do Hub Financeiro" className="lp-hero-image" />
 
           <p className="lp-text">
             Cansado de planilhas complicadas que você começa em janeiro e abandona em fevereiro? O <span className="lp-highlight">Hub Financeiro</span> foi desenhado com um único objetivo: tirar o peso da gestão financeira das suas costas e transformá-la em algo simples, visual e — o melhor de tudo — <span className="lp-highlight">automático</span>.
@@ -135,20 +131,60 @@ function LandingContent() {
           <h2 className="lp-hero-subtitle" style={{marginTop: '2.5rem'}}>Este não é apenas mais um template de Notion.</h2>
           <p className="lp-text">É o seu sistema operacional financeiro para o ano todo.</p>
 
-          <div className="lp-price-box">
-            <p style={{fontSize: '0.9rem', marginBottom: '0.5rem', opacity: 0.8}}>Sem mensalidades. Sem letras miúdas.</p>
-            <div className="lp-price-text">Acesso vitalício por apenas R$ 29,90</div>
-            <p style={{fontSize: '0.85rem', opacity: 0.8, marginBottom: '1.5rem'}}>Acredito que organização financeira deve ser acessível para todos, não um luxo.</p>
-            
-            <button onClick={handleLogin} className="btn-primary" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
-              <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Entrar com Google e Acessar
-            </button>
+          <div className="pricing-grid">
+            {/* PLANO BÁSICO */}
+            <div className="pricing-card">
+              <h3 className="pricing-title">Básico</h3>
+              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>O alicerce da sua organização.</p>
+              <div className="pricing-price">R$ 49,90 <span className="pricing-period">/ único</span></div>
+              <ul className="pricing-features">
+                <li><span style={{fontSize:'1rem'}}>✅</span> Template Notion Original</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Visão anual centralizada</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Gráficos de balancete</li>
+                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem comandos de voz</li>
+                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem Inteligência Artificial</li>
+              </ul>
+              <button onClick={handleLogin} className="pricing-btn btn-outline">
+                Escolher Básico
+              </button>
+            </div>
+
+            {/* PLANO IA PLUS */}
+            <div className="pricing-card featured">
+              <div style={{position:'absolute', top:'-12px', right:'2rem', background:'#f59e0b', color:'#000', fontSize:'0.7rem', fontWeight:800, padding:'4px 12px', borderRadius:'12px', letterSpacing:'0.5px', textTransform:'uppercase'}}>Mais Popular</div>
+              <h3 className="pricing-title">IA Plus</h3>
+              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>Seu assistente de bolso.</p>
+              <div className="pricing-price">R$ 14,90 <span className="pricing-period">/ mês</span></div>
+              <p style={{fontSize:'0.8rem', opacity:0.6, marginTop:'-10px', marginBottom:'15px'}}>ou R$ 149,00 / ano</p>
+              <ul className="pricing-features">
+                <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do plano Básico</li>
+                <li><span style={{fontSize:'1rem'}}>🚀</span> <strong>Automação por Voz</strong></li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Lance despesas sem digitar nada</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Integração de atalhos (iOS/Android)</li>
+                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem conselheiro financeiro VIP</li>
+              </ul>
+              <button onClick={handleLogin} className="pricing-btn btn-outline">
+                Testar IA Plus
+              </button>
+            </div>
+
+            {/* PLANO IA PRO */}
+            <div className="pricing-card">
+              <h3 className="pricing-title">IA Pro</h3>
+              <p className="lp-text" style={{fontSize:'0.9rem', marginBottom:'0'}}>Seu conselheiro financeiro VIP.</p>
+              <div className="pricing-price">R$ 24,90 <span className="pricing-period">/ mês</span></div>
+              <p style={{fontSize:'0.8rem', opacity:0.6, marginTop:'-10px', marginBottom:'15px'}}>ou R$ 249,00 / ano</p>
+              <ul className="pricing-features">
+                <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do plano Plus</li>
+                <li><span style={{fontSize:'1rem'}}>🧠</span> <strong>Conselheiro IA Avançado</strong></li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Dicas para economizar</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Análises profundas de gastos</li>
+                <li><span style={{fontSize:'1rem'}}>✅</span> Conversas e tira-dúvidas</li>
+              </ul>
+              <button onClick={handleLogin} className="pricing-btn btn-outline">
+                Conhecer IA Pro
+              </button>
+            </div>
           </div>
 
           <div className="lp-divider"></div>
@@ -163,11 +199,7 @@ function LandingContent() {
             </ul>
           </div>
 
-          {/* Imagem 2 Placeholder */}
-          <div className="lp-image-placeholder">
-            <span style={{fontSize: '2rem'}}>🖼️</span>
-            <p>Substitua pela sua Imagem 2 aqui</p>
-          </div>
+          <img src="/app-dashboard.png" alt="Visão Geral do Hub Financeiro" className="lp-hero-image" />
 
           <div className="lp-divider"></div>
 
@@ -200,15 +232,6 @@ function LandingContent() {
             </p>
           </div>
 
-          <button onClick={handleLogin} className="btn-primary" style={{ width: '100%', marginTop: '2rem', marginBottom: '2rem', background: 'var(--foreground)', color: 'var(--background)' }}>
-            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-              <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Acessar o Hub Agora
-          </button>
         </div>
       ) : (
         /* ================= TELA POST-LOGIN ================= */
