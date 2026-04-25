@@ -376,7 +376,8 @@ function LandingContent() {
               </div>
               <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
                 <p className="accordion-text">
-                  Para testar o PWA, acesse o Bot de Voz. No Google Chrome/Safari, clique em Compartilhar e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub no seu celular!
+                  Para usar o Bot de Voz clique no botão abaixo.<br/><br/>
+                  No Google Chrome do seu celular, clique em Compartilhar e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub Financeiro no seu celular!
                 </p>
                 <button onClick={handleAndroidPWA} className="accordion-btn">
                   Acessar Bot de Voz
