@@ -324,7 +324,7 @@ function LandingContent() {
             <div className={`check-item ${notionConnected ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(0)}>
                 <div className="check-content-title">
-                  <span className="check-icon">🤖</span>
+                  <span className="check-icon">⚡</span>
                   <div className="check-text">
                     <h4>Crie e Conecte seu Sistema</h4>
                   </div>
@@ -367,7 +367,9 @@ function LandingContent() {
             <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(1)}>
                 <div className="check-content-title">
-                  <span className="check-icon">📱</span>
+                  <span className="check-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.9 }}><path d="M17.05 20.28c-.96.95-2.04 1.72-3.23 1.72-1.16 0-1.54-.7-2.92-.7-1.39 0-1.81.69-2.92.69-1.12 0-2.2-.77-3.18-1.72-2.04-1.95-3.52-5.52-3.52-8.87 0-3.32 1.73-5.08 3.39-5.08 1.13 0 1.9.64 2.76.64.84 0 1.54-.64 2.8-.64 1.34 0 2.51.58 3.34 1.63-2.79 1.63-2.34 5.37.44 6.64-.78 1.95-1.78 3.73-3.11 5.33zm-1.87-16.14c.6-.72.99-1.72.99-2.73 0-.14-.02-.28-.05-.4-.92.03-2.04.61-2.7 1.37-.58.67-.98 1.69-.98 2.68 0 .15.02.3.06.41.1.01.21.01.32.01.83 0 1.8-.46 2.36-1.34z"/></svg>
+                  </span>
                   <div className="check-text">
                     <h4>Salve o atalho [iOS]</h4>
                   </div>
@@ -388,7 +390,9 @@ function LandingContent() {
             <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
               <div className="check-header" onClick={() => toggleAccordion(2)}>
                 <div className="check-content-title">
-                  <span className="check-icon">🤖</span>
+                  <span className="check-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.9 }}><path d="M17.523 15.3414C17.398 15.558 17.159 15.69 16.906 15.69C16.755 15.69 16.606 15.643 16.48 15.551C15.551 14.872 14.394 14.5 13.2 14.5C12.006 14.5 10.849 14.872 9.92 15.551C9.794 15.643 9.645 15.69 9.494 15.69C9.241 15.69 9.002 15.558 8.877 15.3414C8.752 15.1248 8.761 14.8614 8.899 14.6547C9.99 13.018 11.892 12.1 13.9 12.1C15.908 12.1 17.81 13.018 18.901 14.6547C19.039 14.8614 19.048 15.1248 18.923 15.3414H17.523ZM16.5 11.5C16.2239 11.5 16 11.2761 16 11C16 10.7239 16.2239 10.5 16.5 10.5C16.7761 10.5 17 10.7239 17 11C17 11.2761 16.7761 11.5 16.5 11.5ZM11.5 11.5C11.2239 11.5 11 11.2761 11 11C11 10.7239 11.2239 10.5 11.5 10.5C11.7761 10.5 12 10.7239 12 11C12 11.2761 11.7761 11.5 11.5 11.5ZM13.75 3.33333C14.1642 3.33333 14.5 3.66912 14.5 4.08333V6.25H13V4.08333C13 3.66912 13.3358 3.33333 13.75 3.33333ZM13 18.3333V20.5C13 20.9142 12.6642 21.25 12.25 21.25C11.8358 21.25 11.5 20.9142 11.5 20.5V18.3333H13ZM18.25 10.25H19.5V11.75H18.25V10.25ZM8.5 10.25H9.75V11.75H8.5V10.25ZM14 6.75V17.8333C14 18.1095 13.7761 18.3333 13.5 18.3333H12.5C12.2239 18.3333 12 18.1095 12 17.8333V6.75C12 6.47386 12.2239 6.25 12.5 6.25H13.5C13.7761 6.25 14 6.47386 14 6.75Z"/></svg>
+                  </span>
                   <div className="check-text">
                     <h4>Salve o atalho [Android]</h4>
                   </div>
