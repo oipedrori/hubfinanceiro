@@ -57,7 +57,7 @@ export default function VoiceBotPage() {
 
   const processVoice = async (text: string) => {
     if (!secretKey) {
-      setStatus('Erro: Chave secreta não encontrada. Faça login novamente.');
+      setStatus('Erro: Você precisa conectar seu Notion na página principal primeiro!');
       return;
     }
 

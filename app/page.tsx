@@ -81,6 +81,11 @@ function LandingContent() {
   };
 
   const handleAndroidPWA = () => {
+    const key = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : null;
+    if (!key) {
+      alert('Atenção: Você precisa conectar seu Notion no Passo 1 primeiro para o Bot funcionar!');
+      return;
+    }
     localStorage.setItem('hub_shortcut_done', 'true');
     setShortcutSaved(true);
     window.location.href = '/bot';
