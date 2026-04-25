@@ -175,7 +175,7 @@ function LandingContent() {
             <div className="data-divider"></div>
             <div className="data-solution">
               <h3>O Hub Financeiro inverte a estatística.</h3>
-              <p>Ele é um <strong>ecossistema de gestão financeira</strong> que roda no seu celular e sincroniza perfeitamente com a nuvem. Aqui você não precisa abrir seu Notion para preencher tabelas chatas. Você apenas manda um áudio e a IA organiza tudo por você em <strong>milissegundos</strong>.</p>
+              <p>Ele é um <strong>ecossistema de gestão financeira</strong> que roda no seu celular e sincroniza perfeitamente com a nuvem. Aqui você não precisa abrir seu Notion para preencher tabelas chatas. Você apenas manda um áudio e a IA organiza tudo por você em <strong>segundos</strong>.</p>
             </div>
           </div>
 
