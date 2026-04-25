@@ -282,7 +282,7 @@ function LandingContent() {
                 <div className="check-content-title">
                   <span className="check-icon">📝</span>
                   <div className="check-text">
-                    <h4>Duplique o template</h4>
+                    <h4>Duplique o template do Notion</h4>
                   </div>
                 </div>
                 <div className="check-circle"></div>
