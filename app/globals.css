@@ -281,10 +281,13 @@ a {
 }
 
 .check-item.completed .check-circle::after {
-  content: '✓';
-  color: var(--background);
-  font-size: 14px;
-  font-weight: bold;
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: solid var(--background);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
 }
 
 /* Accordion Content */
