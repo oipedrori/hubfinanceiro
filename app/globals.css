@@ -828,3 +828,33 @@ a {
   width: 100%;
   margin: 3rem 0;
 }
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+========================================= */
+@media (max-width: 768px) {
+  .main {
+    padding: 1.5rem 1rem;
+  }
+  
+  .glass-card {
+    padding: 2rem 1.5rem !important; /* overrides inline padding if any */
+    border-radius: 12px;
+  }
+
+  .hero-title {
+    font-size: 2.2rem !important;
+  }
+  
+  .data-showcase {
+    gap: 1.5rem;
+  }
+  
+  .data-item {
+    padding: 1rem;
+  }
+
+  .data-value {
+    font-size: 2.5rem;
+  }
+}
