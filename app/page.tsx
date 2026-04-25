@@ -260,10 +260,23 @@ function LandingContent() {
             </div>
           </div>
 
-          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', marginBottom: '4rem'}}>
+          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', marginBottom: '2rem'}}>
             <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
               <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub roda na Web, Android e iOS. A automação por voz funciona via aplicativo "Atalhos" no iOS (iPhone) e via PWA (Web App) no Android.
             </p>
+          </div>
+
+          {/* Final CTA Box */}
+          <div className="cta-box">
+            <h2 className="cta-title">Pronto para assumir o controle?</h2>
+            <p className="cta-subtitle">A paz mental de saber exatamente para onde vai o seu dinheiro está a um clique de distância.</p>
+            <button onClick={handleLogin} className="cta-btn">
+              Entre e faça sua assinatura
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
           </div>
 
         </div>
