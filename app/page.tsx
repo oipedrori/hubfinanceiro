@@ -370,52 +370,56 @@ function LandingContent() {
               </div>
             </div>
 
-            {/* Etapa 2: Atalho iOS */}
-            <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
-              <div className="check-header" onClick={() => toggleAccordion(1)}>
-                <div className="check-content-title">
-                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="1.2rem" height="1.2rem" viewBox="0 0 256 315" fill="currentColor"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615-.335 1.05-6.568 22.56-21.726 44.713-13.104 19.153-26.705 38.234-48.23 38.633-21.144.39-27.953-12.484-52.179-12.484-24.23 0-31.802 12.1-51.774 12.893-20.741.798-36.316-20.746-49.52-39.823-26.995-39.043-47.568-110.37-19.735-158.606 13.813-24.07 38.53-39.318 65.346-39.712 20.34-.398 39.512 13.685 51.972 13.685 12.464 0 35.592-16.83 60.235-14.326 10.323.43 39.313 4.14 57.91 31.417-1.488.922-34.61 20.155-34.226 60.007zM174.003 44.45c11.066-13.34 18.52-31.902 16.484-50.418-15.894.64-35.08 10.59-46.48 23.93-10.22 11.82-19.143 30.803-16.737 48.91 17.705 1.375 35.66-9.08 46.733-22.422z"/></svg>
-                  </span>
-                  <div className="check-text">
-                    <h4>Salve o atalho [iOS]</h4>
+            {/* Etapa 2: Atalho iOS - Mostrar apenas no iOS/Mac */}
+            {(platform === 'ios' || platform === null) && (
+              <div className={`check-item ${shortcutSaved && platform === 'ios' ? 'completed' : ''}`}>
+                <div className="check-header" onClick={() => toggleAccordion(1)}>
+                  <div className="check-content-title">
+                    <span className="check-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.1 2.48-1.34.03-1.77-.79-3.29-.79-1.53 0-1.99.77-3.27.82-1.31.05-2.32-1.32-3.15-2.53C4.19 17.05 2.89 12.1 4.64 9.07c.87-1.5 2.42-2.45 4.12-2.48 1.3-.02 2.52.88 3.32.88.79 0 2.27-1.07 3.82-.91.65.03 2.48.26 3.65 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.37 2.83zM13 5.35c.75-.91 1.25-2.18 1.11-3.44-1.09.04-2.41.72-3.19 1.63-.7.82-1.31 2.14-1.14 3.36 1.21.09 2.45-.63 3.22-1.55z"/></svg>
+                    </span>
+                    <div className="check-text">
+                      <h4>Salve o atalho [iOS]</h4>
+                    </div>
                   </div>
+                  <div className="check-circle"></div>
                 </div>
-                <div className="check-circle"></div>
+                <div className={`accordion-content ${activeAccordion === 1 ? 'expanded' : ''}`}>
+                  <p className="accordion-text">
+                    Tenha o Hub Financeiro integrado direto no seu iPhone usando o aplicativo "Atalhos". Ao baixar, ele pedirá sua Chave de Segurança (aquela que geramos no passo anterior).
+                  </p>
+                  <button onClick={handleShortcutClick} className="accordion-btn">
+                    Baixar Atalho iOS
+                  </button>
+                </div>
               </div>
-              <div className={`accordion-content ${activeAccordion === 1 ? 'expanded' : ''}`}>
-                <p className="accordion-text">
-                  Tenha o Hub Financeiro integrado direto no seu iPhone usando o aplicativo "Atalhos". Ao baixar, ele pedirá sua Chave de Segurança (aquela que geramos no passo anterior).
-                </p>
-                <button onClick={handleShortcutClick} className="accordion-btn">
-                  Baixar Atalho iOS
-                </button>
-              </div>
-            </div>
+            )}
 
-            {/* Etapa 3: Atalho Android */}
-            <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
-              <div className="check-header" onClick={() => toggleAccordion(2)}>
-                <div className="check-content-title">
-                  <span className="check-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="currentColor"><path d="M16 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zM8 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm8.5-5.38L17.61 6.5a.495.495 0 1 0-.7-.7L15.65 7.06A7.476 7.476 0 0 0 12 6a7.476 7.476 0 0 0-3.65 1.06L7.1 5.8a.495.495 0 0 0-.7.7l1.11 1.12c-2.31 1.54-3.51 4-3.51 6.38h16c0-2.38-1.2-4.84-3.5-6.38z"/></svg>
-                  </span>
-                  <div className="check-text">
-                    <h4>Salve o atalho [Android]</h4>
+            {/* Etapa 3: Atalho Android - Mostrar apenas no Android/Linux */}
+            {(platform === 'android' || platform === null) && (
+              <div className={`check-item ${shortcutSaved && platform === 'android' ? 'completed' : ''}`}>
+                <div className="check-header" onClick={() => toggleAccordion(2)}>
+                  <div className="check-content-title">
+                    <span className="check-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="currentColor"><path d="M16 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zM8 13c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm8.5-5.38L17.61 6.5a.495.495 0 1 0-.7-.7L15.65 7.06A7.476 7.476 0 0 0 12 6a7.476 7.476 0 0 0-3.65 1.06L7.1 5.8a.495.495 0 0 0-.7.7l1.11 1.12c-2.31 1.54-3.51 4-3.51 6.38h16c0-2.38-1.2-4.84-3.5-6.38z"/></svg>
+                    </span>
+                    <div className="check-text">
+                      <h4>Salve o atalho [Android]</h4>
+                    </div>
                   </div>
+                  <div className="check-circle"></div>
                 </div>
-                <div className="check-circle"></div>
+                <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
+                  <p className="accordion-text">
+                    Para usar o Bot de Voz clique no botão abaixo.<br/><br/>
+                    No Google Chrome do seu celular, clique em Compartilhar e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub Financeiro no seu celular!
+                  </p>
+                  <button onClick={handleAndroidPWA} className="accordion-btn">
+                    Acessar Bot de Voz
+                  </button>
+                </div>
               </div>
-              <div className={`accordion-content ${activeAccordion === 2 ? 'expanded' : ''}`}>
-                <p className="accordion-text">
-                  Para usar o Bot de Voz clique no botão abaixo.<br/><br/>
-                  No Google Chrome do seu celular, clique em Compartilhar e selecione <strong>"Adicionar à tela inicial"</strong>. Isso vai instalar o aplicativo do Hub Financeiro no seu celular!
-                </p>
-                <button onClick={handleAndroidPWA} className="accordion-btn">
-                  Acessar Bot de Voz
-                </button>
-              </div>
-            </div>
+            )}
 
           </div>
 
