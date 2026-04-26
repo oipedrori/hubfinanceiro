@@ -72,7 +72,11 @@ export async function POST(request: Request) {
 
     // Se estiver desativado no Checkbox...
     if (customer.status === 'blocked') {
-      return NextResponse.json({ error: 'Assinatura inativa ou bloqueada no sistema.' }, { status: 403 });
+      return NextResponse.json({ 
+        success: false,
+        message: `Sua conta do Hub Financeiro não está ativa no momento. 
+\nPor favor, acesse o site oficial (hubfinanceiro.com.br) para verificar sua assinatura e ativar sua conta novamente. 🚀`
+      }, { status: 200 }); // Retornamos 200 para que o iOS fale a mensagem ao invés de dar erro genérico
     }
 
     // 3. O cliente é válido e ativo! 
