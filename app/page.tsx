@@ -305,21 +305,11 @@ function LandingContent() {
             </button>
           </div>
 
-          {/* Footer Legal - Landing Page */}
-          <footer style={{ marginTop: '2rem', padding: '2rem 0', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-            <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', width: '100%', marginBottom: '2rem', textAlign: 'left'}}>
-              <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
-                <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub Financeiro é construído sobre o Notion, o que permite que ele funcione nativamente na Web, Android e iOS. A automação por voz utiliza o aplicativo "Atalhos" no iOS (iPhone) e funciona via WebApp no Android.
-              </p>
-            </div>
-            <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '1rem' }}>
-              &copy; {new Date().getFullYear()} Hub Financeiro. Todos os direitos reservados.
+          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', width: '100%', marginBottom: '4rem', textAlign: 'left'}}>
+            <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
+              <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub Financeiro é construído sobre o Notion, o que permite que ele funcione nativamente na Web, Android e iOS. A automação por voz utiliza o aplicativo "Atalhos" no iOS (iPhone) e funciona via WebApp no Android.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
-              <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso</button>
-              <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>Política de Privacidade</button>
-            </div>
-          </footer>
+          </div>
         </div>
       ) : (
         /* ================= TELA POST-LOGIN ================= */
@@ -493,15 +483,19 @@ function LandingContent() {
               <button className="modal-close" onClick={() => setShowTerms(false)}>&times;</button>
             </div>
             <div className="modal-body">
-              <p><strong>1. Aceitação dos Termos</strong><br/>Ao acessar o Hub Financeiro, você concorda em cumprir estes termos de serviço, todas as leis e regulamentos aplicáveis. O Hub é uma ferramenta de auxílio à gestão financeira pessoal, construída sobre a infraestrutura do Notion.</p>
+              <p><strong>1. ACEITAÇÃO DOS TERMOS</strong><br/>Ao utilizar o Hub Financeiro, você concorda integralmente com estes termos. Este software é oferecido como um serviço (SaaS) para organização financeira pessoal através da integração com a plataforma Notion.</p>
               
-              <p><strong>2. Descrição do Serviço</strong><br/>O Hub Financeiro fornece automação de entrada de dados via voz e texto, utilizando modelos de inteligência artificial para classificar e organizar movimentações financeiras diretamente na conta do Notion do usuário.</p>
+              <p><strong>2. DESCRIÇÃO E USO DO SERVIÇO</strong><br/>O Hub Financeiro atua como uma interface de automação que utiliza Inteligência Artificial (Google Gemini) para interpretar comandos de voz e texto e registrá-los em bases de dados no Notion do usuário. O serviço é destinado exclusivamente para uso pessoal.</p>
               
-              <p><strong>3. Limitação de Responsabilidade</strong><br/>O Hub Financeiro e seus desenvolvedores não garantem a precisão absoluta da classificação da IA, que deve ser conferida pelo usuário no Notion. O serviço não constitui aconselhamento financeiro profissional, contábil ou jurídico. Decisões baseadas nos insights da ferramenta são de inteira responsabilidade do usuário.</p>
+              <p><strong>3. LIMITAÇÃO DE RESPONSABILIDADE</strong><br/>O Hub Financeiro é uma ferramenta de suporte e não garante a exatidão absoluta no processamento de dados. A IA pode, eventualmente, interpretar valores ou categorias de forma imprecisa. É responsabilidade do Usuário revisar todas as entradas no Notion. Não somos responsáveis por decisões financeiras, perdas, lucros cessantes ou qualquer dano decorrente do uso desta ferramenta.</p>
               
-              <p><strong>4. Integração com Terceiros</strong><br/>O funcionamento do sistema depende da disponibilidade das APIs do Notion e do Google (Firebase/Gemini). Não nos responsabilizamos por interrupções causadas por falhas nessas plataformas de terceiros.</p>
+              <p><strong>4. AUSÊNCIA DE CONSELHO FINANCEIRO</strong><br/>As análises e conselhos gerados pela Inteligência Artificial não constituem aconselhamento financeiro profissional, contábil ou jurídico. O Hub não substitui a consulta a profissionais qualificados e não está vinculado a instituições bancárias ou reguladoras.</p>
               
-              <p><strong>5. Alterações</strong><br/>Podemos revisar estes termos a qualquer momento, sem aviso prévio. Ao usar este site, você concorda em ficar vinculado à versão atual desses termos.</p>
+              <p><strong>5. INTEGRAÇÃO E DISPONIBILIDADE</strong><br/>O serviço depende da disponibilidade técnica das APIs do Notion, Google Firebase e Google Gemini. Não garantimos o funcionamento ininterrupto em caso de falhas ou alterações nas políticas dessas plataformas de terceiros.</p>
+              
+              <p><strong>6. ASSINATURA E CANCELAMENTO</strong><br/>Caso opte por planos pagos, os pagamentos são processados via parceiros de checkout. O cancelamento pode ser feito a qualquer momento, interrompendo a renovação para o próximo ciclo de faturamento.</p>
+              
+              <p><strong>7. PROPRIEDADE INTELECTUAL</strong><br/>Todo o código fonte, design e lógica do sistema são propriedade intelectual exclusiva do Hub Financeiro. O template do Notion fornecido é para uso pessoal e intransferível do assinante.</p>
             </div>
           </div>
         </div>
@@ -516,15 +510,17 @@ function LandingContent() {
               <button className="modal-close" onClick={() => setShowPrivacy(false)}>&times;</button>
             </div>
             <div className="modal-body">
-              <p><strong>1. Coleta de Informações</strong><br/>Coletamos seu nome e e-mail via Google Authentication para criar sua conta. Ao conectar o Notion, armazenamos o seu Token de Acesso e IDs de tabelas para permitir a gravação das transações. Seus comandos de voz/texto são processados apenas para finalidade de extração de dados.</p>
+              <p><strong>1. COMPROMISSO COM A PRIVACIDADE</strong><br/>O Hub Financeiro adota práticas rigorosas de proteção de dados alinhadas à LGPD (Lei Geral de Proteção de Dados). Seus dados financeiros são propriedade sua e tratados com sigilo absoluto.</p>
               
-              <p><strong>2. Uso de Dados e IA</strong><br/>Seus dados financeiros são enviados para a API do Google Gemini exclusivamente para processamento de linguagem natural e classificação. Não utilizamos seus dados para treinar modelos públicos nem os compartilhamos com terceiros para fins publicitários.</p>
+              <p><strong>2. DADOS COLETADOS</strong><br/>Coletamos: (a) Nome e e-mail via Google Auth para identificação; (b) Token de Acesso do Notion e IDs de banco de dados para integração técnica; (c) Comandos de áudio e texto enviados para o robô para processamento das transações.</p>
               
-              <p><strong>3. Armazenamento e Segurança</strong><br/>Os tokens de acesso são armazenados em ambiente seguro (Firebase Firestore Admin SDK) e protegidos por criptografia de transporte. Somente nossos servidores têm permissão para ler essas credenciais durante o processamento das suas mensagens.</p>
+              <p><strong>3. PROCESSAMENTO VIA INTELIGÊNCIA ARTIFICIAL</strong><br/>Ao enviar uma mensagem, o conteúdo é processado pela API do Google Gemini. Este processamento visa unicamente a extração de dados financeiros. Seus dados não são vendidos para terceiros nem utilizados para fins publicitários ou treinamento de modelos de IA públicos sem seu consentimento explícito.</p>
               
-              <p><strong>4. Seus Direitos (LGPD)</strong><br/>Você tem o direito de acessar, corrigir ou excluir seus dados a qualquer momento. Ao utilizar a função "Resetar meu progresso" no rodapé, as chaves locais são removidas. Para exclusão total do cadastro no servidor, entre em contato com o suporte.</p>
+              <p><strong>4. SEGURANÇA DAS CREDENCIAIS</strong><br/>Seus Tokens do Notion são armazenados exclusivamente em nosso servidor (Server-side) via Firebase Firestore Admin SDK. Eles nunca são expostos ao seu navegador, prevenindo ataques que tentem roubar suas chaves de acesso através de scripts maliciosos.</p>
               
-              <p><strong>5. Cookies</strong><br/>Utilizamos o Local Storage do navegador apenas para manter sua sessão ativa e salvar o progresso do seu checklist de configuração.</p>
+              <p><strong>5. RETENÇÃO E EXCLUSÃO</strong><br/>Armazenamos seus dados enquanto sua conta estiver ativa. O Usuário pode, a qualquer momento, utilizar a função "Resetar progresso" para limpar chaves locais. Para exclusão permanente de todos os dados do servidor, o usuário deve entrar em contato com o suporte oficial.</p>
+              
+              <p><strong>6. COMPARTILHAMENTO</strong><br/>Dados são compartilhados apenas com infraestruturas essenciais ao serviço: Google (Cloud/IA) e Notion. Não há compartilhamento de informações pessoais identificáveis com nenhuma outra entidade.</p>
             </div>
           </div>
         </div>
