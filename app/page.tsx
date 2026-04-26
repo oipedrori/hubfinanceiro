@@ -166,7 +166,7 @@ function LandingContent() {
           {/* Nova Hero Section: 2 Colunas */}
           <div className="lp-hero-grid">
             <div className="lp-3d-wrapper">
-              <img src="/app-dashboard.png" alt="Dashboard do Hub Financeiro" className="lp-3d-image" />
+              <img src="/hero-dashboard.png" alt="Dashboard do Hub Financeiro" className="lp-3d-image" />
             </div>
             
             <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
