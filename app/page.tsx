@@ -140,7 +140,7 @@ function LandingContent() {
   const contentMaxWidth = user ? '500px' : '1000px';
 
   return (
-    <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '4rem' }}>
+    <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '6rem' }}>
       
       {/* Header Comum */}
       <div className="app-header animate-fade" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: contentMaxWidth, margin: '0 auto 2rem auto' }}>
@@ -547,6 +547,14 @@ function LandingContent() {
           justify-content: center;
           z-index: 9999;
           padding: 20px;
+        }
+        .lp-hero-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 3rem;
+          align-items: center;
+          margin-bottom: 6rem;
+          padding: 8rem 0;
         }
         .modal-content {
           background: var(--card-bg);

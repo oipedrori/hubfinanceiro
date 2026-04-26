@@ -401,6 +401,12 @@ a {
   display: block;
 }
 
+@media (max-width: 768px) {
+  .lp-3d-image {
+    transform: rotateY(0deg) rotateX(12deg) scale(0.95);
+  }
+}
+
 @media (min-width: 900px) {
   .lp-3d-image {
     width: 120%;
