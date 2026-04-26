@@ -22,6 +22,10 @@ function LandingContent() {
   const [shortcutSaved, setShortcutSaved] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
 
+  // Estados para Modais Legais
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
   useEffect(() => {
     // Detectar plataforma
     const ua = navigator.userAgent || '';
@@ -301,12 +305,21 @@ function LandingContent() {
             </button>
           </div>
 
-          <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', width: '100%', marginBottom: '4rem'}}>
-            <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
-              <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub Financeiro é construído sobre o Notion, o que permite que ele funcione nativamente na Web, Android e iOS. A automação por voz utiliza o aplicativo "Atalhos" no iOS (iPhone) e funciona via WebApp no Android.
+          {/* Footer Legal - Landing Page */}
+          <footer style={{ marginTop: '2rem', padding: '2rem 0', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+            <div style={{background: 'rgba(255,150,0,0.05)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '1.5rem', width: '100%', marginBottom: '2rem', textAlign: 'left'}}>
+              <p style={{fontSize: '0.9rem', color: '#888', margin: 0}}>
+                <strong style={{color: '#f59e0b'}}>⚠️ Nota Técnica:</strong> O Hub Financeiro é construído sobre o Notion, o que permite que ele funcione nativamente na Web, Android e iOS. A automação por voz utiliza o aplicativo "Atalhos" no iOS (iPhone) e funciona via WebApp no Android.
+              </p>
+            </div>
+            <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '1rem' }}>
+              &copy; {new Date().getFullYear()} Hub Financeiro. Todos os direitos reservados.
             </p>
-          </div>
-
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
+              <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso</button>
+              <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>Política de Privacidade</button>
+            </div>
+          </footer>
         </div>
       ) : (
         /* ================= TELA POST-LOGIN ================= */
@@ -462,9 +475,118 @@ function LandingContent() {
         </div>
       )}
 
-      <footer style={{ marginTop: '1.5rem', color: '#888888', fontSize: '0.8rem', textAlign: 'center' }}>
-        © 2026 Hub Financeiro Bot
+      {/* Footer Legal - App Logado */}
+      <footer style={{ marginTop: 'auto', padding: '3rem 0 2rem 0', textAlign: 'center', width: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
+          <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '0.75rem', cursor: 'pointer' }}>Termos</button>
+          <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '0.75rem', cursor: 'pointer' }}>Privacidade</button>
+        </div>
+        <p style={{ fontSize: '0.7rem', color: '#999' }}>Hub Financeiro &copy; {new Date().getFullYear()}</p>
       </footer>
+
+      {/* MODAL: TERMOS E CONDIÇÕES */}
+      {showTerms && (
+        <div className="modal-overlay" onClick={() => setShowTerms(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Termos e Condições de Uso</h3>
+              <button className="modal-close" onClick={() => setShowTerms(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <p><strong>1. Aceitação dos Termos</strong><br/>Ao acessar o Hub Financeiro, você concorda em cumprir estes termos de serviço, todas as leis e regulamentos aplicáveis. O Hub é uma ferramenta de auxílio à gestão financeira pessoal, construída sobre a infraestrutura do Notion.</p>
+              
+              <p><strong>2. Descrição do Serviço</strong><br/>O Hub Financeiro fornece automação de entrada de dados via voz e texto, utilizando modelos de inteligência artificial para classificar e organizar movimentações financeiras diretamente na conta do Notion do usuário.</p>
+              
+              <p><strong>3. Limitação de Responsabilidade</strong><br/>O Hub Financeiro e seus desenvolvedores não garantem a precisão absoluta da classificação da IA, que deve ser conferida pelo usuário no Notion. O serviço não constitui aconselhamento financeiro profissional, contábil ou jurídico. Decisões baseadas nos insights da ferramenta são de inteira responsabilidade do usuário.</p>
+              
+              <p><strong>4. Integração com Terceiros</strong><br/>O funcionamento do sistema depende da disponibilidade das APIs do Notion e do Google (Firebase/Gemini). Não nos responsabilizamos por interrupções causadas por falhas nessas plataformas de terceiros.</p>
+              
+              <p><strong>5. Alterações</strong><br/>Podemos revisar estes termos a qualquer momento, sem aviso prévio. Ao usar este site, você concorda em ficar vinculado à versão atual desses termos.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: POLÍTICA DE PRIVACIDADE */}
+      {showPrivacy && (
+        <div className="modal-overlay" onClick={() => setShowPrivacy(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Política de Privacidade</h3>
+              <button className="modal-close" onClick={() => setShowPrivacy(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <p><strong>1. Coleta de Informações</strong><br/>Coletamos seu nome e e-mail via Google Authentication para criar sua conta. Ao conectar o Notion, armazenamos o seu Token de Acesso e IDs de tabelas para permitir a gravação das transações. Seus comandos de voz/texto são processados apenas para finalidade de extração de dados.</p>
+              
+              <p><strong>2. Uso de Dados e IA</strong><br/>Seus dados financeiros são enviados para a API do Google Gemini exclusivamente para processamento de linguagem natural e classificação. Não utilizamos seus dados para treinar modelos públicos nem os compartilhamos com terceiros para fins publicitários.</p>
+              
+              <p><strong>3. Armazenamento e Segurança</strong><br/>Os tokens de acesso são armazenados em ambiente seguro (Firebase Firestore Admin SDK) e protegidos por criptografia de transporte. Somente nossos servidores têm permissão para ler essas credenciais durante o processamento das suas mensagens.</p>
+              
+              <p><strong>4. Seus Direitos (LGPD)</strong><br/>Você tem o direito de acessar, corrigir ou excluir seus dados a qualquer momento. Ao utilizar a função "Resetar meu progresso" no rodapé, as chaves locais são removidas. Para exclusão total do cadastro no servidor, entre em contato com o suporte.</p>
+              
+              <p><strong>5. Cookies</strong><br/>Utilizamos o Local Storage do navegador apenas para manter sua sessão ativa e salvar o progresso do seu checklist de configuração.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.8);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          padding: 20px;
+        }
+        .modal-content {
+          background: var(--card-bg);
+          border: 1px solid var(--border);
+          width: 100%;
+          max-width: 600px;
+          max-height: 80vh;
+          border-radius: 20px;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+          animation: modalAppear 0.3s ease-out;
+        }
+        @keyframes modalAppear {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .modal-header h3 { margin: 0; font-size: 1.2rem; }
+        .modal-close {
+          background: none;
+          border: none;
+          color: #888;
+          font-size: 2rem;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .modal-body {
+          padding: 1.5rem;
+          overflow-y: auto;
+          color: #aaa;
+          font-size: 0.9rem;
+          line-height: 1.6;
+        }
+        .modal-body strong { color: var(--foreground); display: block; margin-top: 1.2rem; }
+        .modal-body p:first-child strong { margin-top: 0; }
+      `}</style>
     </main>
   );
 }
