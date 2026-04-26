@@ -548,14 +548,7 @@ function LandingContent() {
           z-index: 9999;
           padding: 20px;
         }
-        .lp-hero-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 3rem;
-          align-items: center;
-          margin-bottom: 6rem;
-          padding: 8rem 0;
-        }
+
         .modal-content {
           background: var(--card-bg);
           border: 1px solid var(--border);

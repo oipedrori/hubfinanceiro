@@ -363,12 +363,14 @@ a {
   grid-template-columns: 1fr;
   gap: 3rem;
   align-items: center;
-  margin-bottom: 4rem;
+  margin-bottom: 6rem;
+  padding: 6rem 0;
 }
 
 @media (min-width: 900px) {
   .lp-hero-grid {
     grid-template-columns: 1fr 1fr;
+    padding: 10rem 0;
   }
 }
 
