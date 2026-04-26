@@ -214,8 +214,8 @@ function LandingContent() {
               <ul className="pricing-features">
                 <li><span style={{fontSize:'1rem'}}>✅</span> Template Notion Premium</li>
                 <li><span style={{fontSize:'1rem'}}>✅</span> Visão anual em uma tela</li>
-                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem automação por voz</li>
-                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem Inteligência Artificial</li>
+                <li><span style={{fontSize:'1rem'}}>❌</span> Sem automação por voz</li>
+                <li><span style={{fontSize:'1rem'}}>❌</span> Sem Inteligência Artificial</li>
               </ul>
               <button onClick={handleLogin} className="pricing-btn btn-outline">
                 Escolher Básico
@@ -233,7 +233,7 @@ function LandingContent() {
                 <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do Básico</li>
                 <li><span style={{fontSize:'1rem'}}>🚀</span> <strong>Automação por Voz</strong></li>
                 <li><span style={{fontSize:'1rem'}}>✅</span> Adicione gastos sem digitar</li>
-                <li><span style={{fontSize:'1rem', opacity:0.3}}>❌</span> Sem análises e conselhos</li>
+                <li><span style={{fontSize:'1rem'}}>❌</span> Sem análises e conselhos</li>
               </ul>
               <button onClick={handleLogin} className="pricing-btn btn-outline">
                 Testar IA Plus
