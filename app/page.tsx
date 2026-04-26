@@ -341,25 +341,55 @@ function LandingContent() {
               <div className={`accordion-content ${activeAccordion === 0 ? 'expanded' : ''}`}>
                 <p className="accordion-text">
                   {notionConnected 
-                    ? "Excelente! Seu banco de dados foi criado e conectado. Abaixo está sua chave de segurança. Ela já está salva neste navegador, mas copie-a para a próxima etapa."
-                    : "Ao clicar abaixo, o Notion vai pedir sua permissão. Ele criará automaticamente o template financeiro na sua conta e conectará nosso robô a ele em um único passo!"}
+                    ? "Excelente! Sua conta Notion foi conectada. Agora precisamos verificar se o seu template financeiro está acessível para o robô."
+                    : "Clique abaixo para autorizar o Hub Financeiro. Você pode escolher conectar um template que já possui (basta selecioná-lo na lista do Notion) ou duplicar um novo durante o processo!"}
                 </p>
                 
                 {notionConnected && localKey ? (
                   <div style={{ marginBottom: '1.2rem' }}>
-                    <code style={{ fontSize: '0.8rem', background: 'rgba(150,150,150,0.1)', padding: '0.8rem', borderRadius: '8px', display: 'block', wordBreak: 'break-all', border: '1px dashed var(--border)' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#888', marginBottom: '1rem' }}>
+                      Sua Chave de Segurança (mantenha-a em sigilo):
+                    </p>
+                    <code style={{ fontSize: '0.8rem', background: 'rgba(150,150,150,0.1)', padding: '0.8rem', borderRadius: '8px', display: 'block', wordBreak: 'break-all', border: '1px dashed var(--border)', marginBottom: '1rem' }}>
                       {localKey}
                     </code>
+                    
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(localKey);
-                        alert('Chave copiada!');
-                        setActiveAccordion(platform === 'ios' ? 1 : 2);
+                        alert('Chave copiada! Agora salve-a no seu celular na próxima etapa.');
                       }}
                       className="accordion-btn"
-                      style={{ marginTop: '0.8rem', background: 'none', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                      style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--foreground)', marginBottom: '0.5rem' }}
                     >
-                      Copiar e Avançar
+                      Copiar Chave
+                    </button>
+
+                    <button 
+                      onClick={async () => {
+                        // Simula uma chamada rápida para verificar se as tabelas existem
+                        try {
+                          const res = await fetch('/api/process', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ secretKey: localKey, text: 'Oi, testando conexão' })
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            alert('✅ Conexão verificada! Encontramos seu template.');
+                            setNotionConnected(true);
+                            setActiveAccordion(platform === 'ios' ? 1 : 2);
+                          } else {
+                            alert('⚠️ Conexão ativa, mas não encontramos as tabelas (Despesas, Receitas e Balancetes). Verifique se você compartilhou a página correta com o Hub Financeiro.');
+                          }
+                        } catch (e) {
+                          alert('Erro ao verificar conexão. Tente novamente.');
+                        }
+                      }}
+                      className="accordion-btn"
+                      style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+                    >
+                      Verificar e Avançar
                     </button>
                   </div>
                 ) : (

@@ -258,6 +258,9 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error("Erro Crítico no /api/process:", error);
-    return NextResponse.json({ error: error.message || 'Erro interno no servidor' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: `Ops! Tive um problema técnico: ${error.message || 'Erro interno no servidor'}. Verifique se o seu Notion está conectado e compartilhado corretamente.` 
+    }, { status: 200 }); // Status 200 para que o iOS atalho leia a mensagem de erro
   }
 }

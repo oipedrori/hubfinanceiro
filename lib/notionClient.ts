@@ -92,45 +92,89 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
     wasSearched = true;
   }
 
-  // Baixa os meses disponíveis. Como o formato é "01 | Janeiro", o sorts ascending ou descending funciona!
-  const rowsRes = await fetch(`https://api.notion.com/v1/databases/${targetDbId}/query`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${clientAccessToken}`,
-      'Notion-Version': '2022-06-28',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ 
-      page_size: 15,
-      sorts: [{ property: 'Mês', direction: 'descending' }]
-    })
-  });
-  const rowsData = await rowsRes.json();
+  try {
+    const rowsRes = await fetch(`https://api.notion.com/v1/databases/${targetDbId}/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${clientAccessToken}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        page_size: 15,
+        sorts: [{ property: 'Mês', direction: 'descending' }]
+      })
+    });
+    let rowsData = await rowsRes.json();
 
-  if(rowsData.results.length === 0) return { data: 'O Balancete do cliente não contém meses registrados.', newDbId: wasSearched ? targetDbId : null, currentMonth: null };
+    // Se o ID do cache falhou (ex: deletado ou sem acesso), tenta buscar de novo uma vez
+    if (!rowsRes.ok && rowsData.code === 'object_not_found') {
+      console.log("Database em cache não encontrada. Tentando busca bruta...");
+      const searchRes = await fetch('https://api.notion.com/v1/search', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${clientAccessToken}`,
+          'Notion-Version': '2022-06-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query: 'Balancetes',
+          filter: { value: 'database', property: 'object' }
+        })
+      });
 
-  const currentYear = new Date().getFullYear();
-  // Número do mês atual com zero-pad (ex: "04" para Abril)
-  const brNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const currentMonthPrefix = String(brNow.getMonth() + 1).padStart(2, '0');
-
-  let currentMonthData: { entradas: number, saidas: number, resultado: number, pageId: string } | null = null;
-
-  const relatorio = rowsData.results.map((row: any) => {
-    const mes = row.properties['Mês']?.title[0]?.plain_text || 'Desconhecido';
-    const entradas = row.properties['Entradas']?.rollup?.number || 0;
-    const saidas = row.properties['Saídas']?.rollup?.number || 0;
-    const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
-
-    // Se este é o mês atual, salvamos os valores brutos e o ID da página
-    if (mes.startsWith(currentMonthPrefix)) {
-      currentMonthData = { entradas, saidas, resultado, pageId: row.id };
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        if (searchData.results.length > 0) {
+          targetDbId = searchData.results[0].id;
+          wasSearched = true;
+          // Tenta a query de novo com o novo ID
+          const retryRes = await fetch(`https://api.notion.com/v1/databases/${targetDbId}/query`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${clientAccessToken}`,
+              'Notion-Version': '2022-06-28',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              page_size: 15,
+              sorts: [{ property: 'Mês', direction: 'descending' }]
+            })
+          });
+          rowsData = await retryRes.json();
+        }
+      }
     }
 
-    return `${mes}/${currentYear}: Entradas R$${entradas} | Saídas R$${saidas} | Balanço R$${resultado}`;
-  });
+    if (!rowsData.results) {
+      throw new Error(`Não consegui ler o seu banco de Balancetes. Verifique se ele existe e se a integração do Hub Financeiro tem acesso a ele.`);
+    }
 
-  return { data: relatorio.join('|'), newDbId: wasSearched ? targetDbId : null, currentMonth: currentMonthData };
+    if(rowsData.results.length === 0) return { data: 'O Balancete do cliente não contém meses registrados.', newDbId: wasSearched ? targetDbId : null, currentMonth: null };
+
+    const currentYear = new Date().getFullYear();
+    const brNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const currentMonthPrefix = String(brNow.getMonth() + 1).padStart(2, '0');
+
+    let currentMonthData: { entradas: number, saidas: number, resultado: number, pageId: string } | null = null;
+
+    const relatorio = rowsData.results.map((row: any) => {
+      const mes = row.properties['Mês']?.title[0]?.plain_text || 'Desconhecido';
+      const entradas = row.properties['Entradas']?.rollup?.number || 0;
+      const saidas = row.properties['Saídas']?.rollup?.number || 0;
+      const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
+
+      if (mes.startsWith(currentMonthPrefix)) {
+        currentMonthData = { entradas, saidas, resultado, pageId: row.id };
+      }
+
+      return `${mes}/${currentYear}: Entradas R$${entradas} | Saídas R$${saidas} | Balanço R$${resultado}`;
+    });
+
+    return { data: relatorio.join('|'), newDbId: wasSearched ? targetDbId : null, currentMonth: currentMonthData };
+  } catch (e: any) {
+    throw new Error(`Erro ao acessar dados do Notion: ${e.message}`);
+  }
 }
 
 // ── Busca movimentações do mês atual (despesas + receitas) ──
