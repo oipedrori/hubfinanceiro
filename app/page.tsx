@@ -232,7 +232,7 @@ function LandingContent() {
               <ul className="pricing-features">
                 <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do Básico</li>
                 <li><span style={{fontSize:'1rem'}}>🚀</span> <strong>Automação por Voz</strong></li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Adicione gastos sem digitar</li>
+                <li><span style={{fontSize:'1rem'}}>🎙️</span> Adicione gastos sem digitar</li>
                 <li><span style={{fontSize:'1rem'}}>❌</span> Sem análises e conselhos</li>
               </ul>
               <button onClick={handleLogin} className="pricing-btn btn-outline">
@@ -249,8 +249,8 @@ function LandingContent() {
               <ul className="pricing-features">
                 <li><span style={{fontSize:'1rem'}}>✅</span> Tudo do IA Plus</li>
                 <li><span style={{fontSize:'1rem'}}>🧠</span> <strong>Conselheiro IA Avançado</strong></li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Dicas de economia reais</li>
-                <li><span style={{fontSize:'1rem'}}>✅</span> Análise de perfil de gastos</li>
+                <li><span style={{fontSize:'1rem'}}>💡</span> Dicas de economia reais</li>
+                <li><span style={{fontSize:'1rem'}}>📊</span> Análise de perfil de gastos</li>
               </ul>
               <button onClick={handleLogin} className="pricing-btn btn-outline">
                 Conhecer IA Pro
