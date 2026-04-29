@@ -52,9 +52,13 @@ REGRAS PARA A DESCRIÇÃO:
 HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
 Retorne o JSON:
-- DESPESA: {"intent": "despesa", "descricao", "valor", "data", "tipo_despesa": "Móvel" | "Recorrente" | "Parcelada", "metodo_pagamento", "categoria", "num_parcelas"}
-- RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita": "Salário" | "Empréstimo" | "Reembolso" | "Freela"}
+- DESPESA: {"intent": "despesa", "descricao", "valor", "data", "tipo_despesa", "metodo_pagamento", "categoria", "num_parcelas"}
+- RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita"}
 - CONSULTA: {"intent": "consulta", "pergunta"}
+
+REGRAS DE INTENÇÃO:
+- Se o usuário perguntar algo (ex: "Quanto gastei...", "Como está meu saldo?"), use "intent": "consulta".
+- NUNCA use "despesa" para perguntas. Use "despesa" apenas para lançamentos novos.
 
 REGRAS PARA RECEITA:
 - Use APENAS: "Salário", "Empréstimo", "Reembolso" ou "Freela".
@@ -87,7 +91,10 @@ REGRAS PARA TIPO DE DESPESA:
     if (topLevelKey) parsed = parsed[topLevelKey];
 
     // Normalização de tipos e limpeza de descrição
-    if (parsed.valor) parsed.valor = Number(String(parsed.valor).replace(/[^\d.]/g, ''));
+    if (parsed.valor) {
+      const v = Number(String(parsed.valor).replace(/[^\d.]/g, ''));
+      parsed.valor = Number(v.toFixed(2));
+    }
     if (parsed.num_parcelas) parsed.num_parcelas = Number(parsed.num_parcelas) || 0;
     if (parsed.intent) parsed.intent = String(parsed.intent).toLowerCase();
     
@@ -180,19 +187,21 @@ export async function generateFinancialAdvice(
 Sua missão é dar uma análise REAL e DIRETA das finanças do usuário.
 
 REGRAS DE RESPOSTA:
+- Se o usuário perguntar "Quanto gastei com [categoria/item]", analise as MOVIMENTAÇÕES DETALHADAS e dê o VALOR TOTAL somado.
+- NUNCA liste todas as transações uma por uma, a menos que o usuário peça explicitamente. Foque no resumo e no total.
+- VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e ARREDONDE para exatamente duas casas decimais (centavos).
 - Use EXATAMENTE 2 parágrafos pequenos (máximo 3 linhas cada).
 - Deve caber na tela de um celular sem que o usuário precise rolar muito.
-- Seja amigável, mas vá direto ao ponto.
-- Use emojis para facilitar a leitura.
+- Seja amigável, comece com "Oi ${firstName}! 😊" e use emojis.
 - PROIBIDO usar asteriscos (*) ou negritos (**).
-- Comece com "Oi ${firstName}! 😊".
 - Devolva APENAS a resposta final.
 
 CONTEXTO:
 Data: ${dateBRT}.
 STATUS ATUAL: ${JSON.stringify(currentMonthDetails || {})}
 HISTÓRICO MENSAL: ${balancetesData}
-MOVIMENTAÇÕES DETALHADAS: ${transacoesReport}
+MOVIMENTAÇÕES DETALHADAS:
+${transacoesReport}
 
 Pergunta do Usuário: "${pergunta}"`;
 

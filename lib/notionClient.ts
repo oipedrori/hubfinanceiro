@@ -165,10 +165,15 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
       const resultado = row.properties['Resultado do mês']?.formula?.number || 0;
 
       if (mes.startsWith(currentMonthPrefix)) {
-        currentMonthData = { entradas, saidas, resultado, pageId: row.id };
+        currentMonthData = { 
+          entradas: Number(entradas.toFixed(2)), 
+          saidas: Number(saidas.toFixed(2)), 
+          resultado: Number(resultado.toFixed(2)), 
+          pageId: row.id 
+        };
       }
 
-      return `${mes}/${currentYear}: Entradas R$${entradas} | Saídas R$${saidas} | Balanço R$${resultado}`;
+      return `${mes}/${currentYear}: Entradas R$${entradas.toFixed(2)} | Saídas R$${saidas.toFixed(2)} | Balanço R$${resultado.toFixed(2)}`;
     });
 
     return { data: relatorio.join('|'), newDbId: wasSearched ? targetDbId : null, currentMonth: currentMonthData };
