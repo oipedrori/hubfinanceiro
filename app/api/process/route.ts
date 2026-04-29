@@ -169,6 +169,7 @@ export async function POST(request: Request) {
 
     // ── FLUXO NORMAL: Gemini classifica o texto ──
     const aiResult = await parseFinancialText(text);
+    console.log('🤖 Resultado da Classificação:', JSON.stringify(aiResult, null, 2));
     totalTokens += aiResult._tokensUsed || 0;
 
     // Caso o classificador detecte uma consulta que o atalho não pegou

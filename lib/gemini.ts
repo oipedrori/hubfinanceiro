@@ -53,15 +53,20 @@ HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
 Retorne o JSON:
 - DESPESA: {"intent": "despesa", "descricao", "valor", "data", "tipo_despesa": "Móvel" | "Recorrente" | "Parcelada", "metodo_pagamento", "categoria", "num_parcelas"}
-- RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita"}
+- RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita": "Salário" | "Empréstimo" | "Reembolso" | "Freela"}
 - CONSULTA: {"intent": "consulta", "pergunta"}
+
+REGRAS PARA RECEITA:
+- Use APENAS: "Salário", "Empréstimo", "Reembolso" ou "Freela".
 
 REGRAS PARA CATEGORIA:
 - Use APENAS: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimentos, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Higiene Pessoal, Outros.
 
 REGRAS PARA TIPO DE DESPESA:
-- Use APENAS: "Móvel" (gastos do dia a dia), "Recorrente" (assinaturas/contas fixas) ou "Parcelada" (compras divididas).
-- PROIBIDO usar qualquer outro valor.`;
+- "Recorrente": Quando o usuário diz que gasta "todo mês", "sempre", ou é uma conta fixa (ex: luz, aluguel).
+- "Parcelada": Quando o usuário menciona parcelas (ex: "em 3x", "4 vezes"). O campo "num_parcelas" deve capturar o número total.
+- "Móvel": Gastos eventuais do dia a dia.
+- Use APENAS: "Móvel", "Recorrente" ou "Parcelada". PROIBIDO usar qualquer outro valor.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -83,12 +88,25 @@ REGRAS PARA TIPO DE DESPESA:
     if (parsed.intent) parsed.intent = String(parsed.intent).toLowerCase();
     
     // Forçar Tipo de Despesa fixo: Móvel, Recorrente ou Parcelada
-    const allowedTipos = ['Móvel', 'Recorrente', 'Parcelada'];
+    const allowedTiposDespesa = ['Móvel', 'Recorrente', 'Parcelada'];
     if (parsed.intent === 'despesa') {
-      if (!parsed.tipo_despesa || !allowedTipos.includes(parsed.tipo_despesa)) {
-        if (String(parsed.tipo_despesa).toLowerCase().includes('parcel')) parsed.tipo_despesa = 'Parcelada';
+      if (!parsed.tipo_despesa || !allowedTiposDespesa.includes(parsed.tipo_despesa)) {
+        if (String(parsed.tipo_despesa).toLowerCase().includes('parcel') || (parsed.num_parcelas && parsed.num_parcelas > 1)) parsed.tipo_despesa = 'Parcelada';
         else if (String(parsed.tipo_despesa).toLowerCase().includes('recorr') || String(parsed.tipo_despesa).toLowerCase().includes('fixa')) parsed.tipo_despesa = 'Recorrente';
         else parsed.tipo_despesa = 'Móvel';
+      }
+    }
+
+    // Forçar Tipo de Receita fixo: Salário, Empréstimo, Reembolso ou Freela
+    const allowedTiposReceita = ['Salário', 'Empréstimo', 'Reembolso', 'Freela'];
+    if (parsed.intent === 'receita') {
+      if (!parsed.tipo_receita || !allowedTiposReceita.includes(parsed.tipo_receita)) {
+        const tr = String(parsed.tipo_receita).toLowerCase();
+        if (tr.includes('salário') || tr.includes('pagamento') || tr.includes('empresa')) parsed.tipo_receita = 'Salário';
+        else if (tr.includes('emprest') || tr.includes('banco')) parsed.tipo_receita = 'Empréstimo';
+        else if (tr.includes('reembolso') || tr.includes('devolu')) parsed.tipo_receita = 'Reembolso';
+        else if (tr.includes('freela') || tr.includes('extra') || tr.includes('serviço')) parsed.tipo_receita = 'Freela';
+        else parsed.tipo_receita = 'Freela';
       }
     }
 
@@ -100,7 +118,6 @@ REGRAS PARA TIPO DE DESPESA:
     ];
     if (parsed.intent === 'despesa') {
       if (!parsed.categoria || !allowedCategorias.includes(parsed.categoria)) {
-        // Tenta mapear o mais próximo ou assume Outros
         const cat = String(parsed.categoria).toLowerCase();
         if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante')) parsed.categoria = 'Alimentação';
         else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus')) parsed.categoria = 'Transporte';
@@ -113,9 +130,9 @@ REGRAS PARA TIPO DE DESPESA:
       }
     }
 
-    // Forçar título curto e limpo se a IA falhar
+    // Forçar título curto e limpo
     if (parsed.descricao) {
-      let d = parsed.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi)\s(no|na|de|com|o|a)\s/i, '');
+      let d = parsed.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
       d = d.split(' ').slice(0, 2).join(' ');
       parsed.descricao = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
     }
