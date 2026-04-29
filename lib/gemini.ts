@@ -6,7 +6,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 export async function parseFinancialText(text: string) {
   // generationConfig garante que o robô não converse, apenas devolva a estrutura exata de JSON que nosso código pede.
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash", 
+    model: "gemma-4-31b-it", 
     generationConfig: { responseMimeType: "application/json" } 
   });
 
@@ -74,7 +74,7 @@ export async function generateFinancialAdvice(
   firstName: string,
   currentMonthDetails?: { entradas: number, saidas: number, resultado: number } | null
 ) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemma-4-31b-it" });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
