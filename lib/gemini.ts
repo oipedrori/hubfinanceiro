@@ -52,9 +52,13 @@ REGRAS PARA A DESCRIÇÃO:
 HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
 Retorne o JSON:
-- DESPESA: {"intent": "despesa", "descricao", "valor", "data", "tipo_despesa", "metodo_pagamento", "categoria", "num_parcelas"}
+- DESPESA: {"intent": "despesa", "descricao", "valor", "data", "tipo_despesa": "Móvel" | "Recorrente" | "Parcelada", "metodo_pagamento", "categoria", "num_parcelas"}
 - RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita"}
-- CONSULTA: {"intent": "consulta", "pergunta"}`;
+- CONSULTA: {"intent": "consulta", "pergunta"}
+
+REGRAS PARA TIPO DE DESPESA:
+- Use APENAS: "Móvel" (gastos do dia a dia), "Recorrente" (assinaturas/contas fixas) ou "Parcelada" (compras divididas).
+- PROIBIDO usar qualquer outro valor.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -75,6 +79,17 @@ Retorne o JSON:
     if (parsed.num_parcelas) parsed.num_parcelas = Number(parsed.num_parcelas) || 0;
     if (parsed.intent) parsed.intent = String(parsed.intent).toLowerCase();
     
+    // Forçar Tipo de Despesa fixo: Móvel, Recorrente ou Parcelada
+    const allowedTipos = ['Móvel', 'Recorrente', 'Parcelada'];
+    if (parsed.intent === 'despesa') {
+      if (!parsed.tipo_despesa || !allowedTipos.includes(parsed.tipo_despesa)) {
+        // Tenta mapear se for algo parecido ou assume Móvel
+        if (String(parsed.tipo_despesa).toLowerCase().includes('parcel')) parsed.tipo_despesa = 'Parcelada';
+        else if (String(parsed.tipo_despesa).toLowerCase().includes('recorr') || String(parsed.tipo_despesa).toLowerCase().includes('fixa')) parsed.tipo_despesa = 'Recorrente';
+        else parsed.tipo_despesa = 'Móvel';
+      }
+    }
+
     // Forçar título curto e limpo se a IA falhar
     if (parsed.descricao) {
       let d = parsed.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi)\s(no|na|de|com|o|a)\s/i, '');
