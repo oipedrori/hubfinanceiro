@@ -177,12 +177,13 @@ export async function generateFinancialAdvice(
   const dateBRT = brNow.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', day: '2-digit' });
 
   const prompt = `Você é o Consultor Financeiro Estratégico do Hub Financeiro.
-Sua missão é dar uma análise REAL e PROFUNDA das finanças do usuário.
+Sua missão é dar uma análise REAL e DIRETA das finanças do usuário.
 
 REGRAS DE RESPOSTA:
-- Use de 2 a 3 parágrafos curtos.
-- Seja específico e traga insights baseados nos dados.
-- Use emojis para tornar a leitura amigável.
+- Use EXATAMENTE 2 parágrafos pequenos (máximo 3 linhas cada).
+- Deve caber na tela de um celular sem que o usuário precise rolar muito.
+- Seja amigável, mas vá direto ao ponto.
+- Use emojis para facilitar a leitura.
 - PROIBIDO usar asteriscos (*) ou negritos (**).
 - Comece com "Oi ${firstName}! 😊".
 - Devolva APENAS a resposta final.
