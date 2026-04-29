@@ -56,6 +56,9 @@ Retorne o JSON:
 - RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita"}
 - CONSULTA: {"intent": "consulta", "pergunta"}
 
+REGRAS PARA CATEGORIA:
+- Use APENAS: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimentos, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Higiene Pessoal, Outros.
+
 REGRAS PARA TIPO DE DESPESA:
 - Use APENAS: "Móvel" (gastos do dia a dia), "Recorrente" (assinaturas/contas fixas) ou "Parcelada" (compras divididas).
 - PROIBIDO usar qualquer outro valor.`;
@@ -83,10 +86,30 @@ REGRAS PARA TIPO DE DESPESA:
     const allowedTipos = ['Móvel', 'Recorrente', 'Parcelada'];
     if (parsed.intent === 'despesa') {
       if (!parsed.tipo_despesa || !allowedTipos.includes(parsed.tipo_despesa)) {
-        // Tenta mapear se for algo parecido ou assume Móvel
         if (String(parsed.tipo_despesa).toLowerCase().includes('parcel')) parsed.tipo_despesa = 'Parcelada';
         else if (String(parsed.tipo_despesa).toLowerCase().includes('recorr') || String(parsed.tipo_despesa).toLowerCase().includes('fixa')) parsed.tipo_despesa = 'Recorrente';
         else parsed.tipo_despesa = 'Móvel';
+      }
+    }
+
+    // Forçar Categorias fixas
+    const allowedCategorias = [
+      'Alimentação', 'Comunicação', 'Doação', 'Educação', 'Equipamentos', 
+      'Impostos', 'Investimentos', 'Lazer', 'Moradia', 'Pet', 
+      'Saúde', 'Seguro', 'Transporte', 'Vestuário', 'Higiene Pessoal', 'Outros'
+    ];
+    if (parsed.intent === 'despesa') {
+      if (!parsed.categoria || !allowedCategorias.includes(parsed.categoria)) {
+        // Tenta mapear o mais próximo ou assume Outros
+        const cat = String(parsed.categoria).toLowerCase();
+        if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante')) parsed.categoria = 'Alimentação';
+        else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus')) parsed.categoria = 'Transporte';
+        else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio')) parsed.categoria = 'Moradia';
+        else if (cat.includes('médico') || cat.includes('farmácia') || cat.includes('remédio')) parsed.categoria = 'Saúde';
+        else if (cat.includes('cinema') || cat.includes('viagem') || cat.includes('show')) parsed.categoria = 'Lazer';
+        else if (cat.includes('internet') || cat.includes('celular') || cat.includes('telefone')) parsed.categoria = 'Comunicação';
+        else if (cat.includes('roupa') || cat.includes('sapato')) parsed.categoria = 'Vestuário';
+        else parsed.categoria = 'Outros';
       }
     }
 
