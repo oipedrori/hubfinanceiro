@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCustomerBySecretKey, updateCustomerDbIds, logTokenUsage } from '@/lib/firebaseAdmin';
 import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
-import { addTransactionToClientNotion, getBalancetesData, getCurrentMonthTransactions } from '@/lib/notionClient';
+import { addTransactionToClientNotion, getBalancetesData, getCurrentMonthTransactions, deleteLastTransaction } from '@/lib/notionClient';
 
 // ── Detector de SALDO: resposta fixa sem IA ──
 function isSaldoQuery(text: string): boolean {
@@ -141,6 +141,7 @@ export async function POST(request: Request) {
           receitasDbId
         );
         transacoesReport = transacoesResult.report;
+        console.log('📄 Relatório Enviado à IA (Atalho):', transacoesReport);
 
         // Cacheia IDs descobertos (fire-and-forget)
         if (pageId) {
@@ -172,6 +173,27 @@ export async function POST(request: Request) {
     console.log('🤖 Resultado da Classificação:', JSON.stringify(aiResult, null, 2));
     totalTokens += aiResult._tokensUsed || 0;
 
+    // Caso a IA identifique que faltam dados (regra de validação)
+    if (aiResult.error) {
+      return NextResponse.json({ success: false, message: aiResult.error }, { status: 200 });
+    }
+
+    // Caso o usuário queira deletar a última ação
+    if (aiResult.intent === 'deletar_ultimo') {
+      console.log(`🗑️ Pedido para deletar última movimentação de ${name}...`);
+      const delResult = await deleteLastTransaction(notionAccessToken, despesasDbId, receitasDbId);
+      
+      const valFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(delResult.valor);
+      const msg = `🗑️ Entendido, ${firstName}. Apaguei o último registro:
+\n📝 O que era: ${delResult.descricao}
+💰 Valor: ${valFmt}
+🏷️ Tipo: ${delResult.tipo === 'despesa' ? 'Despesa' : 'Receita'}
+\nJá está removido do seu Notion. ✅`;
+
+      if (pageId) logTokenUsage(pageId, totalTokens);
+      return NextResponse.json({ success: true, message: msg }, { status: 200 });
+    }
+
     // Caso o classificador detecte uma consulta que o atalho não pegou
     if (aiResult.intent === 'consulta') {
       console.log(`🤖 Consulta detectada pelo Gemini. Resgatando dados de ${name}...`);
@@ -188,6 +210,7 @@ export async function POST(request: Request) {
           receitasDbId
         );
         transacoesReport = transacoesResult.report;
+        console.log('📄 Relatório Enviado à IA:', transacoesReport);
 
         if (pageId) {
           const idsToCache: any = {};

@@ -41,13 +41,7 @@ export async function parseFinancialText(text: string) {
 
   const dateBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
 
-  const prompt = `Você é um robô classificador financeiro. 
-Sua saída deve conter APENAS um objeto JSON puro.
-
-REGRAS PARA A DESCRIÇÃO:
-- A "descricao" deve ser um título PADRONIZADO, curto e com a primeira letra maiúscula (ex: "Mercado", "Gasolina", "Aluguel", "Academia").
-- NUNCA use frases como "Compra no...", "Gastei com...", "Pagamento de...".
-- Use no máximo 2 palavras.
+  const prompt = `Você é um robô classificador financeiro. Sua saída deve conter APENAS um objeto JSON puro.
 
 HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
@@ -55,10 +49,15 @@ Retorne o JSON:
 - DESPESA: {"intent": "despesa", "descricao", "valor", "data", "tipo_despesa", "metodo_pagamento", "categoria", "num_parcelas"}
 - RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita"}
 - CONSULTA: {"intent": "consulta", "pergunta"}
+- DELETAR: {"intent": "deletar_ultimo"}
 
 REGRAS DE INTENÇÃO:
+- Se o usuário pedir para apagar/deletar a última ação ou movimentação, use "intent": "deletar_ultimo".
 - Se o usuário perguntar algo (ex: "Quanto gastei...", "Como está meu saldo?"), use "intent": "consulta".
-- NUNCA use "despesa" para perguntas. Use "despesa" apenas para lançamentos novos.
+- NUNCA use "despesa" ou "receita" se faltar o VALOR ou a DESCRIÇÃO. Nesse caso, retorne um JSON com {"error": "mensagem amigável pedindo os dados faltantes"}.
+
+REGRAS PARA DESCRIÇÃO:
+- A "descricao" deve ser um título PADRONIZADO, curto (1-2 palavras) e Capitalizado.
 
 REGRAS PARA RECEITA:
 - Use APENAS: "Salário", "Empréstimo", "Reembolso" ou "Freela".
@@ -67,14 +66,10 @@ REGRAS PARA CATEGORIA:
 - Use APENAS: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimentos, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Higiene Pessoal, Outros.
 
 REGRAS PARA MÉTODO DE PAGAMENTO:
-- Use APENAS: Crédito, Pix, Débito, Dinheiro, Transferência.
-- VALOR PADRÃO: Se o usuário não mencionar, use "Crédito".
+- Use APENAS: Crédito, Pix, Débito, Dinheiro, Transferência. Valor padrão: "Crédito".
 
 REGRAS PARA TIPO DE DESPESA:
-- "Recorrente": Quando o usuário diz que gasta "todo mês", "sempre", ou é uma conta fixa (ex: luz, aluguel).
-- "Parcelada": Quando o usuário menciona parcelas (ex: "em 3x", "4 vezes"). O campo "num_parcelas" deve capturar o número total.
-- "Móvel": Gastos eventuais do dia a dia.
-- Use APENAS: "Móvel", "Recorrente" ou "Parcelada". PROIBIDO usar qualquer outro valor.`;
+- Use APENAS: "Móvel", "Recorrente" (contas fixas/todo mês) ou "Parcelada" (compras divididas).`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -87,10 +82,12 @@ REGRAS PARA TIPO DE DESPESA:
       throw new Error("Não encontrei JSON válido na resposta da IA.");
     }
 
-    const topLevelKey = Object.keys(parsed).find(k => ["DESPESA", "RECEITA", "CONSULTA", "despesa", "receita", "consulta"].includes(k));
+    const topLevelKey = Object.keys(parsed).find(k => ["DESPESA", "RECEITA", "CONSULTA", "DELETAR", "despesa", "receita", "consulta", "deletar_ultimo"].includes(k));
     if (topLevelKey) parsed = parsed[topLevelKey];
 
-    // Normalização de tipos e limpeza de descrição
+    if (parsed.error) return parsed;
+
+    // Normalização de tipos e limpeza
     if (parsed.valor) {
       const v = Number(String(parsed.valor).replace(/[^\d.]/g, ''));
       parsed.valor = Number(v.toFixed(2));
@@ -98,7 +95,7 @@ REGRAS PARA TIPO DE DESPESA:
     if (parsed.num_parcelas) parsed.num_parcelas = Number(parsed.num_parcelas) || 0;
     if (parsed.intent) parsed.intent = String(parsed.intent).toLowerCase();
     
-    // Forçar Tipo de Despesa fixo: Móvel, Recorrente ou Parcelada
+    // Forçar Tipo de Despesa fixo
     const allowedTiposDespesa = ['Móvel', 'Recorrente', 'Parcelada'];
     if (parsed.intent === 'despesa') {
       if (!parsed.tipo_despesa || !allowedTiposDespesa.includes(parsed.tipo_despesa)) {
@@ -108,15 +105,14 @@ REGRAS PARA TIPO DE DESPESA:
       }
     }
 
-    // Forçar Tipo de Receita fixo: Salário, Empréstimo, Reembolso ou Freela
+    // Forçar Tipo de Receita fixo
     const allowedTiposReceita = ['Salário', 'Empréstimo', 'Reembolso', 'Freela'];
     if (parsed.intent === 'receita') {
       if (!parsed.tipo_receita || !allowedTiposReceita.includes(parsed.tipo_receita)) {
-        const tr = String(parsed.tipo_receita).toLowerCase();
+        const tr = String(parsed.tipo_receita || '').toLowerCase();
         if (tr.includes('salário') || tr.includes('pagamento') || tr.includes('empresa')) parsed.tipo_receita = 'Salário';
         else if (tr.includes('emprest') || tr.includes('banco')) parsed.tipo_receita = 'Empréstimo';
         else if (tr.includes('reembolso') || tr.includes('devolu')) parsed.tipo_receita = 'Reembolso';
-        else if (tr.includes('freela') || tr.includes('extra') || tr.includes('serviço')) parsed.tipo_receita = 'Freela';
         else parsed.tipo_receita = 'Freela';
       }
     }
@@ -129,26 +125,19 @@ REGRAS PARA TIPO DE DESPESA:
     ];
     if (parsed.intent === 'despesa') {
       if (!parsed.categoria || !allowedCategorias.includes(parsed.categoria)) {
-        const cat = String(parsed.categoria).toLowerCase();
-        if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante')) parsed.categoria = 'Alimentação';
-        else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus')) parsed.categoria = 'Transporte';
-        else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio')) parsed.categoria = 'Moradia';
+        const cat = String(parsed.categoria || '').toLowerCase();
+        if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante') || cat.includes('lanche') || cat.includes('comida')) parsed.categoria = 'Alimentação';
+        else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus') || cat.includes('transporte')) parsed.categoria = 'Transporte';
+        else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio') || cat.includes('energia')) parsed.categoria = 'Moradia';
         else if (cat.includes('médico') || cat.includes('farmácia') || cat.includes('remédio')) parsed.categoria = 'Saúde';
-        else if (cat.includes('cinema') || cat.includes('viagem') || cat.includes('show')) parsed.categoria = 'Lazer';
+        else if (cat.includes('cinema') || cat.includes('viagem') || cat.includes('show') || cat.includes('rolê')) parsed.categoria = 'Lazer';
         else if (cat.includes('internet') || cat.includes('celular') || cat.includes('telefone')) parsed.categoria = 'Comunicação';
         else if (cat.includes('roupa') || cat.includes('sapato')) parsed.categoria = 'Vestuário';
         else parsed.categoria = 'Outros';
       }
     }
 
-    // Forçar título curto e limpo
-    if (parsed.descricao) {
-      let d = parsed.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
-      d = d.split(' ').slice(0, 2).join(' ');
-      parsed.descricao = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
-    }
-
-    // Forçar Método de Pagamento fixo: Crédito, Pix, Débito, Dinheiro, Transferência
+    // Forçar Método de Pagamento fixo
     const allowedMetodos = ['Crédito', 'Pix', 'Débito', 'Dinheiro', 'Transferência'];
     if (parsed.intent === 'despesa') {
       if (!parsed.metodo_pagamento || !allowedMetodos.includes(parsed.metodo_pagamento)) {
@@ -157,9 +146,15 @@ REGRAS PARA TIPO DE DESPESA:
         else if (mp.includes('débito')) parsed.metodo_pagamento = 'Débito';
         else if (mp.includes('dinheiro') || mp.includes('espécie')) parsed.metodo_pagamento = 'Dinheiro';
         else if (mp.includes('transf') || mp.includes('ted') || mp.includes('doc')) parsed.metodo_pagamento = 'Transferência';
-        else if (mp.includes('crédito') || mp.includes('cartão')) parsed.metodo_pagamento = 'Crédito';
-        else parsed.metodo_pagamento = 'Crédito'; // Valor padrão
+        else parsed.metodo_pagamento = 'Crédito';
       }
+    }
+
+    // Forçar título curto
+    if (parsed.descricao) {
+      let d = parsed.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
+      d = d.split(' ').slice(0, 2).join(' ');
+      parsed.descricao = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
     }
     
     const tokensUsed = result.response.usageMetadata?.totalTokenCount || 0;
@@ -183,15 +178,13 @@ export async function generateFinancialAdvice(
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
   const dateBRT = brNow.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', day: '2-digit' });
 
-  const prompt = `Você é o Consultor Financeiro Estratégico do Hub Financeiro.
-Sua missão é dar uma análise REAL e DIRETA das finanças do usuário.
+  const prompt = `Você é o Consultor Financeiro Estratégico do Hub Financeiro. Sua missão é dar uma análise REAL e DIRETA das finanças.
 
 REGRAS DE RESPOSTA:
 - Se o usuário perguntar "Quanto gastei com [categoria/item]", analise as MOVIMENTAÇÕES DETALHADAS e dê o VALOR TOTAL somado.
-- NUNCA liste todas as transações uma por uma, a menos que o usuário peça explicitamente. Foque no resumo e no total.
-- VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e ARREDONDE para exatamente duas casas decimais (centavos).
+- NUNCA liste todas as transações uma por uma. Foque no resumo e no total arredondado.
+- VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e ARREDONDE para exatamente duas casas decimais.
 - Use EXATAMENTE 2 parágrafos pequenos (máximo 3 linhas cada).
-- Deve caber na tela de um celular sem que o usuário precise rolar muito.
 - Seja amigável, comece com "Oi ${firstName}! 😊" e use emojis.
 - PROIBIDO usar asteriscos (*) ou negritos (**).
 - Devolva APENAS a resposta final.

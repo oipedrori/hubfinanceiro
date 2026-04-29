@@ -232,7 +232,8 @@ export async function getCurrentMonthTransactions(
         
         return {
           descricao: row.properties['Descrição']?.title[0]?.plain_text || 'Sem descrição',
-          valor: valor
+          valor: valor,
+          categoria: row.properties['Categoria']?.select?.name || row.properties['Categoria']?.multi_select?.[0]?.name || 'Outros'
         };
       });
     } catch { return []; }
@@ -256,12 +257,26 @@ export async function getCurrentMonthTransactions(
 
   // Formata relatório para a IA
   let report = '';
+
+  // Adiciona resumo por categoria para facilitar para a IA
+  const resumoCategorias: Record<string, number> = {};
+  despesas.forEach(d => {
+    const cat = d.categoria || 'Outros';
+    resumoCategorias[cat] = (resumoCategorias[cat] || 0) + d.valor;
+  });
+
   if (despesas.length > 0) {
-    report += 'DESPESAS VINCULADAS A ESTE MÊS (incluindo parcelas e recorrentes):\n';
-    despesas.forEach(d => report += `- ${d.descricao}: R$${d.valor.toFixed(2)}\n`);
+    report += 'RESUMO DE GASTOS POR CATEGORIA NESTE MÊS:\n';
+    Object.entries(resumoCategorias).forEach(([cat, total]) => {
+      report += `- ${cat}: R$${total.toFixed(2)}\n`;
+    });
+    report += '\n';
+
+    report += 'MOVIMENTAÇÕES DETALHADAS (incluindo parcelas e recorrentes):\n';
+    despesas.forEach(d => report += `- ${d.descricao}: R$${d.valor.toFixed(2)} [Categoria: ${d.categoria}]\n`);
   }
   if (receitas.length > 0) {
-    report += 'RECEITAS VINCULADAS A ESTE MÊS:\n';
+    report += '\nRECEITAS VINCULADAS A ESTE MÊS:\n';
     receitas.forEach(r => report += `- ${r.descricao}: R$${r.valor.toFixed(2)}\n`);
   }
 
@@ -275,3 +290,88 @@ export async function getCurrentMonthTransactions(
     newReceitasDbId: !receitasDbId && rId ? rId : null
   };
 }
+
+/**
+ * Encontra a última movimentação (despesa ou receita) e a deleta (arquiva).
+ */
+export async function deleteLastTransaction(
+  clientAccessToken: string,
+  despesasDbId?: string | null,
+  receitasDbId?: string | null
+) {
+  const headers = {
+    'Authorization': `Bearer ${clientAccessToken}`,
+    'Notion-Version': '2022-06-28',
+    'Content-Type': 'application/json'
+  };
+
+  async function findDbId(name: string): Promise<string | null> {
+    try {
+      const res = await fetch('https://api.notion.com/v1/search', {
+        method: 'POST', headers,
+        body: JSON.stringify({ query: name, filter: { value: 'database', property: 'object' } })
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.results.length > 0 ? data.results[0].id : null;
+    } catch { return null; }
+  }
+
+  const [dId, rId] = await Promise.all([
+    despesasDbId || findDbId('Despesas'),
+    receitasDbId || findDbId('Receitas')
+  ]);
+
+  // Busca a mais recente de cada um
+  async function getLatest(dbId: string): Promise<any | null> {
+    try {
+      const res = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ 
+          page_size: 1, 
+          sorts: [{ timestamp: 'created_time', direction: 'descending' }] 
+        })
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.results[0] || null;
+    } catch { return null; }
+  }
+
+  const [lastD, lastR] = await Promise.all([
+    dId ? getLatest(dId) : Promise.resolve(null),
+    rId ? getLatest(rId) : Promise.resolve(null)
+  ]);
+
+  if (!lastD && !lastR) {
+    throw new Error("Não encontrei nenhuma movimentação recente para deletar.");
+  }
+
+  // Compara qual é a mais recente de fato
+  let targetPage: any = null;
+  if (lastD && lastR) {
+    const timeD = new Date(lastD.created_time).getTime();
+    const timeR = new Date(lastR.created_time).getTime();
+    targetPage = timeD > timeR ? lastD : lastR;
+  } else {
+    targetPage = lastD || lastR;
+  }
+
+  const desc = targetPage.properties['Descrição']?.title[0]?.plain_text || 'Sem descrição';
+  const valor = targetPage.properties['Valor']?.number || 0;
+
+  // Arquiva a página
+  const delRes = await fetch(`https://api.notion.com/v1/pages/${targetPage.id}`, {
+    method: 'PATCH', headers,
+    body: JSON.stringify({ archived: true })
+  });
+
+  if (!delRes.ok) throw new Error("Falha ao deletar a página no Notion.");
+
+  return { 
+    descricao: desc, 
+    valor, 
+    tipo: targetPage.parent.database_id === dId ? 'despesa' : 'receita' 
+  };
+}
+
