@@ -62,6 +62,10 @@ REGRAS PARA RECEITA:
 REGRAS PARA CATEGORIA:
 - Use APENAS: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimentos, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Higiene Pessoal, Outros.
 
+REGRAS PARA MÉTODO DE PAGAMENTO:
+- Use APENAS: Crédito, Pix, Débito, Dinheiro, Transferência.
+- VALOR PADRÃO: Se o usuário não mencionar, use "Crédito".
+
 REGRAS PARA TIPO DE DESPESA:
 - "Recorrente": Quando o usuário diz que gasta "todo mês", "sempre", ou é uma conta fixa (ex: luz, aluguel).
 - "Parcelada": Quando o usuário menciona parcelas (ex: "em 3x", "4 vezes"). O campo "num_parcelas" deve capturar o número total.
@@ -135,6 +139,20 @@ REGRAS PARA TIPO DE DESPESA:
       let d = parsed.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
       d = d.split(' ').slice(0, 2).join(' ');
       parsed.descricao = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
+    }
+
+    // Forçar Método de Pagamento fixo: Crédito, Pix, Débito, Dinheiro, Transferência
+    const allowedMetodos = ['Crédito', 'Pix', 'Débito', 'Dinheiro', 'Transferência'];
+    if (parsed.intent === 'despesa') {
+      if (!parsed.metodo_pagamento || !allowedMetodos.includes(parsed.metodo_pagamento)) {
+        const mp = String(parsed.metodo_pagamento || '').toLowerCase();
+        if (mp.includes('pix')) parsed.metodo_pagamento = 'Pix';
+        else if (mp.includes('débito')) parsed.metodo_pagamento = 'Débito';
+        else if (mp.includes('dinheiro') || mp.includes('espécie')) parsed.metodo_pagamento = 'Dinheiro';
+        else if (mp.includes('transf') || mp.includes('ted') || mp.includes('doc')) parsed.metodo_pagamento = 'Transferência';
+        else if (mp.includes('crédito') || mp.includes('cartão')) parsed.metodo_pagamento = 'Crédito';
+        else parsed.metodo_pagamento = 'Crédito'; // Valor padrão
+      }
     }
     
     const tokensUsed = result.response.usageMetadata?.totalTokenCount || 0;
