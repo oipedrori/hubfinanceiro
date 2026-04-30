@@ -45,31 +45,23 @@ export async function parseFinancialText(text: string) {
 
 HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
-Retorne o JSON:
-- DESPESA: {"intent": "despesa", "descricao", "valor", "data", "tipo_despesa", "metodo_pagamento", "categoria", "num_parcelas"}
-- RECEITA: {"intent": "receita", "descricao", "valor", "data", "tipo_receita"}
-- CONSULTA: {"intent": "consulta", "pergunta"}
-- DELETAR: {"intent": "deletar_ultimo"}
+EXEMPLOS:
+- "Gastei 20 no cafe": {"intent": "despesa", "itens": [{"descricao": "Cafe", "valor": 20, ...}]}
+- "Gastei 10 no pao e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Pao", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
+- "Quanto gastei este mes?": {"intent": "consulta", "pergunta": "Quanto gastei este mes?"}
+- "Posso comprar um fone de 200?": {"intent": "decisao_compra", "descricao_item": "fone", "valor_item": 200}
 
-REGRAS DE INTENÇÃO:
-- Se o usuário pedir para apagar/deletar a última ação ou movimentação, use "intent": "deletar_ultimo".
-- Se o usuário perguntar algo (ex: "Quanto gastei...", "Como está meu saldo?"), use "intent": "consulta".
-- NUNCA use "despesa" ou "receita" se faltar o VALOR ou a DESCRIÇÃO. Nesse caso, retorne um JSON com {"error": "mensagem amigável pedindo os dados faltantes"}.
+REGRAS DE INTENÇÃO (CRÍTICO):
+- Se o usuário disse "Gastei", "Paguei", "Comprei", "Recebi" seguido de valores, use "intent": "despesa" ou "receita".
+- Use "intent": "consulta" APENAS se houver uma PERGUNTA clara.
+- Se o usuário perguntar se "pode comprar" algo, use "intent": "decisao_compra".
+- NUNCA use "despesa" ou "receita" se faltar o VALOR ou a DESCRIÇÃO de algum item. Retorne {"error": "..."}.
 
-REGRAS PARA DESCRIÇÃO:
-- A "descricao" deve ser um título PADRONIZADO, curto (1-2 palavras) e Capitalizado.
-
-REGRAS PARA RECEITA:
-- Use APENAS: "Salário", "Empréstimo", "Reembolso" ou "Freela".
-
-REGRAS PARA CATEGORIA:
-- Use APENAS: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimentos, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Higiene Pessoal, Outros.
-
-REGRAS PARA MÉTODO DE PAGAMENTO:
-- Use APENAS: Crédito, Pix, Débito, Dinheiro, Transferência. Valor padrão: "Crédito".
-
-REGRAS PARA TIPO DE DESPESA:
-- Use APENAS: "Móvel", "Recorrente" (contas fixas/todo mês) ou "Parcelada" (compras divididas).`;
+REGRAS PARA ITENS:
+- "descricao": Título PADRONIZADO, curto (1-2 palavras) e Capitalizado.
+- "valor": Número puro (ex: 50.50).
+- "categoria": Apenas as permitidas (Alimentação, Transporte, Moradia, Lazer, Saúde, Vestuário, Outros).
+- "metodo_pagamento": Crédito, Pix, Débito, Dinheiro, Transferência. Default: "Crédito".`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -82,79 +74,91 @@ REGRAS PARA TIPO DE DESPESA:
       throw new Error("Não encontrei JSON válido na resposta da IA.");
     }
 
-    const topLevelKey = Object.keys(parsed).find(k => ["DESPESA", "RECEITA", "CONSULTA", "DELETAR", "despesa", "receita", "consulta", "deletar_ultimo"].includes(k));
+    const topLevelKey = Object.keys(parsed).find(k => ["DESPESA", "RECEITA", "CONSULTA", "DELETAR", "DECISAO", "despesa", "receita", "consulta", "deletar_ultimo", "decisao_compra"].includes(k));
     if (topLevelKey) parsed = parsed[topLevelKey];
 
     if (parsed.error) return parsed;
-
-    // Normalização de tipos e limpeza
-    if (parsed.valor) {
-      const v = Number(String(parsed.valor).replace(/[^\d.]/g, ''));
-      parsed.valor = Number(v.toFixed(2));
-    }
-    if (parsed.num_parcelas) parsed.num_parcelas = Number(parsed.num_parcelas) || 0;
     if (parsed.intent) parsed.intent = String(parsed.intent).toLowerCase();
-    
-    // Forçar Tipo de Despesa fixo
-    const allowedTiposDespesa = ['Móvel', 'Recorrente', 'Parcelada'];
-    if (parsed.intent === 'despesa') {
-      if (!parsed.tipo_despesa || !allowedTiposDespesa.includes(parsed.tipo_despesa)) {
-        if (String(parsed.tipo_despesa).toLowerCase().includes('parcel') || (parsed.num_parcelas && parsed.num_parcelas > 1)) parsed.tipo_despesa = 'Parcelada';
-        else if (String(parsed.tipo_despesa).toLowerCase().includes('recorr') || String(parsed.tipo_despesa).toLowerCase().includes('fixa')) parsed.tipo_despesa = 'Recorrente';
-        else parsed.tipo_despesa = 'Móvel';
-      }
-    }
 
-    // Forçar Tipo de Receita fixo
-    const allowedTiposReceita = ['Salário', 'Empréstimo', 'Reembolso', 'Freela'];
-    if (parsed.intent === 'receita') {
-      if (!parsed.tipo_receita || !allowedTiposReceita.includes(parsed.tipo_receita)) {
-        const tr = String(parsed.tipo_receita || '').toLowerCase();
-        if (tr.includes('salário') || tr.includes('pagamento') || tr.includes('empresa')) parsed.tipo_receita = 'Salário';
-        else if (tr.includes('emprest') || tr.includes('banco')) parsed.tipo_receita = 'Empréstimo';
-        else if (tr.includes('reembolso') || tr.includes('devolu')) parsed.tipo_receita = 'Reembolso';
-        else parsed.tipo_receita = 'Freela';
-      }
-    }
+    // Normalização para itens múltiplos ou item único (legado)
+    const normalizeItem = (item: any, intent: string) => {
+      // Data default
+      if (!item.data) item.data = dateBRT;
 
-    // Forçar Categorias fixas
-    const allowedCategorias = [
-      'Alimentação', 'Comunicação', 'Doação', 'Educação', 'Equipamentos', 
-      'Impostos', 'Investimentos', 'Lazer', 'Moradia', 'Pet', 
-      'Saúde', 'Seguro', 'Transporte', 'Vestuário', 'Higiene Pessoal', 'Outros'
-    ];
-    if (parsed.intent === 'despesa') {
-      if (!parsed.categoria || !allowedCategorias.includes(parsed.categoria)) {
-        const cat = String(parsed.categoria || '').toLowerCase();
-        if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante') || cat.includes('lanche') || cat.includes('comida')) parsed.categoria = 'Alimentação';
-        else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus') || cat.includes('transporte')) parsed.categoria = 'Transporte';
-        else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio') || cat.includes('energia')) parsed.categoria = 'Moradia';
-        else if (cat.includes('médico') || cat.includes('farmácia') || cat.includes('remédio')) parsed.categoria = 'Saúde';
-        else if (cat.includes('cinema') || cat.includes('viagem') || cat.includes('show') || cat.includes('rolê')) parsed.categoria = 'Lazer';
-        else if (cat.includes('internet') || cat.includes('celular') || cat.includes('telefone')) parsed.categoria = 'Comunicação';
-        else if (cat.includes('roupa') || cat.includes('sapato')) parsed.categoria = 'Vestuário';
-        else parsed.categoria = 'Outros';
+      // Valor
+      if (item.valor) {
+        const v = Number(String(item.valor).replace(/[^\d.]/g, ''));
+        item.valor = Number(v.toFixed(2));
       }
-    }
+      if (item.num_parcelas) item.num_parcelas = Number(item.num_parcelas) || 0;
 
-    // Forçar Método de Pagamento fixo
-    const allowedMetodos = ['Crédito', 'Pix', 'Débito', 'Dinheiro', 'Transferência'];
-    if (parsed.intent === 'despesa') {
-      if (!parsed.metodo_pagamento || !allowedMetodos.includes(parsed.metodo_pagamento)) {
-        const mp = String(parsed.metodo_pagamento || '').toLowerCase();
-        if (mp.includes('pix')) parsed.metodo_pagamento = 'Pix';
-        else if (mp.includes('débito')) parsed.metodo_pagamento = 'Débito';
-        else if (mp.includes('dinheiro') || mp.includes('espécie')) parsed.metodo_pagamento = 'Dinheiro';
-        else if (mp.includes('transf') || mp.includes('ted') || mp.includes('doc')) parsed.metodo_pagamento = 'Transferência';
-        else parsed.metodo_pagamento = 'Crédito';
+      // Descrição curta
+      if (item.descricao) {
+        let d = item.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
+        d = d.split(' ').slice(0, 2).join(' ');
+        item.descricao = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
       }
-    }
 
-    // Forçar título curto
-    if (parsed.descricao) {
-      let d = parsed.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
-      d = d.split(' ').slice(0, 2).join(' ');
-      parsed.descricao = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
+      // Tipo de Despesa
+      const allowedTiposDespesa = ['Móvel', 'Recorrente', 'Parcelada'];
+      if (intent === 'despesa') {
+        if (!item.tipo_despesa || !allowedTiposDespesa.includes(item.tipo_despesa)) {
+          const td = String(item.tipo_despesa || '').toLowerCase();
+          if (td.includes('parcel') || (item.num_parcelas && item.num_parcelas > 1)) item.tipo_despesa = 'Parcelada';
+          else if (td.includes('recorr') || td.includes('fixa')) item.tipo_despesa = 'Recorrente';
+          else item.tipo_despesa = 'Móvel';
+        }
+      }
+
+      // Tipo de Receita
+      const allowedTiposReceita = ['Salário', 'Empréstimo', 'Reembolso', 'Freela'];
+      if (intent === 'receita') {
+        if (!item.tipo_receita || !allowedTiposReceita.includes(item.tipo_receita)) {
+          const tr = String(item.tipo_receita || '').toLowerCase();
+          if (tr.includes('salário') || tr.includes('pagamento') || tr.includes('empresa')) item.tipo_receita = 'Salário';
+          else if (tr.includes('emprest') || tr.includes('banco')) item.tipo_receita = 'Empréstimo';
+          else if (tr.includes('reembolso') || tr.includes('devolu')) item.tipo_receita = 'Reembolso';
+          else item.tipo_receita = 'Freela';
+        }
+      }
+
+      // Categoria
+      const allowedCategorias = ['Alimentação', 'Comunicação', 'Doação', 'Educação', 'Equipamentos', 'Impostos', 'Investimentos', 'Lazer', 'Moradia', 'Pet', 'Saúde', 'Seguro', 'Transporte', 'Vestuário', 'Higiene Pessoal', 'Outros'];
+      if (intent === 'despesa') {
+        if (!item.categoria || !allowedCategorias.includes(item.categoria)) {
+          const cat = String(item.categoria || '').toLowerCase();
+          if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante') || cat.includes('lanche') || cat.includes('comida')) item.categoria = 'Alimentação';
+          else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus') || cat.includes('transporte')) item.categoria = 'Transporte';
+          else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio') || cat.includes('energia')) item.categoria = 'Moradia';
+          else if (cat.includes('médico') || cat.includes('farmácia') || cat.includes('remédio')) item.categoria = 'Saúde';
+          else if (cat.includes('cinema') || cat.includes('viagem') || cat.includes('show') || cat.includes('rolê')) item.categoria = 'Lazer';
+          else if (cat.includes('internet') || cat.includes('celular') || cat.includes('telefone')) item.categoria = 'Comunicação';
+          else if (cat.includes('roupa') || cat.includes('sapato')) item.categoria = 'Vestuário';
+          else item.categoria = 'Outros';
+        }
+      }
+
+      // Método de Pagamento
+      const allowedMetodos = ['Crédito', 'Pix', 'Débito', 'Dinheiro', 'Transferência'];
+      if (intent === 'despesa') {
+        if (!item.metodo_pagamento || !allowedMetodos.includes(item.metodo_pagamento)) {
+          const mp = String(item.metodo_pagamento || '').toLowerCase();
+          if (mp.includes('pix')) item.metodo_pagamento = 'Pix';
+          else if (mp.includes('débito')) item.metodo_pagamento = 'Débito';
+          else if (mp.includes('dinheiro') || mp.includes('espécie')) item.metodo_pagamento = 'Dinheiro';
+          else if (mp.includes('transf') || mp.includes('ted') || mp.includes('doc')) item.metodo_pagamento = 'Transferência';
+          else item.metodo_pagamento = 'Crédito';
+        }
+      }
+      return item;
+    };
+
+    if (parsed.itens && Array.isArray(parsed.itens)) {
+      parsed.itens = parsed.itens.map((i: any) => normalizeItem(i, parsed.intent));
+    } else if (parsed.descricao || parsed.valor) {
+      // Suporte a formato antigo se o E2B falhar no array
+      const normalized = normalizeItem(parsed, parsed.intent);
+      parsed.itens = [normalized];
     }
     
     const tokensUsed = result.response.usageMetadata?.totalTokenCount || 0;
@@ -181,6 +185,8 @@ export async function generateFinancialAdvice(
   const prompt = `Você é o Consultor Financeiro Estratégico do Hub Financeiro. Sua missão é dar uma análise REAL e DIRETA das finanças.
 
 REGRAS DE RESPOSTA:
+- Se a intenção for "decisao_compra", avalie se o usuário pode gastar o valor solicitado baseado no saldo atual e nos gastos recorrentes que ainda podem vir. Seja sincero (ex: "Sim, você tem margem" ou "Melhor não, seu saldo está apertado para o dia ${now.getDate()}").
+- "TERMÔMETRO FINANCEIRO" (Burn Rate): Em consultas gerais, mencione se o ritmo de gastos está adequado para o dia ${now.getDate()} do mês.
 - Se o usuário perguntar "Quanto gastei com [categoria/item]", analise as MOVIMENTAÇÕES DETALHADAS e dê o VALOR TOTAL somado.
 - NUNCA liste todas as transações uma por uma. Foque no resumo e no total arredondado.
 - VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e ARREDONDE para exatamente duas casas decimais.
@@ -190,13 +196,13 @@ REGRAS DE RESPOSTA:
 - Devolva APENAS a resposta final.
 
 CONTEXTO:
-Data: ${dateBRT}.
+Data: ${dateBRT} (Dia ${now.getDate()}).
 STATUS ATUAL: ${JSON.stringify(currentMonthDetails || {})}
 HISTÓRICO MENSAL: ${balancetesData}
 MOVIMENTAÇÕES DETALHADAS:
 ${transacoesReport}
 
-Pergunta do Usuário: "${pergunta}"`;
+Pergunta/Ação do Usuário: "${pergunta}"`;
 
   try {
     const result = await model.generateContent(prompt);

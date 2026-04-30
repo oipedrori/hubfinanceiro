@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getCustomerBySecretKey, updateCustomerDbIds, logTokenUsage } from '@/lib/firebaseAdmin';
 import { parseFinancialText, generateFinancialAdvice } from '@/lib/gemini';
-import { addTransactionToClientNotion, getBalancetesData, getCurrentMonthTransactions, deleteLastTransaction } from '@/lib/notionClient';
+import { 
+  addTransactionToClientNotion, 
+  getBalancetesData, 
+  getCurrentMonthTransactions, 
+  deleteLastTransaction 
+} from '@/lib/notionClient';
 
 // ── Detector de SALDO: resposta fixa sem IA ──
 function isSaldoQuery(text: string): boolean {
@@ -19,131 +24,86 @@ function isSaldoQuery(text: string): boolean {
 }
 
 // ── Pré-classificador local: detecta consultas SEM gastar tokens ──
-// Conservador por design: só retorna true quando é claramente uma pergunta.
-// Se tiver dúvida, retorna false e o Gemini classifica normalmente.
 function isLikelyConsulta(text: string): boolean {
   const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-
-  // Padrões fortes de consulta financeira (saldo/balancete tratados separadamente)
   const consultaPatterns = [
     /como\s+(estao|esta|ta|anda|andam|vao)/,
     /quanto\s+(gastei|ganhei|sobrou|falta|tenho|devo)/,
-    /me\s+(da|de|faz)\s+(um|uma)\s+(resumo|conselho|dica|analise)/,
-    /minhas?\s+(situacao|financas|financ|contas?)/,
-    /meus?\s+(gastos?|financ)/,
-    /(conselho|dica|sugestao|recomendacao)\s*(financ)?/,
-    /(resumo|analise|relatorio)\s+(financ|do\s+mes|mensal)/,
-    /estou\s+(gastando|economizando|devendo|perdendo|ganhando)/,
-    /posso\s+(gastar|economizar|investir)/,
-    /como\s+(economizar|investir|melhorar|reduzir|organizar)/,
-    /o\s+que\s+(voce\s+)?acha/,
-    /fechamento\s+do\s+mes/,
-    /como\s+(anda|vai)\s+meu/,
+    /qual\s+(foi|e|o)\s+(meu|meus|o|os)\s+(gasto|gastos|rendimento|rendimentos)/,
+    /analise/,
+    /resumo/,
+    /balanco/,
+    /dicas/,
+    /conselho/,
+    /ajuda/
   ];
-
-  if (consultaPatterns.some(p => p.test(lower))) return true;
-
-  // Texto com "?" e SEM valores monetários → provavelmente uma pergunta
-  if (lower.includes('?')) {
-    const hasMoneyValue = /\d+[\.,]?\d*\s*(reais|real|conto|mil)|\br?\$\s*\d/i.test(lower);
-    if (!hasMoneyValue) return true;
-  }
-
-  return false;
+  return consultaPatterns.some(p => p.test(lower));
 }
 
-// Esta é a porta de entrada. Quando o iOS mandar o áudio, ele vai bater nesta URL usando o método POST
 export async function POST(request: Request) {
   try {
-    // 1. Abrimos a "carta" (JSON) que o celular enviou
-    const body = await request.json();
-    const { secretKey, text } = body;
+    const { secretKey, text } = await request.json();
 
-    // Verificações de segurança básicas
-    if (!secretKey) return NextResponse.json({ error: 'Falta a Chave do Hub Financeiro (Acesso Negado)' }, { status: 400 });
-    if (!text) return NextResponse.json({ error: 'Nenhum texto enviado para processamento.' }, { status: 400 });
-
-    // 2. Batemos na sua Tabela Mestre do Notion para checar quem é a pessoa
-    const customer = await getCustomerBySecretKey(secretKey);
-
-    if (!customer) {
-      return NextResponse.json({ error: 'Chave não encontrada na Base Mestra do Hub Financeiro.' }, { status: 401 });
+    if (!secretKey || !text) {
+      return NextResponse.json({ success: false, message: 'Dados insuficientes.' }, { status: 400 });
     }
 
-    // Se estiver desativado no Checkbox...
-    if (customer.status === 'blocked') {
-      return NextResponse.json({ 
-        success: false,
-        message: `Sua conta do Hub Financeiro não está ativa no momento. 
-\nPor favor, acesse o site oficial (hubfinanceiro.com.br) para verificar sua assinatura e ativar sua conta novamente. 🚀`
-      }, { status: 200 }); // Retornamos 200 para que o iOS fale a mensagem ao invés de dar erro genérico
+    const customerRes = await getCustomerBySecretKey(secretKey);
+    if (!customerRes || customerRes.status === 'blocked') {
+      return NextResponse.json({ success: false, message: customerRes?.reason || 'Chave de acesso inválida ou bloqueada.' }, { status: 403 });
     }
 
-    // 3. O cliente é válido e ativo! 
     const { 
-      name, notionAccessToken, workspaceId, 
-      despesasDbId, receitasDbId, balancetesDbId, pageId 
-    } = customer.data!;
-    
-    if (!notionAccessToken || !workspaceId) {
-       return NextResponse.json({ error: 'O cadastro do cliente está incompleto (Falta URL ou Token Notion).' }, { status: 400 });
-    }
+      notionAccessToken, 
+      workspaceId, 
+      name, 
+      pageId,
+      balancetesId: cachedBalancetesId,
+      despesasId: cachedDespesasId,
+      receitasId: cachedReceitasId
+    } = customerRes.data;
 
-    console.log(`📡 Processando áudio do cliente: ${name}`);
+    let balancetesDbId = cachedBalancetesId;
+    let despesasDbId = cachedDespesasId;
+    let receitasDbId = cachedReceitasId;
+    let totalTokens = 0;
     const firstName = name.split(' ')[0];
 
-    // Acumulador de tokens consumidos nesta requisição
-    let totalTokens = 0;
+    console.log(`📡 Processando comando de: ${name}`);
 
-    // ── COMANDO DE SALDO: resposta instantânea sem IA ──
+    // ── FLUXO DE SALDO (Atalho Zero-Token) ──
     if (isSaldoQuery(text)) {
-      console.log(`📊 Comando de saldo detectado para ${name}. Sem IA.`);
+      console.log(`⚡ Atalho de SALDO ativado para ${name}.`);
+      const { currentMonth } = await getBalancetesData(notionAccessToken, balancetesDbId);
       
-      const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
-      
-      if (balancetesResult.newDbId && pageId) {
-        updateCustomerDbIds(pageId, { balancetesId: balancetesResult.newDbId }); // fire-and-forget
+      if (!currentMonth) {
+        return NextResponse.json({ 
+          success: true, 
+          message: `Oi ${firstName}! Não encontrei seu balancete deste mês no Notion ainda. Verifique se ele foi criado.` 
+        });
       }
 
+      const { entradas, saidas, resultado } = currentMonth;
       const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
-      let message: string;
-
-      if (balancetesResult.currentMonth) {
-        const { entradas, saidas, resultado } = balancetesResult.currentMonth;
-        const pctGasto = entradas > 0 ? Math.round((saidas / entradas) * 100) : 0;
-
-        message = `Oi, ${firstName}! 📋\n\n🟢 Receitas: ${fmt(entradas)}\n🔴 Despesas: ${fmt(saidas)}\n💰 Saldo: ${fmt(resultado)}\n\n📊 ${pctGasto}% da receita já foi gasto`;
-      } else {
-        message = `Oi, ${firstName}! 📋\n\nAinda não há dados de balancete registrados para este mês. Registre suas movimentações e o saldo será calculado automaticamente no seu Notion. 🚀`;
-      }
-
-      // Registra 0 tokens (não usou IA)
-      if (pageId) logTokenUsage(pageId, 0);
-
-      return NextResponse.json({ success: true, message }, { status: 200 });
+      
+      const msg = `💰 *Seu Status Atual*\n\n📈 Entradas: ${fmt(entradas)}\n📉 Saídas: ${fmt(saidas)}\n⚖️ Saldo: ${fmt(resultado)}\n\nO que mais deseja saber?`;
+      
+      return NextResponse.json({ success: true, message: msg });
     }
 
-    // ── ATALHO: Pré-classificação local para consultas ──
-    // Se o texto parece claramente uma pergunta, pulamos direto pro conselheiro (1 chamada ao invés de 2)
+    // ── PRÉ-CLASSIFICADOR: Atalho para consultas óbvias ──
     if (isLikelyConsulta(text)) {
-      console.log(`⚡ Atalho ativado: texto detectado como consulta localmente. Pulando classificação.`);
+      console.log(`⚡ Atalho de CONSULTA ativado localmente.`);
       
       const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
       let transacoesReport = 'Não foi possível encontrar movimentações detalhadas para este mês.';
       
       if (balancetesResult.currentMonth) {
         const monthInfo = balancetesResult.currentMonth as any;
-        const transacoesResult = await getCurrentMonthTransactions(
-          notionAccessToken, 
-          monthInfo.pageId, 
-          despesasDbId, 
-          receitasDbId
-        );
+        const transacoesResult = await getCurrentMonthTransactions(notionAccessToken, monthInfo.pageId, despesasDbId, receitasDbId);
         transacoesReport = transacoesResult.report;
-        console.log('📄 Relatório Enviado à IA (Atalho):', transacoesReport);
 
-        // Cacheia IDs descobertos (fire-and-forget)
+        // Cacheia IDs
         if (pageId) {
           const idsToCache: any = {};
           if (balancetesResult.newDbId) idsToCache.balancetesId = balancetesResult.newDbId;
@@ -153,19 +113,11 @@ export async function POST(request: Request) {
         }
       }
 
-      const adviceResult = await generateFinancialAdvice(
-        text, 
-        balancetesResult.data, 
-        transacoesReport, 
-        firstName, 
-        balancetesResult.currentMonth
-      );
+      const adviceResult = await generateFinancialAdvice(text, balancetesResult.data, transacoesReport, firstName, balancetesResult.currentMonth);
       totalTokens += adviceResult.tokensUsed || 0;
 
-      console.log('💬 Resposta do Consultor gerada com sucesso (via atalho).');
       if (pageId) logTokenUsage(pageId, totalTokens);
-
-      return NextResponse.json({ success: true, message: adviceResult.text }, { status: 200 });
+      return NextResponse.json({ success: true, message: adviceResult.text });
     }
 
     // ── FLUXO NORMAL: Gemini classifica o texto ──
@@ -173,118 +125,68 @@ export async function POST(request: Request) {
     console.log('🤖 Resultado da Classificação:', JSON.stringify(aiResult, null, 2));
     totalTokens += aiResult._tokensUsed || 0;
 
-    // Caso a IA identifique que faltam dados (regra de validação)
     if (aiResult.error) {
-      return NextResponse.json({ success: false, message: aiResult.error }, { status: 200 });
+      return NextResponse.json({ success: false, message: aiResult.error });
     }
 
-    // Caso o usuário queira deletar a última ação
+    // Caso de DELETAR
     if (aiResult.intent === 'deletar_ultimo') {
-      console.log(`🗑️ Pedido para deletar última movimentação de ${name}...`);
+      console.log(`🗑️ Deletando última movimentação de ${name}...`);
       const delResult = await deleteLastTransaction(notionAccessToken, despesasDbId, receitasDbId);
-      
       const valFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(delResult.valor);
-      const msg = `🗑️ Entendido, ${firstName}. Apaguei o último registro:
-\n📝 O que era: ${delResult.descricao}
-💰 Valor: ${valFmt}
-🏷️ Tipo: ${delResult.tipo === 'despesa' ? 'Despesa' : 'Receita'}
-\nJá está removido do seu Notion. ✅`;
-
+      const msg = `🗑️ Registro removido: ${delResult.descricao} (${valFmt}). ✅`;
       if (pageId) logTokenUsage(pageId, totalTokens);
-      return NextResponse.json({ success: true, message: msg }, { status: 200 });
+      return NextResponse.json({ success: true, message: msg });
     }
 
-    // Caso o classificador detecte uma consulta que o atalho não pegou
-    if (aiResult.intent === 'consulta') {
-      console.log(`🤖 Consulta detectada pelo Gemini. Resgatando dados de ${name}...`);
+    // Caso de CONSULTA ou DECISÃO DE COMPRA
+    if (aiResult.intent === 'consulta' || aiResult.intent === 'decisao_compra') {
+      const isDecisao = aiResult.intent === 'decisao_compra';
+      console.log(`🤖 ${isDecisao ? 'Decisão' : 'Consulta'} por Gemini.`);
       
       const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
-      let transacoesReport = 'Não foi possível encontrar movimentações detalhadas para este mês.';
+      let transacoesReport = 'Sem movimentações detalhadas.';
 
       if (balancetesResult.currentMonth) {
         const monthInfo = balancetesResult.currentMonth as any;
-        const transacoesResult = await getCurrentMonthTransactions(
-          notionAccessToken, 
-          monthInfo.pageId, 
-          despesasDbId, 
-          receitasDbId
-        );
+        const transacoesResult = await getCurrentMonthTransactions(notionAccessToken, monthInfo.pageId, despesasDbId, receitasDbId);
         transacoesReport = transacoesResult.report;
-        console.log('📄 Relatório Enviado à IA:', transacoesReport);
-
-        if (pageId) {
-          const idsToCache: any = {};
-          if (balancetesResult.newDbId) idsToCache.balancetesId = balancetesResult.newDbId;
-          if (transacoesResult.newDespesasDbId) idsToCache.despesasId = transacoesResult.newDespesasDbId;
-          if (transacoesResult.newReceitasDbId) idsToCache.receitasId = transacoesResult.newReceitasDbId;
-          if (Object.keys(idsToCache).length > 0) updateCustomerDbIds(pageId, idsToCache);
-        }
       }
       
-      console.log('🗣️ Pedindo conselho ao Consultor (Gemini)...');
-      const adviceResult = await generateFinancialAdvice(
-        aiResult.pergunta, 
-        balancetesResult.data, 
-        transacoesReport, 
-        firstName, 
-        balancetesResult.currentMonth
-      );
+      const pergunta = isDecisao ? `Posso comprar ${aiResult.descricao_item} por R$${aiResult.valor_item}?` : (aiResult.pergunta || text);
+      const adviceResult = await generateFinancialAdvice(pergunta, balancetesResult.data, transacoesReport, firstName, balancetesResult.currentMonth);
       totalTokens += adviceResult.tokensUsed || 0;
       
-      console.log('💬 Resposta do Consultor gerada com sucesso.');
       if (pageId) logTokenUsage(pageId, totalTokens);
-
-      return NextResponse.json({ success: true, message: adviceResult.text }, { status: 200 });
+      return NextResponse.json({ success: true, message: adviceResult.text });
     }
 
-    console.log(`🤖 Gemini classificou como ${aiResult.intent}. Inserindo no Notion de ${name}...`);
-
-    // 4. Entregamos os números e datas organizados para a "gaveta" privada de Despesas ou Receitas desse cliente
+    // Caso de LANÇAMENTO (Pode ser múltiplo)
+    console.log(`🤖 Lançamento (${aiResult.intent}) detectado.`);
+    let successCount = 0;
+    let lastSummary = '';
     const isDespesa = aiResult.intent === 'despesa';
-    const cachedId = isDespesa ? despesasDbId : receitasDbId;
-    
-    const { newDbId } = await addTransactionToClientNotion(notionAccessToken, workspaceId, aiResult, cachedId);
 
-    // Salva no cache se for a primeira vez
-    if (newDbId && pageId) {
-      if (isDespesa) await updateCustomerDbIds(pageId, { despesasId: newDbId });
-      else await updateCustomerDbIds(pageId, { receitasId: newDbId });
+    for (const item of (aiResult.itens || [])) {
+      const cachedId = isDespesa ? despesasDbId : receitasDbId;
+      const { newDbId } = await addTransactionToClientNotion(notionAccessToken, workspaceId, item, cachedId, aiResult.intent);
+      
+      if (newDbId && pageId && successCount === 0) {
+        if (isDespesa) { await updateCustomerDbIds(pageId, { despesasId: newDbId }); despesasDbId = newDbId; }
+        else { await updateCustomerDbIds(pageId, { receitasId: newDbId }); receitasDbId = newDbId; }
+      }
+
+      const valFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor);
+      lastSummary += `\n✅ ${item.descricao}: ${valFmt}`;
+      successCount++;
     }
 
-    // 5. Gerar Resposta Humanizada
-    let responseMessage = "";
-    const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(aiResult.valor);
-
-    if (aiResult.intent === 'despesa') {
-      responseMessage = `✅ Tudo pronto, ${firstName}. Lançamento realizado.
-\n📝 O que foi: ${aiResult.descricao}
-💰 Valor: ${valorFormatado}
-🏷️ Categoria: ${aiResult.categoria}
-💳 Pagamento: ${aiResult.metodo_pagamento}
-\nJá deixei tudo organizado no seu Notion. 🚀`;
-    } else if (aiResult.intent === 'receita') {
-      responseMessage = `✅ Confirmado, ${firstName}. Receita registrada.
-\n💰 Entrada: ${aiResult.descricao}
-📈 Valor: ${valorFormatado}
-🏷️ Tipo: ${aiResult.tipo_receita}
-\nSeu relatório financeiro já foi atualizado no Notion. 🚀`;
-    } else {
-      responseMessage = `✅ Certinho, ${firstName}. Tudo anotado por aqui.`;
-    }
-
-    // Registra tokens consumidos (fire-and-forget)
+    const responseMessage = `✅ Tudo pronto! Lancei ${successCount} item(s):${lastSummary}\n\nOrganizado no seu Notion. 🚀`;
     if (pageId) logTokenUsage(pageId, totalTokens);
+    return NextResponse.json({ success: true, message: responseMessage });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: responseMessage 
-    }, { status: 200 });
-
-  } catch (error: any) {
-    console.error("Erro Crítico no /api/process:", error);
-    return NextResponse.json({ 
-      success: false, 
-      message: `Ops! Tive um problema técnico: ${error.message || 'Erro interno no servidor'}. Verifique se o seu Notion está conectado e compartilhado corretamente.` 
-    }, { status: 200 }); // Status 200 para que o iOS atalho leia a mensagem de erro
+  } catch (err: any) {
+    console.error('❌ Erro no processamento:', err);
+    return NextResponse.json({ success: false, message: 'Ops! Tive um problema técnico. Tente novamente em breve.' }, { status: 500 });
   }
 }

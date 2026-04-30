@@ -1,5 +1,5 @@
-export async function addTransactionToClientNotion(clientAccessToken: string, workspaceId: string, transactionData: any, cachedDbId?: string | null) {
-  const isDespesa = transactionData.intent === 'despesa';
+export async function addTransactionToClientNotion(clientAccessToken: string, workspaceId: string, transactionData: any, cachedDbId?: string | null, intent?: string) {
+  const isDespesa = (intent || transactionData.intent) === 'despesa';
   const targetDbName = isDespesa ? 'Despesas' : 'Receitas';
   
   let targetDbId = cachedDbId;
