@@ -83,8 +83,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, message: 'Não encontrei dados do mês atual no seu Balancete. 😅' });
       }
 
+      const brNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+      const mesAtual = brNow.toLocaleDateString('pt-BR', { month: 'long' });
+      const mesCapitalized = mesAtual.charAt(0).toUpperCase() + mesAtual.slice(1);
+      
       const val = (v: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
-      const msg = `📊 *Resumo do Mês*\nEntradas: ${val(currentMonth.entradas)}\nSaídas: ${val(currentMonth.saidas)}\n*Saldo: ${val(currentMonth.resultado)}*`;
+      const msg = `📊 Seu balancete de ${mesCapitalized}\nEntradas: ${val(currentMonth.entradas)}\nSaídas: ${val(currentMonth.saidas)}\nSaldo: ${val(currentMonth.resultado)}\n\nRode o atalho novamente para explorar outras opções!`;
       return NextResponse.json({ success: true, message: msg });
     }
 
@@ -108,7 +112,7 @@ export async function POST(request: Request) {
       console.log(`🗑️ Deletando última movimentação...`);
       const delResult = await deleteLastTransaction(notionAccessToken, despesasDbId, receitasDbId);
       const valFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(delResult.valor);
-      const msg = `🗑️ Registro removido: ${delResult.descricao} (${valFmt}). ✅`;
+      const msg = `🗑️ Registro removido: ${delResult.descricao} (${valFmt}). ✅\n\nRode o atalho novamente para explorar outras opções!`;
       if (pageId) logTokenUsage(pageId, totalTokens);
       return NextResponse.json({ success: true, message: msg });
     }
@@ -145,7 +149,7 @@ export async function POST(request: Request) {
       totalTokens += adviceResult.tokensUsed || 0;
       
       if (pageId) logTokenUsage(pageId, totalTokens);
-      return NextResponse.json({ success: true, message: adviceResult.text });
+      return NextResponse.json({ success: true, message: adviceResult.text + '\n\nRode o atalho novamente para explorar outras opções!' });
     }
 
     // CASO: LANÇAMENTO (Multi-Item)
@@ -168,7 +172,7 @@ export async function POST(request: Request) {
       successCount++;
     }
 
-    const responseMessage = `✅ Tudo pronto! Lancei ${successCount} item(s) no seu Notion:${lastSummary}\n\nJá deixei tudo organizado. Quer saber como isso afetou seu "Termômetro Financeiro" ou se ainda pode comprar algo hoje? É só perguntar! 🚀`;
+    const responseMessage = `✅ Tudo pronto! Lancei ${successCount} item(s) no seu Notion:${lastSummary}\n\nRode o atalho novamente para explorar outras opções!`;
     if (pageId) logTokenUsage(pageId, totalTokens);
     return NextResponse.json({ success: true, message: responseMessage });
 
