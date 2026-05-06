@@ -22,6 +22,8 @@ function isSaldoQuery(text: string): boolean {
   return saldoPatterns.some(p => p.test(lower));
 }
 
+export const maxDuration = 60; // Permite até 60s no Vercel para evitar timeout com a Gemma 4
+
 export async function POST(request: Request) {
   try {
     const { secretKey, text } = await request.json();
