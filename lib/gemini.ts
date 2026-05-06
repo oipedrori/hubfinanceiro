@@ -46,9 +46,9 @@ export async function parseFinancialText(text: string) {
 HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
 EXEMPLOS:
-- "Gastei 20 no café": {"intent": "despesa", "itens": [{"descricao": "Café", "valor": 20, "tipo_despesa": "Móvel"}]}
+- "Gastei 20 no pão": {"intent": "despesa", "itens": [{"descricao": "Pão", "valor": 20}]}
 - "Comprei uma TV de 2000 em 10 vezes": {"intent": "despesa", "itens": [{"descricao": "TV", "valor": 2000, "tipo_despesa": "Parcelada", "num_parcelas": 10}]}
-- "Gastei 10 no pão e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Pão", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
+- "Gastei 10 na água e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Água", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
 - "Gastei 55 e 88 no mercado": {"intent": "despesa", "itens": [{"descricao": "Mercado", "valor": 55.88}]}
 - "Gastei 37 e 88 no mercado e 88 e 99 na padaria": {"intent": "despesa", "itens": [{"descricao": "Mercado", "valor": 37.88}, {"descricao": "Padaria", "valor": 88.99}]}
 - "Quanto gastei este mes?": {"intent": "consulta", "pergunta": "Quanto gastei este mes?"}
@@ -61,7 +61,7 @@ REGRAS DE INTENÇÃO (CRÍTICO):
 - Perguntas sobre poder comprar algo: use "intent": "decisao_compra".
 
 REGRAS PARA ITENS:
-- "descricao": O que foi comprado ou pago. OBRIGATÓRIO: Use acentos corretos e primeira letra maiúscula (ex: Pão, Tênis, Água).
+- "descricao": O que foi comprado ou pago. OBRIGATÓRIO: Use a descrição EXATA do texto do usuário (ex: se ele falou "pão", use "Pão", não use "Café"). Use acentos corretos e primeira letra maiúscula.
 - "valor": O valor numérico (ex: 15.50). ATENÇÃO AOS CENTAVOS: Se o usuário falar "X e Y" seguido de um único local (ex: "55 e 88 no mercado"), significa R$ 55,88 em um único item. Só crie múltiplos itens se houver descrições diferentes (ex: "X no mercado E Y na padaria").
 - "categoria": DEVE ser EXATAMENTE uma destas: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimento, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Doações.
 - "metodo_pagamento": Crédito, Pix, Débito, Dinheiro. Se não souber, use "Crédito".

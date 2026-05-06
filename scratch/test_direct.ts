@@ -2,7 +2,7 @@ import { POST } from '../app/api/process/route';
 
 async function testDirect() {
   const secretKey = 'zimbroo_nmcam'; 
-  const text = 'MOVIMENTACAO gastei 55 e 88 no mercado e 27 e 38 na padaria';
+  const text = 'gastei 20 no pão';
   
   console.log("Testing POST directly...");
   try {

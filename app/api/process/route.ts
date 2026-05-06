@@ -26,10 +26,12 @@ export const maxDuration = 60; // Permite até 60s no Vercel para evitar timeout
 
 export async function POST(request: Request) {
   try {
-    const { secretKey, text } = await request.json();
+    const body = await request.json();
+    const secretKey = body.secretKey;
+    const text = (body.text || body.message || '').trim();
 
     if (!secretKey || !text) {
-      return NextResponse.json({ success: false, message: 'Dados insuficientes.' }, { status: 400 });
+      return NextResponse.json({ success: false, message: 'Dados insuficientes. Certifique-se de enviar a chave e a mensagem.' }, { status: 400 });
     }
 
     const customerRes = await getCustomerBySecretKey(secretKey);
