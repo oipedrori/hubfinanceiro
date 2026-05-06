@@ -245,11 +245,23 @@ export async function getCurrentMonthTransactions(
     receitasDbId || findDbId('Receitas')
   ]);
 
-  // Busca transações vinculadas ao mês (usando o nome exato da relação que vi no search)
-  const [despesas, receitas] = await Promise.all([
-    dId ? fetchFromDb(dId, 'Balancete') : Promise.resolve([]),
-    rId ? fetchFromDb(rId, 'Balancete') : Promise.resolve([])
-  ]);
+  // Tenta buscar transações com diferentes nomes de relação comuns
+  const possibleRelationNames = ['Balancete', 'Mês', 'Balancetes', 'Mês/Ano', 'Periodo', 'Competência'];
+  let despesas: any[] = [];
+  let receitas: any[] = [];
+
+  for (const relName of possibleRelationNames) {
+    const [d, r] = await Promise.all([
+      dId ? fetchFromDb(dId, relName) : Promise.resolve([]),
+      rId ? fetchFromDb(rId, relName) : Promise.resolve([])
+    ]);
+    if (d.length > 0 || r.length > 0) {
+      despesas = d;
+      receitas = r;
+      console.log(`✅ Transações encontradas usando relação: ${relName}`);
+      break;
+    }
+  }
 
   // Totais numéricos
   const totalDespesas = despesas.reduce((sum, d) => sum + d.valor, 0);

@@ -36,7 +36,7 @@ function extractFirstJSON(text: string): any {
 
 export async function parseFinancialText(text: string) {
   const model = genAI.getGenerativeModel({ 
-    model: "gemma-3n-e2b-it"
+    model: "gemini-2.5-flash"
   });
 
   const dateBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
@@ -70,12 +70,20 @@ REGRAS PARA ITENS:
     let parsed = extractFirstJSON(rawText);
     
     if (!parsed) {
-      console.error("Falha ao extrair JSON do E2B. Raw:", rawText);
+      console.error("Falha ao extrair JSON da IA. Raw:", rawText);
       throw new Error("Não encontrei JSON válido na resposta da IA.");
     }
 
-    const topLevelKey = Object.keys(parsed).find(k => ["DESPESA", "RECEITA", "CONSULTA", "DELETAR", "DECISAO", "despesa", "receita", "consulta", "deletar_ultimo", "decisao_compra"].includes(k));
-    if (topLevelKey) parsed = parsed[topLevelKey];
+    // Se a IA retornar algo como {"DESPESA": {...}}, extraímos o conteúdo e salvamos a chave como intenção
+    const topLevelKey = Object.keys(parsed).find(k => 
+      ["DESPESA", "RECEITA", "CONSULTA", "DELETAR", "DECISAO", "despesa", "receita", "consulta", "deletar_ultimo", "decisao_compra"].includes(k)
+    );
+    
+    if (topLevelKey) {
+      const intentFromKey = topLevelKey.toLowerCase().replace("decisao", "decisao_compra").replace("deletar", "deletar_ultimo");
+      const content = parsed[topLevelKey];
+      parsed = { ...content, intent: parsed.intent || intentFromKey };
+    }
 
     if (parsed.error) return parsed;
     if (parsed.intent) parsed.intent = String(parsed.intent).toLowerCase();
@@ -176,21 +184,21 @@ export async function generateFinancialAdvice(
   firstName: string,
   currentMonthDetails?: { entradas: number, saidas: number, resultado: number } | null
 ) {
-  const model = genAI.getGenerativeModel({ model: "gemma-3n-e2b-it" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
   const dateBRT = brNow.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', day: '2-digit' });
 
-  const prompt = `Você é o Consultor Financeiro Estratégico do Hub Financeiro. Sua missão é dar uma análise REAL e DIRETA das finanças.
+  const prompt = `Você é o Consultor Financeiro Estratégico do Hub Financeiro. Sua missão é dar uma análise REAL, DETALHADA e ESPECÍFICA das finanças do usuário.
 
 REGRAS DE RESPOSTA:
-- Se a intenção for "decisao_compra", avalie se o usuário pode gastar o valor solicitado baseado no saldo atual e nos gastos recorrentes que ainda podem vir. Seja sincero (ex: "Sim, você tem margem" ou "Melhor não, seu saldo está apertado para o dia ${now.getDate()}").
-- "TERMÔMETRO FINANCEIRO" (Burn Rate): Em consultas gerais, mencione se o ritmo de gastos está adequado para o dia ${now.getDate()} do mês.
-- Se o usuário perguntar "Quanto gastei com [categoria/item]", analise as MOVIMENTAÇÕES DETALHADAS e dê o VALOR TOTAL somado.
-- NUNCA liste todas as transações uma por uma. Foque no resumo e no total arredondado.
-- VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e ARREDONDE para exatamente duas casas decimais.
-- Use EXATAMENTE 2 parágrafos pequenos (máximo 3 linhas cada).
+- Use obrigatoriamente as MOVIMENTAÇÕES DETALHADAS abaixo para dar exemplos reais e específicos. Cite nomes de itens e categorias.
+- "TERMÔMETRO FINANCEIRO" (Burn Rate): Em qualquer consulta sobre resumo ou situação, você DEVE analisar se o ritmo de gastos está adequado para o dia ${now.getDate()} do mês. Compare o total gasto vs o tempo decorrido.
+- "CONSELHEIRO DE COMPRA": Se a intenção for "decisao_compra", avalie se o usuário pode gastar o valor solicitado baseado no saldo atual e na projeção de gastos. Dê uma recomendação clara (Sim/Não/Cuidado) e justifique com os dados.
+- Se o usuário perguntar sobre um gasto específico, procure-o na lista e informe o valor exato e a categoria.
+- VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e arredonde para duas casas decimais.
+- A resposta deve ser concisa para mobile (máximo 4 parágrafos pequenos), mas rica em detalhes.
 - Seja amigável, comece com "Oi ${firstName}! 😊" e use emojis.
 - PROIBIDO usar asteriscos (*) ou negritos (**).
 - Devolva APENAS a resposta final.
@@ -199,7 +207,7 @@ CONTEXTO:
 Data: ${dateBRT} (Dia ${now.getDate()}).
 STATUS ATUAL: ${JSON.stringify(currentMonthDetails || {})}
 HISTÓRICO MENSAL: ${balancetesData}
-MOVIMENTAÇÕES DETALHADAS:
+MOVIMENTAÇÕES DETALHADAS (Use isso para ser específico):
 ${transacoesReport}
 
 Pergunta/Ação do Usuário: "${pergunta}"`;
