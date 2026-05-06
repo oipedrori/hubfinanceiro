@@ -58,18 +58,24 @@ export async function POST(request: Request) {
     let overrideIntent: string | null = null;
     const lowerText = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-    if (lowerText.includes('desfazer a ultima acao')) {
+    let isBalanceteKeyword = false;
+
+    if (lowerText.startsWith('desfazer')) {
       overrideIntent = 'deletar_ultimo';
-    } else if (lowerText.includes('receber um conselho financeiro')) {
+      cleanText = text.replace(/^(?:\s*desfazer\s*[:\-]*\s*)/i, '').trim();
+    } else if (lowerText.startsWith('conselho')) {
       overrideIntent = 'consulta';
-      cleanText = text.replace(/receber um conselho financeiro:?\s*-?\s*/i, '').trim();
+      cleanText = text.replace(/^(?:\s*conselho\s*[:\-]*\s*)/i, '').trim();
       if (!cleanText) cleanText = "Faça um resumo geral das minhas finanças.";
-    } else if (lowerText.includes('registrar uma movimentacao')) {
-      cleanText = text.replace(/registrar uma movimenta[çc][ãa]o:?\s*-?\s*/i, '').trim();
+    } else if (lowerText.startsWith('movimentacao')) {
+      cleanText = text.replace(/^(?:\s*movimenta[çc][ãa]o\s*[:\-]*\s*)/i, '').trim();
+    } else if (lowerText.startsWith('balancete')) {
+      isBalanceteKeyword = true;
+      cleanText = text.replace(/^(?:\s*balancete\s*[:\-]*\s*)/i, '').trim();
     }
 
     // 1. FLUXO DE SALDO (Atalho Zero-Token)
-    if (isSaldoQuery(cleanText)) {
+    if (isBalanceteKeyword || isSaldoQuery(cleanText)) {
       console.log(`⚡ Atalho de SALDO ativado.`);
       const { currentMonth } = await getBalancetesData(notionAccessToken, balancetesDbId);
       
