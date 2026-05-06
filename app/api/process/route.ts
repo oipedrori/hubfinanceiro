@@ -11,6 +11,7 @@ import {
 // ── Detector de SALDO: resposta fixa sem IA (Atalho rápido) ──
 function isSaldoQuery(text: string): boolean {
   const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  if (lower.includes('ver meu balancete mensal')) return true;
   const saldoPatterns = [
     /\bsaldo\b/,
     /\bbalancete\b/,
@@ -52,25 +53,45 @@ export async function POST(request: Request) {
 
     console.log(`📡 Processando comando de: ${name} -> "${text}"`);
 
+    // 0. INTERCEPTAÇÃO DE MENUS DO ATALHO
+    let cleanText = text;
+    let overrideIntent: string | null = null;
+    const lowerText = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    if (lowerText.includes('desfazer a ultima acao')) {
+      overrideIntent = 'deletar_ultimo';
+    } else if (lowerText.includes('receber um conselho financeiro')) {
+      overrideIntent = 'consulta';
+      cleanText = text.replace(/receber um conselho financeiro:?\s*-?\s*/i, '').trim();
+      if (!cleanText) cleanText = "Faça um resumo geral das minhas finanças.";
+    } else if (lowerText.includes('registrar uma movimentacao')) {
+      cleanText = text.replace(/registrar uma movimenta[çc][ãa]o:?\s*-?\s*/i, '').trim();
+    }
+
     // 1. FLUXO DE SALDO (Atalho Zero-Token)
-    if (isSaldoQuery(text)) {
+    if (isSaldoQuery(cleanText)) {
       console.log(`⚡ Atalho de SALDO ativado.`);
       const { currentMonth } = await getBalancetesData(notionAccessToken, balancetesDbId);
       
       if (!currentMonth) {
-        return NextResponse.json({ success: true, message: `Oi ${firstName}! Não encontrei seu balancete deste mês no Notion ainda.` });
+        return NextResponse.json({ success: true, message: 'Não encontrei dados do mês atual no seu Balancete. 😅' });
       }
 
-      const { entradas, saidas, resultado } = currentMonth;
-      const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-      const msg = `💰 *Seu Status Atual*\n\n📈 Entradas: ${fmt(entradas)}\n📉 Saídas: ${fmt(saidas)}\n⚖️ Saldo: ${fmt(resultado)}\n\nO que mais deseja saber?`;
+      const val = (v: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+      const msg = `📊 *Resumo do Mês*\nEntradas: ${val(currentMonth.entradas)}\nSaídas: ${val(currentMonth.saidas)}\n*Saldo: ${val(currentMonth.resultado)}*`;
       return NextResponse.json({ success: true, message: msg });
     }
 
     // 2. CLASSIFICAÇÃO PELA IA (Todos os outros casos)
-    const aiResult = await parseFinancialText(text);
+    let aiResult: any = {};
+    if (overrideIntent) {
+      aiResult = { intent: overrideIntent, pergunta: cleanText };
+    } else {
+      aiResult = await parseFinancialText(cleanText);
+      totalTokens += aiResult._tokensUsed || 0;
+    }
+
     console.log('🤖 Resultado da Classificação:', JSON.stringify(aiResult, null, 2));
-    totalTokens += aiResult._tokensUsed || 0;
 
     if (aiResult.error) {
       return NextResponse.json({ success: false, message: aiResult.error });
