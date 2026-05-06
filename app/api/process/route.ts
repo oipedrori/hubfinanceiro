@@ -187,7 +187,7 @@ export async function POST(request: Request) {
 
     const intentLabel = isDespesa ? 'despesa' : 'receita';
     const msgPrefix = successCount > 1 ? `as ${successCount} ${intentLabel}s` : `a ${intentLabel}`;
-    const responseMessage = `✅ Pronto! Acabei de adicionar ${msgPrefix}:${lastSummary}\n\n━━━━━━━━━━━━━━━━━━━━\nRode o atalho novamente para explorar outras opções!`;
+    const responseMessage = `✅ Pronto! Acabei de adicionar ${msgPrefix}:${lastSummary}\n\nRode o atalho novamente para explorar outras opções!`;
     if (pageId) logTokenUsage(pageId, totalTokens);
     return NextResponse.json({ success: true, message: responseMessage });
 
