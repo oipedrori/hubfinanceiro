@@ -2,7 +2,7 @@ import { POST } from '../app/api/process/route';
 
 async function testDirect() {
   const secretKey = 'zimbroo_nmcam'; 
-  const text = 'Gastei 15 no pão';
+  const text = 'Como estão minhas finanças?';
   
   console.log("Testing POST directly...");
   try {

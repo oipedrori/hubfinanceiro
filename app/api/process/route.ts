@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     const customerRes = await getCustomerBySecretKey(secretKey);
-    if (!customerRes || customerRes.status === 'blocked') {
+    if (!customerRes || !customerRes.data || customerRes.status === 'blocked') {
       return NextResponse.json({ success: false, message: customerRes?.reason || 'Chave de acesso inválida ou bloqueada.' }, { status: 403 });
     }
 
@@ -39,9 +39,9 @@ export async function POST(request: Request) {
       workspaceId, 
       name, 
       pageId,
-      balancetesId: cachedBalancetesId,
-      despesasId: cachedDespesasId,
-      receitasId: cachedReceitasId
+      balancetesDbId: cachedBalancetesId,
+      despesasDbId: cachedDespesasId,
+      receitasDbId: cachedReceitasId
     } = customerRes.data;
 
     let balancetesDbId = cachedBalancetesId;
