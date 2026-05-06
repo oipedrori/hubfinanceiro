@@ -36,7 +36,7 @@ function extractFirstJSON(text: string): any {
 
 export async function parseFinancialText(text: string) {
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash-lite"
+    model: "gemma-4-31b-it"
   });
 
   const dateBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
@@ -49,6 +49,8 @@ EXEMPLOS:
 - "Gastei 20 no café": {"intent": "despesa", "itens": [{"descricao": "Café", "valor": 20, "tipo_despesa": "Móvel"}]}
 - "Comprei uma TV de 2000 em 10 vezes": {"intent": "despesa", "itens": [{"descricao": "TV", "valor": 2000, "tipo_despesa": "Parcelada", "num_parcelas": 10}]}
 - "Gastei 10 no pão e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Pão", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
+- "Gastei 55 e 88 no mercado": {"intent": "despesa", "itens": [{"descricao": "Mercado", "valor": 55.88}]}
+- "Gastei 37 e 88 no mercado e 88 e 99 na padaria": {"intent": "despesa", "itens": [{"descricao": "Mercado", "valor": 37.88}, {"descricao": "Padaria", "valor": 88.99}]}
 - "Quanto gastei este mes?": {"intent": "consulta", "pergunta": "Quanto gastei este mes?"}
 - "Posso comprar um fone de 200?": {"intent": "decisao_compra", "descricao_item": "fone", "valor_item": 200}
 
@@ -60,7 +62,7 @@ REGRAS DE INTENÇÃO (CRÍTICO):
 
 REGRAS PARA ITENS:
 - "descricao": O que foi comprado ou pago. OBRIGATÓRIO: Use acentos corretos e primeira letra maiúscula (ex: Pão, Tênis, Água).
-- "valor": O valor numérico (ex: 15.50).
+- "valor": O valor numérico (ex: 15.50). ATENÇÃO AOS CENTAVOS: Se o usuário falar "X e Y" seguido de um único local (ex: "55 e 88 no mercado"), significa R$ 55,88 em um único item. Só crie múltiplos itens se houver descrições diferentes (ex: "X no mercado E Y na padaria").
 - "categoria": DEVE ser EXATAMENTE uma destas: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimento, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Doações.
 - "metodo_pagamento": Crédito, Pix, Débito, Dinheiro. Se não souber, use "Crédito".
 - "tipo_despesa": Móvel, Recorrente, Parcelada.
@@ -187,7 +189,7 @@ export async function generateFinancialAdvice(
   firstName: string,
   currentMonthDetails?: { entradas: number, saidas: number, resultado: number } | null
 ) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+  const model = genAI.getGenerativeModel({ model: "gemma-4-31b-it" });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
@@ -201,7 +203,7 @@ REGRAS DE RESPOSTA:
 - "CONSELHEIRO DE COMPRA": Se a intenção for "decisao_compra", avalie se o usuário pode gastar o valor solicitado baseado no saldo atual e na projeção de gastos. Dê uma recomendação clara (Sim/Não/Cuidado) e justifique com os dados.
 - Se o usuário perguntar sobre um gasto específico, procure-o na lista e informe o valor exato e a categoria.
 - VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e arredonde para duas casas decimais.
-- A resposta deve ser concisa para mobile (máximo 4 parágrafos pequenos), mas rica em detalhes.
+- OBRIGATÓRIO: Sua resposta final DEVE conter EXATAMENTE 3 parágrafos curtos. Não escreva mais nem menos. Seja direto.
 - Seja amigável, comece com "Oi ${firstName}! 😊" e use emojis.
 - PROIBIDO usar asteriscos (*) ou negritos (**).
 - Devolva APENAS a resposta final.
