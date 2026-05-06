@@ -46,8 +46,9 @@ export async function parseFinancialText(text: string) {
 HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
 EXEMPLOS:
-- "Gastei 20 no cafe": {"intent": "despesa", "itens": [{"descricao": "Cafe", "valor": 20}]}
-- "Gastei 10 no pao e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Pao", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
+- "Gastei 20 no café": {"intent": "despesa", "itens": [{"descricao": "Café", "valor": 20, "tipo_despesa": "Móvel"}]}
+- "Comprei uma TV de 2000 em 10 vezes": {"intent": "despesa", "itens": [{"descricao": "TV", "valor": 2000, "tipo_despesa": "Parcelada", "num_parcelas": 10}]}
+- "Gastei 10 no pão e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Pão", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
 - "Quanto gastei este mes?": {"intent": "consulta", "pergunta": "Quanto gastei este mes?"}
 - "Posso comprar um fone de 200?": {"intent": "decisao_compra", "descricao_item": "fone", "valor_item": 200}
 
@@ -58,10 +59,12 @@ REGRAS DE INTENÇÃO (CRÍTICO):
 - Perguntas sobre poder comprar algo: use "intent": "decisao_compra".
 
 REGRAS PARA ITENS:
-- "descricao": O que foi comprado ou pago (ex: Pao, Uber, Aluguel).
+- "descricao": O que foi comprado ou pago. OBRIGATÓRIO: Use acentos corretos e primeira letra maiúscula (ex: Pão, Tênis, Água).
 - "valor": O valor numérico (ex: 15.50).
-- "categoria": Tente adivinhar (Alimentação, Transporte, Moradia, Lazer, Saúde, Vestuário, Outros). Se não souber, use "Outros".
-- "metodo_pagamento": Crédito, Pix, Débito, Dinheiro. Se não souber, use "Crédito".`;
+- "categoria": DEVE ser EXATAMENTE uma destas: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimento, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Doações.
+- "metodo_pagamento": Crédito, Pix, Débito, Dinheiro. Se não souber, use "Crédito".
+- "tipo_despesa": Móvel, Recorrente, Parcelada.
+- "num_parcelas": Número inteiro. Use apenas se a pessoa falar que parcelou ou comprou em X vezes. Caso contrário, ignore.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -103,8 +106,8 @@ REGRAS PARA ITENS:
       // Descrição curta
       if (item.descricao) {
         let d = item.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
-        d = d.split(' ').slice(0, 2).join(' ');
-        item.descricao = d.charAt(0).toUpperCase() + d.slice(1).toLowerCase();
+        d = d.trim();
+        item.descricao = d.charAt(0).toUpperCase() + d.slice(1);
       }
 
       // Tipo de Despesa
@@ -131,13 +134,13 @@ REGRAS PARA ITENS:
       }
 
       // Categoria
-      const allowedCategorias = ['Alimentação', 'Comunicação', 'Doação', 'Educação', 'Equipamentos', 'Impostos', 'Investimentos', 'Lazer', 'Moradia', 'Pet', 'Saúde', 'Seguro', 'Transporte', 'Vestuário', 'Higiene Pessoal', 'Outros'];
+      const allowedCategorias = ['Alimentação', 'Comunicação', 'Doação', 'Educação', 'Equipamentos', 'Impostos', 'Investimento', 'Lazer', 'Moradia', 'Pet', 'Saúde', 'Seguro', 'Transporte', 'Vestuário', 'Doações', 'Outros'];
       if (intent === 'despesa') {
         if (!item.categoria || !allowedCategorias.includes(item.categoria)) {
           const cat = String(item.categoria || '').toLowerCase();
           if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante') || cat.includes('lanche') || cat.includes('comida')) item.categoria = 'Alimentação';
           else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus') || cat.includes('transporte')) item.categoria = 'Transporte';
-          else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio') || cat.includes('energia')) item.categoria = 'Moradia';
+          else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio') || cat.includes('energia') || cat.includes('moradia')) item.categoria = 'Moradia';
           else if (cat.includes('médico') || cat.includes('farmácia') || cat.includes('remédio')) item.categoria = 'Saúde';
           else if (cat.includes('cinema') || cat.includes('viagem') || cat.includes('show') || cat.includes('rolê')) item.categoria = 'Lazer';
           else if (cat.includes('internet') || cat.includes('celular') || cat.includes('telefone')) item.categoria = 'Comunicação';
