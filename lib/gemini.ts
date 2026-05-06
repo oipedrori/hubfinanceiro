@@ -46,22 +46,22 @@ export async function parseFinancialText(text: string) {
 HOJE: ${dateBRT}. Texto do usuário: "${text}"
 
 EXEMPLOS:
-- "Gastei 20 no cafe": {"intent": "despesa", "itens": [{"descricao": "Cafe", "valor": 20, ...}]}
+- "Gastei 20 no cafe": {"intent": "despesa", "itens": [{"descricao": "Cafe", "valor": 20}]}
 - "Gastei 10 no pao e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Pao", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
 - "Quanto gastei este mes?": {"intent": "consulta", "pergunta": "Quanto gastei este mes?"}
 - "Posso comprar um fone de 200?": {"intent": "decisao_compra", "descricao_item": "fone", "valor_item": 200}
 
 REGRAS DE INTENÇÃO (CRÍTICO):
-- Se o usuário disse "Gastei", "Paguei", "Comprei", "Recebi" seguido de valores, use "intent": "despesa" ou "receita".
-- Use "intent": "consulta" APENAS se houver uma PERGUNTA clara.
-- Se o usuário perguntar se "pode comprar" algo, use "intent": "decisao_compra".
-- NUNCA use "despesa" ou "receita" se faltar o VALOR ou a DESCRIÇÃO de algum item. Retorne {"error": "..."}.
+- Gastos, pagamentos ou compras: use "intent": "despesa".
+- Entradas de dinheiro ou recebimentos: use "intent": "receita".
+- Perguntas sobre o mês, saldo ou resumo: use "intent": "consulta".
+- Perguntas sobre poder comprar algo: use "intent": "decisao_compra".
 
 REGRAS PARA ITENS:
-- "descricao": Título PADRONIZADO, curto (1-2 palavras) e Capitalizado.
-- "valor": Número puro (ex: 50.50).
-- "categoria": Apenas as permitidas (Alimentação, Transporte, Moradia, Lazer, Saúde, Vestuário, Outros).
-- "metodo_pagamento": Crédito, Pix, Débito, Dinheiro, Transferência. Default: "Crédito".`;
+- "descricao": O que foi comprado ou pago (ex: Pao, Uber, Aluguel).
+- "valor": O valor numérico (ex: 15.50).
+- "categoria": Tente adivinhar (Alimentação, Transporte, Moradia, Lazer, Saúde, Vestuário, Outros). Se não souber, use "Outros".
+- "metodo_pagamento": Crédito, Pix, Débito, Dinheiro. Se não souber, use "Crédito".`;
 
   try {
     const result = await model.generateContent(prompt);

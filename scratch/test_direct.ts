@@ -1,8 +1,8 @@
 import { POST } from '../app/api/process/route';
 
 async function testDirect() {
-  const secretKey = 'zimbroo_6hhn2'; 
-  const text = 'Gastei 20 no pão';
+  const secretKey = 'zimbroo_nmcam'; 
+  const text = 'Gastei 15 no pão';
   
   console.log("Testing POST directly...");
   try {
