@@ -90,7 +90,8 @@ export async function POST(request: Request) {
       const mesCapitalized = mesAtual.charAt(0).toUpperCase() + mesAtual.slice(1);
       
       const val = (v: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
-      const msg = `📊 Seu balancete de ${mesCapitalized}\nEntradas: ${val(currentMonth.entradas)}\nSaídas: ${val(currentMonth.saidas)}\nSaldo: ${val(currentMonth.resultado)}\n\nRode o atalho novamente para explorar outras opções!`;
+      const cm: any = currentMonth;
+      const msg = `📊 Seu balancete de ${mesCapitalized}\nEntradas: ${val(cm.entradas)}\nSaídas: ${val(cm.saidas)}\nSaldo: ${val(cm.resultado)}\n\nRode o atalho novamente para explorar outras opções!`;
       return NextResponse.json({ success: true, message: msg });
     }
 
@@ -170,11 +171,23 @@ export async function POST(request: Request) {
       }
 
       const valFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor);
-      lastSummary += `\n✅ ${item.descricao}: ${valFmt}`;
+      
+      let extraInfo = '';
+      if (item.tipo_despesa === 'Parcelada' && item.num_parcelas) {
+        extraInfo = `\n💳 (Parcelada em ${item.num_parcelas} vezes)`;
+      } else if (item.tipo_despesa === 'Recorrente') {
+        extraInfo = `\n🔁 (Adicionada como recorrente)`;
+      }
+      
+      const categoryLabel = isDespesa ? (item.categoria || 'Outros') : (item.tipo_receita || 'Outros');
+      lastSummary += `\n\nℹ️ ${item.descricao}\n💸 ${valFmt}\n🏷️ ${categoryLabel}${extraInfo}`;
+      
       successCount++;
     }
 
-    const responseMessage = `✅ Tudo pronto! Lancei ${successCount} item(s) no seu Notion:${lastSummary}\n\nRode o atalho novamente para explorar outras opções!`;
+    const intentLabel = isDespesa ? 'despesa' : 'receita';
+    const msgPrefix = successCount > 1 ? `as ${successCount} ${intentLabel}s` : `a ${intentLabel}`;
+    const responseMessage = `✅ Pronto! Acabei de adicionar ${msgPrefix}:${lastSummary}\n\n━━━━━━━━━━━━━━━━━━━━\nRode o atalho novamente para explorar outras opções!`;
     if (pageId) logTokenUsage(pageId, totalTokens);
     return NextResponse.json({ success: true, message: responseMessage });
 
