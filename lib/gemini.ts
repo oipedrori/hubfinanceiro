@@ -171,7 +171,8 @@ REGRAS PARA ITENS:
       parsed.itens = parsed.itens.map((i: any) => normalizeItem(i, parsed.intent));
     } else if (parsed.descricao || parsed.valor) {
       // Suporte a formato antigo se o E2B falhar no array
-      const normalized = normalizeItem(parsed, parsed.intent);
+      const { intent, error, ...itemData } = parsed;
+      const normalized = normalizeItem(itemData, parsed.intent);
       parsed.itens = [normalized];
     }
     
