@@ -36,7 +36,7 @@ function extractFirstJSON(text: string): any {
 
 export async function parseFinancialText(text: string) {
   const model = genAI.getGenerativeModel({ 
-    model: "models/gemma-4-e2b-it",
+    model: "models/gemma-4-26b-a4b-it",
     generationConfig: { responseMimeType: "application/json" }
   });
 
@@ -190,7 +190,7 @@ export async function generateFinancialAdvice(
   firstName: string,
   currentMonthDetails?: { entradas: number, saidas: number, resultado: number } | null
 ) {
-  const model = genAI.getGenerativeModel({ model: "models/gemma-4-e2b-it" });
+  const model = genAI.getGenerativeModel({ model: "models/gemma-4-26b-a4b-it" });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
