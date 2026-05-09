@@ -38,20 +38,56 @@ export async function parseFinancialText(text: string) {
   // Chamada de listModels (aquecimento da rota / validação)
   await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + process.env.GEMINI_API_KEY).catch(() => {});
 
+  const dateBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+
+  const systemInstruction = `Atue como MASTER_FINANCIAL_PROCESSOR. Extraia dados de movimentações financeiras de transcrições de voz.
+DATA_REF: ${dateBRT} (Use como âncora absoluta).
+
+INSTRUÇÃO DE INTELIGÊNCIA TEMPORAL:
+- Se o usuário mencionar "ontem", "anteontem", "semana passada" ou dias da semana ("na segunda"), calcule a data exata no formato YYYY-MM-DD.
+- Se nenhuma data for dita, use a data da DATA_REF.
+
+LÓGICA DE ROTEAMENTO (INTENT):
+DESPESA: Quando o usuário informa um novo gasto (Gatilhos: comprei, paguei, lanche, mercado, pix enviado). use db_id = "ID_DESPESAS".
+RECEITA: Quando o usuário informa um novo ganho (Gatilhos: recebi, ganhei, caiu, salário, pix recebido). use db_id = "ID_RECEITAS".
+
+CAMINHO 1: REGISTRO DE DESPESA
+- Categorias: Alimentação, Comunicação, Doações, Educação, Equipamentos, Impostos, Investimento, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário.
+- Parcelas: Procure por "X vezes", "X parcelas", "X x" ou "em X". Extraia o número X. Se não houver, use 1.
+- Tipo: Se Parcelas > 1 "Parcelada", senão "Móvel".
+- Pagamento: Se não citado, assuma "Crédito".
+
+CAMINHO 2: REGISTRO DE RECEITA
+- Categorias: Salário, Freela, Reembolso, Empréstimo.
+- Descrição: Sintética (Ex: "Cliente X" em vez de "Recebi do cliente X").
+
+Preencha o objeto conforme o esquema JSON estrito. Proibido campos nulos ou vazios. Use deduções acima.`;
+
   const model = genAI.getGenerativeModel({ 
     model: "models/gemma-4-26b-a4b-it",
-    systemInstruction: "Atue como um parser financeiro JSON. Extraia dados de transcrições de voz. Categorias permitidas: [Alimentação, Transporte, Lazer, Contas, Outros]. Retorne apenas o objeto.",
+    systemInstruction,
     generationConfig: { 
       responseMimeType: "application/json",
       responseSchema: {
         type: SchemaType.OBJECT,
         properties: {
-          valor: { type: SchemaType.NUMBER },
-          categoria: { type: SchemaType.STRING },
-          descricao: { type: SchemaType.STRING },
-          data: { type: SchemaType.STRING }
+          intent: { type: SchemaType.STRING },
+          db_id: { type: SchemaType.STRING },
+          dados: {
+            type: SchemaType.OBJECT,
+            properties: {
+              descricao: { type: SchemaType.STRING },
+              valor: { type: SchemaType.NUMBER },
+              data: { type: SchemaType.STRING },
+              categoria: { type: SchemaType.STRING },
+              pagamento: { type: SchemaType.STRING },
+              tipo: { type: SchemaType.STRING },
+              parcelas: { type: SchemaType.NUMBER }
+            },
+            required: ["descricao", "valor", "data", "categoria"]
+          }
         },
-        required: ["valor", "categoria", "descricao", "data"]
+        required: ["intent", "db_id", "dados"]
       },
       temperature: 0.1,
       topP: 1
@@ -65,19 +101,21 @@ export async function parseFinancialText(text: string) {
     for await (const chunk of result.stream) {
       const chunkText = chunk.text();
       rawText += chunkText;
-      process.stdout.write(chunkText); // Feedback visual no console / "loading" chunks
+      process.stdout.write(chunkText);
     }
     
     const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(cleanText);
     
-    // Empacota no formato Zimbroo assumindo transação expressa
+    // Adapta para o formato esperado pelo Zimbroo (intent e array de itens)
     return {
-      intent: "despesa",
+      intent: String(parsed.intent).toLowerCase(),
       itens: [{
-        ...parsed,
-        metodo_pagamento: "Crédito",
-        tipo_despesa: "Móvel"
+        ...parsed.dados,
+        // Garante que campos opcionais tenham fallback para não quebrar o fluxo do Notion
+        metodo_pagamento: parsed.dados.pagamento || "Crédito",
+        tipo_despesa: parsed.dados.tipo || "Móvel",
+        num_parcelas: parsed.dados.parcelas || 1
       }],
       _tokensUsed: (await result.response).usageMetadata?.totalTokenCount || 0
     };
