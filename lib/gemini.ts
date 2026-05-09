@@ -132,7 +132,7 @@ export async function generateFinancialAdvice(
   firstName: string,
   currentMonthDetails?: { entradas: number, saidas: number, resultado: number } | null
 ) {
-  const model = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash-lite" });
+  const model = genAI.getGenerativeModel({ model: "models/gemma-4-26b-a4b-it" });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
