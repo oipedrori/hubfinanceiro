@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import fs from 'fs';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
@@ -35,151 +35,54 @@ function extractFirstJSON(text: string): any {
 }
 
 export async function parseFinancialText(text: string) {
+  // Chamada de listModels (aquecimento da rota / validação)
+  await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + process.env.GEMINI_API_KEY).catch(() => {});
+
   const model = genAI.getGenerativeModel({ 
     model: "models/gemma-4-26b-a4b-it",
-    generationConfig: { responseMimeType: "application/json" }
+    systemInstruction: "Atue como um parser financeiro JSON. Extraia dados de transcrições de voz. Categorias permitidas: [Alimentação, Transporte, Lazer, Contas, Outros]. Retorne apenas o objeto.",
+    generationConfig: { 
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: SchemaType.OBJECT,
+        properties: {
+          valor: { type: SchemaType.NUMBER },
+          categoria: { type: SchemaType.STRING },
+          descricao: { type: SchemaType.STRING },
+          data: { type: SchemaType.STRING }
+        },
+        required: ["valor", "categoria", "descricao", "data"]
+      },
+      temperature: 0.1,
+      topP: 1
+    }
   });
 
-  const dateBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
-
-  const prompt = `Você é um robô classificador financeiro. Sua saída deve conter APENAS um objeto JSON puro.
-
-HOJE: ${dateBRT}. Texto do usuário: "${text}"
-
-EXEMPLOS:
-- "Gastei 20 no pão": {"intent": "despesa", "itens": [{"descricao": "Pão", "valor": 20}]}
-- "Comprei uma TV de 2000 em 10 vezes": {"intent": "despesa", "itens": [{"descricao": "TV", "valor": 2000, "tipo_despesa": "Parcelada", "num_parcelas": 10}]}
-- "Gastei 10 na água e 50 na gasolina": {"intent": "despesa", "itens": [{"descricao": "Água", "valor": 10}, {"descricao": "Gasolina", "valor": 50}]}
-- "Gastei 55 e 88 no mercado": {"intent": "despesa", "itens": [{"descricao": "Mercado", "valor": 55.88}]}
-- "Gastei 37 e 88 no mercado e 88 e 99 na padaria": {"intent": "despesa", "itens": [{"descricao": "Mercado", "valor": 37.88}, {"descricao": "Padaria", "valor": 88.99}]}
-- "Quanto gastei este mes?": {"intent": "consulta", "pergunta": "Quanto gastei este mes?"}
-- "Posso comprar um fone de 200?": {"intent": "decisao_compra", "descricao_item": "fone", "valor_item": 200}
-
-REGRAS DE INTENÇÃO (CRÍTICO):
-- Gastos, pagamentos ou compras: use "intent": "despesa".
-- Entradas de dinheiro ou recebimentos: use "intent": "receita".
-- Perguntas sobre o mês, saldo ou resumo: use "intent": "consulta".
-- Perguntas sobre poder comprar algo: use "intent": "decisao_compra".
-
-REGRAS PARA ITENS:
-- "descricao": O que foi comprado ou pago. OBRIGATÓRIO: Use a descrição EXATA do texto do usuário (ex: se ele falou "pão", use "Pão", não use "Café"). Use acentos corretos e primeira letra maiúscula.
-- "valor": O valor numérico (ex: 15.50). ATENÇÃO AOS CENTAVOS: Se o usuário falar "X e Y" seguido de um único local (ex: "55 e 88 no mercado"), significa R$ 55,88 em um único item. Só crie múltiplos itens se houver descrições diferentes (ex: "X no mercado E Y na padaria").
-- "categoria": DEVE ser EXATAMENTE uma destas: Alimentação, Comunicação, Doação, Educação, Equipamentos, Impostos, Investimento, Lazer, Moradia, Pet, Saúde, Seguro, Transporte, Vestuário, Doações.
-- "metodo_pagamento": Crédito, Pix, Débito, Dinheiro. Se não souber, use "Crédito".
-- "tipo_despesa": Móvel, Recorrente, Parcelada.
-- "num_parcelas": Número inteiro. Use apenas se a pessoa falar que parcelou ou comprou em X vezes. Caso contrário, ignore.`;
-
   try {
-    const result = await model.generateContent(prompt);
-    const rawText = result.response.text();
+    const result = await model.generateContentStream(text);
+    let rawText = '';
     
-    let parsed = extractFirstJSON(rawText);
-    
-    if (!parsed) {
-      console.error("Falha ao extrair JSON da IA. Raw:", rawText);
-      throw new Error("Não encontrei JSON válido na resposta da IA.");
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      rawText += chunkText;
+      process.stdout.write(chunkText); // Feedback visual no console / "loading" chunks
     }
-
-    // Se a IA retornar algo como {"DESPESA": {...}}, extraímos o conteúdo e salvamos a chave como intenção
-    const topLevelKey = Object.keys(parsed).find(k => 
-      ["DESPESA", "RECEITA", "CONSULTA", "DELETAR", "DECISAO", "despesa", "receita", "consulta", "deletar_ultimo", "decisao_compra"].includes(k)
-    );
     
-    if (topLevelKey) {
-      const intentFromKey = topLevelKey.toLowerCase().replace("decisao", "decisao_compra").replace("deletar", "deletar_ultimo");
-      const content = parsed[topLevelKey];
-      parsed = { ...content, intent: parsed.intent || intentFromKey };
-    }
-
-    if (parsed.error) return parsed;
-    if (parsed.intent) parsed.intent = String(parsed.intent).toLowerCase();
-
-    // Normalização para itens múltiplos ou item único (legado)
-    const normalizeItem = (item: any, intent: string) => {
-      // Data default
-      if (!item.data) item.data = dateBRT;
-
-      // Valor
-      if (item.valor) {
-        const v = Number(String(item.valor).replace(/[^\d.]/g, ''));
-        item.valor = Number(v.toFixed(2));
-      }
-      if (item.num_parcelas) item.num_parcelas = Number(item.num_parcelas) || 0;
-
-      // Descrição curta
-      if (item.descricao) {
-        let d = item.descricao.replace(/^(Compra|Gasto|Pagamento|Gastei|Recebi|Vendi|Paguei)\s(no|na|de|com|o|a)\s/i, '');
-        d = d.trim();
-        item.descricao = d.charAt(0).toUpperCase() + d.slice(1);
-      }
-
-      // Tipo de Despesa
-      const allowedTiposDespesa = ['Móvel', 'Recorrente', 'Parcelada'];
-      if (intent === 'despesa') {
-        if (!item.tipo_despesa || !allowedTiposDespesa.includes(item.tipo_despesa)) {
-          const td = String(item.tipo_despesa || '').toLowerCase();
-          if (td.includes('parcel') || (item.num_parcelas && item.num_parcelas > 1)) item.tipo_despesa = 'Parcelada';
-          else if (td.includes('recorr') || td.includes('fixa')) item.tipo_despesa = 'Recorrente';
-          else item.tipo_despesa = 'Móvel';
-        }
-      }
-
-      // Tipo de Receita
-      const allowedTiposReceita = ['Salário', 'Empréstimo', 'Reembolso', 'Freela'];
-      if (intent === 'receita') {
-        if (!item.tipo_receita || !allowedTiposReceita.includes(item.tipo_receita)) {
-          const tr = String(item.tipo_receita || '').toLowerCase();
-          if (tr.includes('salário') || tr.includes('pagamento') || tr.includes('empresa')) item.tipo_receita = 'Salário';
-          else if (tr.includes('emprest') || tr.includes('banco')) item.tipo_receita = 'Empréstimo';
-          else if (tr.includes('reembolso') || tr.includes('devolu')) item.tipo_receita = 'Reembolso';
-          else item.tipo_receita = 'Freela';
-        }
-      }
-
-      // Categoria
-      const allowedCategorias = ['Alimentação', 'Comunicação', 'Doação', 'Educação', 'Equipamentos', 'Impostos', 'Investimento', 'Lazer', 'Moradia', 'Pet', 'Saúde', 'Seguro', 'Transporte', 'Vestuário', 'Doações', 'Outros'];
-      if (intent === 'despesa') {
-        if (!item.categoria || !allowedCategorias.includes(item.categoria)) {
-          const cat = String(item.categoria || '').toLowerCase();
-          if (cat.includes('mercado') || cat.includes('comer') || cat.includes('restaurante') || cat.includes('lanche') || cat.includes('comida')) item.categoria = 'Alimentação';
-          else if (cat.includes('uber') || cat.includes('carro') || cat.includes('gasolina') || cat.includes('ônibus') || cat.includes('transporte')) item.categoria = 'Transporte';
-          else if (cat.includes('aluguel') || cat.includes('luz') || cat.includes('água') || cat.includes('condomínio') || cat.includes('energia') || cat.includes('moradia')) item.categoria = 'Moradia';
-          else if (cat.includes('médico') || cat.includes('farmácia') || cat.includes('remédio')) item.categoria = 'Saúde';
-          else if (cat.includes('cinema') || cat.includes('viagem') || cat.includes('show') || cat.includes('rolê')) item.categoria = 'Lazer';
-          else if (cat.includes('internet') || cat.includes('celular') || cat.includes('telefone')) item.categoria = 'Comunicação';
-          else if (cat.includes('roupa') || cat.includes('sapato')) item.categoria = 'Vestuário';
-          else item.categoria = 'Outros';
-        }
-      }
-
-      // Método de Pagamento
-      const allowedMetodos = ['Crédito', 'Pix', 'Débito', 'Dinheiro', 'Transferência'];
-      if (intent === 'despesa') {
-        if (!item.metodo_pagamento || !allowedMetodos.includes(item.metodo_pagamento)) {
-          const mp = String(item.metodo_pagamento || '').toLowerCase();
-          if (mp.includes('pix')) item.metodo_pagamento = 'Pix';
-          else if (mp.includes('débito')) item.metodo_pagamento = 'Débito';
-          else if (mp.includes('dinheiro') || mp.includes('espécie')) item.metodo_pagamento = 'Dinheiro';
-          else if (mp.includes('transf') || mp.includes('ted') || mp.includes('doc')) item.metodo_pagamento = 'Transferência';
-          else item.metodo_pagamento = 'Crédito';
-        }
-      }
-      return item;
+    const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleanText);
+    
+    // Empacota no formato Zimbroo assumindo transação expressa
+    return {
+      intent: "despesa",
+      itens: [{
+        ...parsed,
+        metodo_pagamento: "Crédito",
+        tipo_despesa: "Móvel"
+      }],
+      _tokensUsed: (await result.response).usageMetadata?.totalTokenCount || 0
     };
-
-    if (parsed.itens && Array.isArray(parsed.itens)) {
-      parsed.itens = parsed.itens.map((i: any) => normalizeItem(i, parsed.intent));
-    } else if (parsed.descricao || parsed.valor) {
-      // Suporte a formato antigo se o E2B falhar no array
-      const { intent, error, ...itemData } = parsed;
-      const normalized = normalizeItem(itemData, parsed.intent);
-      parsed.itens = [normalized];
-    }
-    
-    const tokensUsed = result.response.usageMetadata?.totalTokenCount || 0;
-    return { ...parsed, _tokensUsed: tokensUsed };
   } catch (err) {
-    console.error("Erro no Gemma Classifier:", err);
+    console.error("Erro no Gemma Fast Classifier:", err);
     throw new Error('Falha na classificação da IA.');
   }
 }
