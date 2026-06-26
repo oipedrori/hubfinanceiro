@@ -1,3 +1,45 @@
+
+// ── HELPER: Busca mais robusta para encontrar bancos de dados mesmo dentro de colunas ──
+async function findDatabaseByName(clientAccessToken: string, targetName: string): Promise<string | null> {
+  try {
+    const res = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${clientAccessToken}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        filter: { value: 'database', property: 'object' }
+      })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.results) return null;
+
+    // Procura por um título que contenha o nome desejado (ignorando maiúsculas/minúsculas)
+    const targetLower = targetName.toLowerCase();
+    
+    // Tenta achar correspondência exata primeiro
+    const exactMatch = data.results.find((db: any) => {
+      const title = db.title?.[0]?.plain_text?.toLowerCase() || '';
+      return title === targetLower;
+    });
+    if (exactMatch) return exactMatch.id;
+
+    // Se não achar exato, acha o primeiro que contém a palavra chave
+    const partialMatch = data.results.find((db: any) => {
+      const title = db.title?.[0]?.plain_text?.toLowerCase() || '';
+      return title.includes(targetLower);
+    });
+    
+    return partialMatch ? partialMatch.id : null;
+  } catch (e) {
+    console.error("Erro no findDatabaseByName:", e);
+    return null;
+  }
+}
+
 export async function addTransactionToClientNotion(clientAccessToken: string, workspaceId: string, transactionData: any, cachedDbId?: string | null, intent?: string) {
   const isDespesa = (intent || transactionData.intent) === 'despesa';
   const targetDbName = isDespesa ? 'Despesas' : 'Receitas';
@@ -7,27 +49,10 @@ export async function addTransactionToClientNotion(clientAccessToken: string, wo
 
   // Só faz a busca bruta se não tiver o ID no cache
   if (!targetDbId) {
-    const searchRes = await fetch('https://api.notion.com/v1/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${clientAccessToken}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        query: targetDbName,
-        filter: { value: 'database', property: 'object' }
-      })
-    });
-
-    if (!searchRes.ok) throw new Error("Falha na busca pela tabela do cliente");
-    
-    const searchData = await searchRes.json();
-    if (searchData.results.length === 0) {
+    targetDbId = await findDatabaseByName(clientAccessToken, targetDbName);
+    if (!targetDbId) {
       throw new Error(`Não consegui achar uma tabela chamada '${targetDbName}' na conta do cliente.`);
     }
-
-    targetDbId = searchData.results[0].id;
     wasSearched = true;
   }
 
@@ -70,25 +95,10 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
   let wasSearched = false;
 
   if (!targetDbId) {
-    const searchRes = await fetch('https://api.notion.com/v1/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${clientAccessToken}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        query: 'Balancetes',
-        filter: { value: 'database', property: 'object' }
-      })
-    });
-
-    if (!searchRes.ok) throw new Error("Falha na busca pela tabela Balancetes do cliente");
-    const searchData = await searchRes.json();
-    if (searchData.results.length === 0) {
+    targetDbId = await findDatabaseByName(clientAccessToken, 'Balancete');
+    if (!targetDbId) {
       return { data: 'O banco "Balancetes" não foi encontrado na conta.', newDbId: null, currentMonth: null };
     }
-    targetDbId = searchData.results[0].id;
     wasSearched = true;
   }
 
@@ -110,23 +120,10 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
     // Se o ID do cache falhou (ex: deletado ou sem acesso), tenta buscar de novo uma vez
     if (!rowsRes.ok && rowsData.code === 'object_not_found') {
       console.log("Database em cache não encontrada. Tentando busca bruta...");
-      const searchRes = await fetch('https://api.notion.com/v1/search', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${clientAccessToken}`,
-          'Notion-Version': '2022-06-28',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          query: 'Balancetes',
-          filter: { value: 'database', property: 'object' }
-        })
-      });
-
-      if (searchRes.ok) {
-        const searchData = await searchRes.json();
-        if (searchData.results.length > 0) {
-          targetDbId = searchData.results[0].id;
+      const fallbackId = await findDatabaseByName(clientAccessToken, 'Balancete');
+      
+      if (fallbackId) {
+          targetDbId = fallbackId;
           wasSearched = true;
           // Tenta a query de novo com o novo ID
           const retryRes = await fetch(`https://api.notion.com/v1/databases/${targetDbId}/query`, {
@@ -142,7 +139,6 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
             })
           });
           rowsData = await retryRes.json();
-        }
       }
     }
 
@@ -198,15 +194,7 @@ export async function getCurrentMonthTransactions(
 
   // Busca o ID de uma database pelo nome (caso não esteja em cache)
   async function findDbId(name: string): Promise<string | null> {
-    try {
-      const res = await fetch('https://api.notion.com/v1/search', {
-        method: 'POST', headers,
-        body: JSON.stringify({ query: name, filter: { value: 'database', property: 'object' } })
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.results.length > 0 ? data.results[0].id : null;
-    } catch { return null; }
+    return findDatabaseByName(clientAccessToken, name);
   }
 
   // Busca transações vinculadas ao ID do mês do balancete
@@ -282,14 +270,10 @@ export async function getCurrentMonthTransactions(
     Object.entries(resumoCategorias).forEach(([cat, total]) => {
       report += `- ${cat}: R$${total.toFixed(2)}\n`;
     });
-    report += '\n';
-
-    report += 'MOVIMENTAÇÕES DETALHADAS (incluindo parcelas e recorrentes):\n';
-    despesas.forEach(d => report += `- ${d.descricao}: R$${d.valor.toFixed(2)} [Categoria: ${d.categoria}]\n`);
   }
   if (receitas.length > 0) {
-    report += '\nRECEITAS VINCULADAS A ESTE MÊS:\n';
-    receitas.forEach(r => report += `- ${r.descricao}: R$${r.valor.toFixed(2)}\n`);
+    const totalReceitas = receitas.reduce((sum, r) => sum + r.valor, 0);
+    report += `\nTOTAL DE RECEITAS VINCULADAS A ESTE MÊS: R$${totalReceitas.toFixed(2)}\n`;
   }
 
   if (!report) report = 'Nenhuma movimentação vinculada a este mês no balancete.';
@@ -318,15 +302,7 @@ export async function deleteLastTransaction(
   };
 
   async function findDbId(name: string): Promise<string | null> {
-    try {
-      const res = await fetch('https://api.notion.com/v1/search', {
-        method: 'POST', headers,
-        body: JSON.stringify({ query: name, filter: { value: 'database', property: 'object' } })
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.results.length > 0 ? data.results[0].id : null;
-    } catch { return null; }
+    return findDatabaseByName(clientAccessToken, name);
   }
 
   const [dId, rId] = await Promise.all([
