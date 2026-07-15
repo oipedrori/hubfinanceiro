@@ -66,7 +66,7 @@ async function findDatabasesInBlock(clientAccessToken: string, blockId: string, 
 }
 
 // ── HELPER: Busca mais robusta para encontrar bancos de dados mesmo dentro de colunas ──
-export async function findDatabaseByName(clientAccessToken: string, targetName: string): Promise<string | null> {
+export async function findDatabaseByName(clientAccessToken: string, targetName: string, templatePageId?: string | null): Promise<string | null> {
   try {
     // 1. Tenta a busca padrão do Notion primeiro
     const res = await fetch('https://api.notion.com/v1/search', {
@@ -103,10 +103,23 @@ export async function findDatabaseByName(clientAccessToken: string, targetName: 
       });
       if (exact) return exact.id;
 
-      // Correspondência parcial
+      // Correspondência parcial (com lógica flexível para balancete)
       const partial = list.find((db: any) => {
         const title = db.title?.[0]?.plain_text || db.child_database?.title || db.title || '';
-        return cleanMatch(title).includes(cleanTarget);
+        const cleanTitle = cleanMatch(title);
+        
+        if (cleanTarget === 'balancete') {
+          // Aceita variações como "Balancete Mensal", "Mensal", "Balancetes", "Mês", etc.
+          return (
+            cleanTitle.includes('balancete') || 
+            cleanTitle.includes('balanco') || 
+            cleanTitle.includes('mensal') || 
+            cleanTitle.includes('meses') || 
+            cleanTitle.includes('competencia')
+          );
+        }
+        
+        return cleanTitle.includes(cleanTarget);
       });
       return partial ? partial.id : null;
     };
@@ -117,7 +130,7 @@ export async function findDatabaseByName(clientAccessToken: string, targetName: 
     // 2. Se não encontrou via busca (que pode falhar para bancos em colunas),
     // faz a busca varrendo os blocos da página principal
     console.log(`⚠️ Database '${targetName}' não encontrada na busca padrão. Iniciando varredura de blocos da página...`);
-    const rootPageId = await findTemplatePageId(clientAccessToken);
+    const rootPageId = templatePageId || await findTemplatePageId(clientAccessToken);
     if (rootPageId) {
       const pageDbs = await findDatabasesInBlock(clientAccessToken, rootPageId);
       console.log(`Bancos de dados encontrados na varredura de blocos:`, pageDbs);
@@ -132,7 +145,7 @@ export async function findDatabaseByName(clientAccessToken: string, targetName: 
   }
 }
 
-export async function addTransactionToClientNotion(clientAccessToken: string, workspaceId: string, transactionData: any, cachedDbId?: string | null, intent?: string) {
+export async function addTransactionToClientNotion(clientAccessToken: string, workspaceId: string, transactionData: any, cachedDbId?: string | null, intent?: string, templatePageId?: string | null) {
   const isDespesa = (intent || transactionData.intent) === 'despesa';
   const targetDbName = isDespesa ? 'Despesas' : 'Receitas';
   
@@ -141,7 +154,7 @@ export async function addTransactionToClientNotion(clientAccessToken: string, wo
 
   // Só faz a busca bruta se não tiver o ID no cache
   if (!targetDbId) {
-    targetDbId = await findDatabaseByName(clientAccessToken, targetDbName);
+    targetDbId = await findDatabaseByName(clientAccessToken, targetDbName, templatePageId);
     if (!targetDbId) {
       throw new Error(`Não consegui achar uma tabela chamada '${targetDbName}' na conta do cliente.`);
     }
@@ -182,12 +195,12 @@ export async function addTransactionToClientNotion(clientAccessToken: string, wo
   return { result, newDbId: wasSearched ? targetDbId : null };
 }
 
-export async function getBalancetesData(clientAccessToken: string, cachedDbId?: string | null) {
+export async function getBalancetesData(clientAccessToken: string, cachedDbId?: string | null, templatePageId?: string | null) {
   let targetDbId = cachedDbId;
   let wasSearched = false;
 
   if (!targetDbId) {
-    targetDbId = await findDatabaseByName(clientAccessToken, 'Balancete');
+    targetDbId = await findDatabaseByName(clientAccessToken, 'Balancete', templatePageId);
     if (!targetDbId) {
       return { data: 'O banco "Balancetes" não foi encontrado na conta.', newDbId: null, currentMonth: null };
     }
@@ -212,7 +225,7 @@ export async function getBalancetesData(clientAccessToken: string, cachedDbId?: 
     // Se o ID do cache falhou (ex: deletado ou sem acesso), tenta buscar de novo uma vez
     if (!rowsRes.ok && rowsData.code === 'object_not_found') {
       console.log("Database em cache não encontrada. Tentando busca bruta...");
-      const fallbackId = await findDatabaseByName(clientAccessToken, 'Balancete');
+      const fallbackId = await findDatabaseByName(clientAccessToken, 'Balancete', templatePageId);
       
       if (fallbackId) {
           targetDbId = fallbackId;
@@ -276,7 +289,8 @@ export async function getCurrentMonthTransactions(
   clientAccessToken: string,
   monthPageId: string,
   despesasDbId?: string | null,
-  receitasDbId?: string | null
+  receitasDbId?: string | null,
+  templatePageId?: string | null
 ) {
   const headers = {
     'Authorization': `Bearer ${clientAccessToken}`,
@@ -286,7 +300,7 @@ export async function getCurrentMonthTransactions(
 
   // Busca o ID de uma database pelo nome (caso não esteja em cache)
   async function findDbId(name: string): Promise<string | null> {
-    return findDatabaseByName(clientAccessToken, name);
+    return findDatabaseByName(clientAccessToken, name, templatePageId);
   }
 
   // Busca transações vinculadas ao ID do mês do balancete
@@ -385,7 +399,8 @@ export async function getCurrentMonthTransactions(
 export async function deleteLastTransaction(
   clientAccessToken: string,
   despesasDbId?: string | null,
-  receitasDbId?: string | null
+  receitasDbId?: string | null,
+  templatePageId?: string | null
 ) {
   const headers = {
     'Authorization': `Bearer ${clientAccessToken}`,
@@ -394,7 +409,7 @@ export async function deleteLastTransaction(
   };
 
   async function findDbId(name: string): Promise<string | null> {
-    return findDatabaseByName(clientAccessToken, name);
+    return findDatabaseByName(clientAccessToken, name, templatePageId);
   }
 
   const [dId, rId] = await Promise.all([

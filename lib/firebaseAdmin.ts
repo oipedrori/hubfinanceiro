@@ -44,6 +44,7 @@ export async function getCustomerBySecretKey(secretKey: string) {
         name: data.name || 'Cliente Misterioso',
         notionAccessToken: data.notionAccessToken || null,
         workspaceId: data.workspaceId || null,
+        templatePageId: data.templatePageId || null,
         despesasDbId: data.despesasDbId || null,
         receitasDbId: data.receitasDbId || null,
         balancetesDbId: data.balancetesDbId || null,
@@ -56,7 +57,7 @@ export async function getCustomerBySecretKey(secretKey: string) {
   }
 }
 
-export async function createNewCustomer(data: { name: string, email?: string, notionAccessToken: string, workspaceId: string }) {
+export async function createNewCustomer(data: { name: string, email?: string, notionAccessToken: string, workspaceId: string, templatePageId?: string | null }) {
   try {
     const customersRef = db.collection(CUSTOMERS_COLLECTION);
     
@@ -67,11 +68,15 @@ export async function createNewCustomer(data: { name: string, email?: string, no
       const doc = snapshot.docs[0];
       const existingData = doc.data();
       
-      // Se achamos, atualizamos apenas o Token de Acesso (caso tenha mudado)
-      await doc.ref.update({
+      // Se achamos, atualizamos apenas o Token de Acesso (caso tenha mudado) e o templatePageId (caso tenha duplicado um novo)
+      const updateData: any = {
         notionAccessToken: data.notionAccessToken,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+      };
+      if (data.templatePageId) {
+        updateData.templatePageId = data.templatePageId;
+      }
+      await doc.ref.update(updateData);
       
       return { secretKey: existingData.secretKey };
     }
@@ -86,6 +91,7 @@ export async function createNewCustomer(data: { name: string, email?: string, no
       secretKey: secretKey,
       notionAccessToken: data.notionAccessToken,
       workspaceId: data.workspaceId,
+      templatePageId: data.templatePageId || null,
       isActive: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       tokensUsed: 0 // Inicia o contador de tokens

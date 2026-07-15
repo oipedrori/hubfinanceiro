@@ -54,7 +54,8 @@ export async function GET(request: Request) {
       name: userName,
       email: userEmail,
       notionAccessToken: access_token,
-      workspaceId: workspace_id
+      workspaceId: workspace_id,
+      templatePageId: duplicated_template_id || null
     });
 
     // 3. Sucesso! Redirecionar para a home com a chave e template_id

@@ -43,6 +43,7 @@ export async function POST(request: Request) {
     const { 
       notionAccessToken, 
       workspaceId, 
+      templatePageId,
       name, 
       pageId,
       balancetesDbId: cachedBalancetesId,
@@ -59,9 +60,9 @@ export async function POST(request: Request) {
       console.log(`🔍 Verificando conexão e buscando databases para: ${name}`);
       
       // Busca no Notion caso não estejam no cache
-      if (!despesasDbId) despesasDbId = await findDatabaseByName(notionAccessToken, 'Despesas');
-      if (!receitasDbId) receitasDbId = await findDatabaseByName(notionAccessToken, 'Receitas');
-      if (!balancetesDbId) balancetesDbId = await findDatabaseByName(notionAccessToken, 'Balancete');
+      if (!despesasDbId) despesasDbId = await findDatabaseByName(notionAccessToken, 'Despesas', templatePageId);
+      if (!receitasDbId) receitasDbId = await findDatabaseByName(notionAccessToken, 'Receitas', templatePageId);
+      if (!balancetesDbId) balancetesDbId = await findDatabaseByName(notionAccessToken, 'Balancete', templatePageId);
       
       // Salva no cache do Firebase se descobriu novos IDs
       if (pageId) {
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
     // 1. FLUXO DE SALDO (Atalho Zero-Token)
     if (isBalanceteKeyword || isSaldoQuery(cleanText)) {
       console.log(`⚡ Atalho de SALDO ativado.`);
-      const { currentMonth } = await getBalancetesData(notionAccessToken, balancetesDbId);
+      const { currentMonth } = await getBalancetesData(notionAccessToken, balancetesDbId, templatePageId);
       
       if (!currentMonth) {
         return NextResponse.json({ success: true, message: 'Não encontrei dados do mês atual no seu Balancete. 😅' });
@@ -150,7 +151,7 @@ export async function POST(request: Request) {
     // CASO: DELETAR
     if (aiResult.intent === 'deletar_ultimo') {
       console.log(`🗑️ Deletando última movimentação...`);
-      const delResult = await deleteLastTransaction(notionAccessToken, despesasDbId, receitasDbId);
+      const delResult = await deleteLastTransaction(notionAccessToken, despesasDbId, receitasDbId, templatePageId);
       const valFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(delResult.valor);
       const msg = `🗑️ Registro removido: ${delResult.descricao} (${valFmt}). ✅\n\nRode o atalho novamente para explorar outras opções!`;
       if (pageId) logTokenUsage(pageId, totalTokens);
@@ -162,12 +163,12 @@ export async function POST(request: Request) {
       const isDecisao = aiResult.intent === 'decisao_compra';
       console.log(`🤖 ${isDecisao ? 'Decisão de Compra' : 'Consulta'} detectada.`);
       
-      const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId);
+      const balancetesResult = await getBalancetesData(notionAccessToken, balancetesDbId, templatePageId);
       let transacoesReport = 'Sem movimentações detalhadas encontradas.';
 
       if (balancetesResult.currentMonth) {
         const monthInfo = balancetesResult.currentMonth as any;
-        const transacoesResult = await getCurrentMonthTransactions(notionAccessToken, monthInfo.pageId, despesasDbId, receitasDbId);
+        const transacoesResult = await getCurrentMonthTransactions(notionAccessToken, monthInfo.pageId, despesasDbId, receitasDbId, templatePageId);
         transacoesReport = transacoesResult.report;
         
         // Cacheia IDs se foram descobertos agora
@@ -200,7 +201,7 @@ export async function POST(request: Request) {
 
     for (const item of (aiResult.itens || [])) {
       const cachedId = isDespesa ? despesasDbId : receitasDbId;
-      const { newDbId } = await addTransactionToClientNotion(notionAccessToken, workspaceId, item, cachedId, aiResult.intent);
+      const { newDbId } = await addTransactionToClientNotion(notionAccessToken, workspaceId, item, cachedId, aiResult.intent, templatePageId);
       
       if (newDbId && pageId && successCount === 0) {
         if (isDespesa) { await updateCustomerDbIds(pageId, { despesasId: newDbId }); despesasDbId = newDbId; }
