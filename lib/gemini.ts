@@ -132,7 +132,10 @@ export async function generateFinancialAdvice(
   firstName: string,
   currentMonthDetails?: { entradas: number, saidas: number, resultado: number } | null
 ) {
-  const model = genAI.getGenerativeModel({ model: "models/gemma-4-26b-a4b-it" });
+  const model = genAI.getGenerativeModel({ 
+    model: "models/gemma-4-26b-a4b-it",
+    generationConfig: { temperature: 0.1 }
+  });
   
   const now = new Date();
   const brNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
@@ -141,12 +144,12 @@ export async function generateFinancialAdvice(
   const prompt = `Você é o Consultor Financeiro Estratégico do Hub Financeiro. Sua missão é dar uma análise REAL, DETALHADA e ESPECÍFICA das finanças do usuário.
 
 REGRAS DE RESPOSTA:
-- Use obrigatoriamente as MOVIMENTAÇÕES DETALHADAS abaixo para dar exemplos reais e específicos. Cite nomes de itens e categorias.
+- Use os totais por categoria abaixo para dar exemplos de onde o dinheiro está indo e sugerir onde economizar.
 - "TERMÔMETRO FINANCEIRO" (Burn Rate): Em qualquer consulta sobre resumo ou situação, você DEVE analisar se o ritmo de gastos está adequado para o dia ${now.getDate()} do mês. Compare o total gasto vs o tempo decorrido.
 - "CONSELHEIRO DE COMPRA": Se a intenção for "decisao_compra", avalie se o usuário pode gastar o valor solicitado baseado no saldo atual e na projeção de gastos. Dê uma recomendação clara (Sim/Não/Cuidado) e justifique com os dados.
 - Se o usuário perguntar sobre um gasto específico, procure-o na lista e informe o valor exato e a categoria.
 - VALORES MONETÁRIOS: Use sempre o formato "R$ XX,XX" e arredonde para duas casas decimais.
-- OBRIGATÓRIO: Sua resposta final DEVE conter EXATAMENTE 3 parágrafos curtos. Não escreva mais nem menos. Seja direto.
+- OBRIGATÓRIO: Sua resposta final DEVE conter EXATAMENTE 2 parágrafos curtos. Não escreva mais nem menos. Seja direto.
 - Seja amigável, comece com "Oi ${firstName}! 😊" e use emojis.
 - PROIBIDO usar asteriscos (*) ou negritos (**).
 - Devolva APENAS a resposta final.
@@ -155,7 +158,7 @@ CONTEXTO:
 Data: ${dateBRT} (Dia ${now.getDate()}).
 STATUS ATUAL: ${JSON.stringify(currentMonthDetails || {})}
 HISTÓRICO MENSAL: ${balancetesData}
-MOVIMENTAÇÕES DETALHADAS (Use isso para ser específico):
+RESUMO FINANCEIRO (Use isso para basear sua análise):
 ${transacoesReport}
 
 Pergunta/Ação do Usuário: "${pergunta}"`;

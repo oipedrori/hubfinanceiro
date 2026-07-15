@@ -1,7 +1,74 @@
 
+// Busca o ID da página principal compartilhada com a integração
+async function findTemplatePageId(clientAccessToken: string): Promise<string | null> {
+  try {
+    const res = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${clientAccessToken}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        filter: { value: 'page', property: 'object' }
+      })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.results) return null;
+
+    const page = data.results.find((p: any) => {
+      const titleProp = p.properties?.title || p.properties?.Name || p.properties?.Nome;
+      const titleArray = titleProp?.title || p.title;
+      const title = (titleArray?.[0]?.plain_text || '').toLowerCase();
+      return title.includes('hub') || title.includes('financeiro') || title.includes('zimbroo');
+    }) || data.results[0];
+
+    return page ? page.id : null;
+  } catch (e) {
+    console.error("Erro ao buscar página template:", e);
+    return null;
+  }
+}
+
+// Varre recursivamente os blocos em busca de child_database originais
+async function findDatabasesInBlock(clientAccessToken: string, blockId: string, depth = 0): Promise<{ id: string, title: string }[]> {
+  if (depth > 4) return []; // Evita loops ou recursão excessiva
+
+  const list: { id: string, title: string }[] = [];
+  try {
+    const res = await fetch(`https://api.notion.com/v1/blocks/${blockId}/children?page_size=100`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${clientAccessToken}`,
+        'Notion-Version': '2022-06-28'
+      }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.results) return [];
+
+    for (const block of data.results) {
+      if (block.type === 'child_database') {
+        list.push({
+          id: block.id,
+          title: block.child_database?.title || ''
+        });
+      } else if (block.has_children) {
+        const subDbs = await findDatabasesInBlock(clientAccessToken, block.id, depth + 1);
+        list.push(...subDbs);
+      }
+    }
+  } catch (e) {
+    console.error(`Erro ao buscar filhos do bloco ${blockId}:`, e);
+  }
+  return list;
+}
+
 // ── HELPER: Busca mais robusta para encontrar bancos de dados mesmo dentro de colunas ──
 async function findDatabaseByName(clientAccessToken: string, targetName: string): Promise<string | null> {
   try {
+    // 1. Tenta a busca padrão do Notion primeiro
     const res = await fetch('https://api.notion.com/v1/search', {
       method: 'POST',
       headers: {
@@ -13,27 +80,52 @@ async function findDatabaseByName(clientAccessToken: string, targetName: string)
         filter: { value: 'database', property: 'object' }
       })
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data.results) return null;
+    
+    let databases: any[] = [];
+    if (res.ok) {
+      const data = await res.json();
+      if (data.results) {
+        databases = data.results;
+      }
+    }
 
-    // Procura por um título que contenha o nome desejado (ignorando maiúsculas/minúsculas)
     const targetLower = targetName.toLowerCase();
-    
-    // Tenta achar correspondência exata primeiro
-    const exactMatch = data.results.find((db: any) => {
-      const title = db.title?.[0]?.plain_text?.toLowerCase() || '';
-      return title === targetLower;
-    });
-    if (exactMatch) return exactMatch.id;
 
-    // Se não achar exato, acha o primeiro que contém a palavra chave
-    const partialMatch = data.results.find((db: any) => {
-      const title = db.title?.[0]?.plain_text?.toLowerCase() || '';
-      return title.includes(targetLower);
-    });
-    
-    return partialMatch ? partialMatch.id : null;
+    // Helper para buscar na lista de databases
+    const searchInList = (list: any[]) => {
+      const cleanMatch = (val: string) => val.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const cleanTarget = cleanMatch(targetLower);
+
+      // Correspondência exata
+      const exact = list.find((db: any) => {
+        const title = db.title?.[0]?.plain_text || db.child_database?.title || db.title || '';
+        return cleanMatch(title) === cleanTarget;
+      });
+      if (exact) return exact.id;
+
+      // Correspondência parcial
+      const partial = list.find((db: any) => {
+        const title = db.title?.[0]?.plain_text || db.child_database?.title || db.title || '';
+        return cleanMatch(title).includes(cleanTarget);
+      });
+      return partial ? partial.id : null;
+    };
+
+    let matchedId = searchInList(databases);
+    if (matchedId) return matchedId;
+
+    // 2. Se não encontrou via busca (que pode falhar para bancos em colunas),
+    // faz a busca varrendo os blocos da página principal
+    console.log(`⚠️ Database '${targetName}' não encontrada na busca padrão. Iniciando varredura de blocos da página...`);
+    const rootPageId = await findTemplatePageId(clientAccessToken);
+    if (rootPageId) {
+      const pageDbs = await findDatabasesInBlock(clientAccessToken, rootPageId);
+      console.log(`Bancos de dados encontrados na varredura de blocos:`, pageDbs);
+      matchedId = searchInList(pageDbs);
+      if (matchedId) return matchedId;
+    }
+
+    return null;
   } catch (e) {
     console.error("Erro no findDatabaseByName:", e);
     return null;
