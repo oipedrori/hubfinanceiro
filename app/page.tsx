@@ -144,13 +144,40 @@ function LandingContent() {
     <main className="main" style={{ justifyContent: 'flex-start', paddingTop: '6rem' }}>
       
       {/* Header Comum */}
-      <div className="app-header animate-fade" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: contentMaxWidth, margin: '0 auto 2rem auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <picture>
+      <div className="app-header animate-fade" style={{ 
+        display: 'flex', 
+        justifyContent: user ? 'center' : 'space-between', 
+        alignItems: 'center', 
+        width: '100%', 
+        maxWidth: contentMaxWidth, 
+        margin: '0 auto 2rem auto' 
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          gap: '0.6rem',
+          height: user ? '24px' : '48px'
+        }}>
+          <picture style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
             <source srcSet="/icon-dark.png" media="(prefers-color-scheme: dark)" />
-            <img src="/icon-light.png" alt="Logo" width={48} height={48} style={{ objectFit: 'contain' }} />
+            <img 
+              src="/icon-light.png" 
+              alt="Logo" 
+              width={user ? 24 : 48} 
+              height={user ? 24 : 48} 
+              style={{ objectFit: 'contain', height: '100%', width: 'auto' }} 
+            />
           </picture>
-          <h1 style={{ margin: 0 }}>Hub Financeiro</h1>
+          <h1 style={{ 
+            margin: 0, 
+            fontSize: user ? '1.25rem' : '2rem', 
+            lineHeight: user ? '24px' : 'normal',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            Hub Financeiro
+          </h1>
         </div>
         
         {!user && (
