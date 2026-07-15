@@ -66,7 +66,7 @@ async function findDatabasesInBlock(clientAccessToken: string, blockId: string, 
 }
 
 // ── HELPER: Busca mais robusta para encontrar bancos de dados mesmo dentro de colunas ──
-async function findDatabaseByName(clientAccessToken: string, targetName: string): Promise<string | null> {
+export async function findDatabaseByName(clientAccessToken: string, targetName: string): Promise<string | null> {
   try {
     // 1. Tenta a busca padrão do Notion primeiro
     const res = await fetch('https://api.notion.com/v1/search', {

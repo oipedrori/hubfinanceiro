@@ -375,15 +375,30 @@ function LandingContent() {
                           const res = await fetch('/api/process', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ secretKey: localKey, text: 'Oi, testando conexão' })
+                            body: JSON.stringify({ secretKey: localKey, text: 'Oi, testando conexão', isVerification: true })
                           });
                           const data = await res.json();
                           if (data.success) {
-                            alert('✅ Conexão verificada! Encontramos seu template.');
+                            const dbs = data.databases || {};
+                            let alertMsg = '✅ Conexão verificada! Encontramos seu template.\n\n';
+                            alertMsg += 'Bancos de dados identificados:\n';
+                            alertMsg += `📊 ${dbs.balancetes?.name || 'Balancete'}: ${dbs.balancetes?.id || 'Não encontrado'}\n`;
+                            alertMsg += `💸 ${dbs.despesas?.name || 'Despesas'}: ${dbs.despesas?.id || 'Não encontrado'}\n`;
+                            alertMsg += `💰 ${dbs.receitas?.name || 'Receitas'}: ${dbs.receitas?.id || 'Não encontrado'}`;
+                            
+                            alert(alertMsg);
                             setNotionConnected(true);
                             setActiveAccordion(platform === 'ios' ? 1 : 2);
                           } else {
-                            alert('⚠️ Conexão ativa, mas não encontramos as tabelas (Despesas, Receitas e Balancetes). Verifique se você compartilhou a página correta com o Hub Financeiro.');
+                            const dbs = data.databases || {};
+                            let alertMsg = '⚠️ Conexão ativa, mas não encontramos todas as tabelas (Despesas, Receitas e Balancetes).\n\n';
+                            alertMsg += 'Estado dos bancos de dados:\n';
+                            alertMsg += `📊 Balancete: ${dbs.balancetes?.id || 'Não encontrado'}\n`;
+                            alertMsg += `💸 Despesas: ${dbs.despesas?.id || 'Não encontrado'}\n`;
+                            alertMsg += `💰 Receitas: ${dbs.receitas?.id || 'Não encontrado'}\n\n`;
+                            alertMsg += 'Verifique se você compartilhou a página correta com o Hub Financeiro.';
+                            
+                            alert(alertMsg);
                           }
                         } catch (e) {
                           alert('Erro ao verificar conexão. Tente novamente.');

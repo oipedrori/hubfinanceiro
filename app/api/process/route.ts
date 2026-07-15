@@ -5,7 +5,8 @@ import {
   addTransactionToClientNotion, 
   getBalancetesData, 
   getCurrentMonthTransactions, 
-  deleteLastTransaction 
+  deleteLastTransaction,
+  findDatabaseByName
 } from '@/lib/notionClient';
 
 // ── Detector de SALDO: resposta fixa sem IA (Atalho rápido) ──
@@ -52,6 +53,40 @@ export async function POST(request: Request) {
     let balancetesDbId = cachedBalancetesId;
     let despesasDbId = cachedDespesasId;
     let receitasDbId = cachedReceitasId;
+
+    // ── INTERCEPTAÇÃO DE VERIFICAÇÃO DE CONEXÃO (Retorna IDs e nomes das databases) ──
+    if (body.isVerification) {
+      console.log(`🔍 Verificando conexão e buscando databases para: ${name}`);
+      
+      // Busca no Notion caso não estejam no cache
+      if (!despesasDbId) despesasDbId = await findDatabaseByName(notionAccessToken, 'Despesas');
+      if (!receitasDbId) receitasDbId = await findDatabaseByName(notionAccessToken, 'Receitas');
+      if (!balancetesDbId) balancetesDbId = await findDatabaseByName(notionAccessToken, 'Balancete');
+      
+      // Salva no cache do Firebase se descobriu novos IDs
+      if (pageId) {
+        const idsToCache: any = {};
+        if (despesasDbId && despesasDbId !== cachedDespesasId) idsToCache.despesasId = despesasDbId;
+        if (receitasDbId && receitasDbId !== cachedReceitasId) idsToCache.receitasId = receitasDbId;
+        if (balancetesDbId && balancetesDbId !== cachedBalancetesId) idsToCache.balancetesId = balancetesDbId;
+        if (Object.keys(idsToCache).length > 0) {
+          await updateCustomerDbIds(pageId, idsToCache);
+        }
+      }
+
+      const success = !!(despesasDbId && receitasDbId && balancetesDbId);
+      
+      return NextResponse.json({
+        success,
+        isVerification: true,
+        databases: {
+          despesas: { id: despesasDbId || 'Não encontrada', name: 'Despesas' },
+          receitas: { id: receitasDbId || 'Não encontrada', name: 'Receitas' },
+          balancetes: { id: balancetesDbId || 'Não encontrada', name: 'Balancete' }
+        }
+      });
+    }
+
     let totalTokens = 0;
     const firstName = name.split(' ')[0];
 
