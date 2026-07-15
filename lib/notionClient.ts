@@ -54,6 +54,25 @@ async function findDatabasesInBlock(clientAccessToken: string, blockId: string, 
           id: block.id,
           title: block.child_database?.title || ''
         });
+      } else if (block.type === 'link_to_database' && block.link_to_database?.database_id) {
+        const dbId = block.link_to_database.database_id;
+        try {
+          const dbRes = await fetch(`https://api.notion.com/v1/databases/${dbId}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${clientAccessToken}`,
+              'Notion-Version': '2022-06-28'
+            }
+          });
+          if (dbRes.ok) {
+            const dbData = await dbRes.json();
+            const title = dbData.title?.[0]?.plain_text || '';
+            console.log(`🌟 [LINKED DATABASE DETECTADA]: ${title} (ID: ${dbId})`);
+            list.push({ id: dbId, title });
+          }
+        } catch (dbErr) {
+          console.error(`Erro ao buscar meta da database linkada ${dbId}:`, dbErr);
+        }
       } else if (block.has_children) {
         const subDbs = await findDatabasesInBlock(clientAccessToken, block.id, depth + 1);
         list.push(...subDbs);
