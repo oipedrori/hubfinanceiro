@@ -130,13 +130,23 @@ export async function logTokenUsage(pageId: string, tokensUsed: number) {
   }
 }
 
-export async function deleteCustomerBySecretKey(secretKey: string) {
+export async function deleteCustomerBySecretKey({ secretKey, email }: { secretKey?: string | null, email?: string | null }) {
   try {
     const customersRef = db.collection(CUSTOMERS_COLLECTION);
-    const snapshot = await customersRef.where('secretKey', '==', secretKey).limit(1).get();
+    let query: admin.firestore.Query = customersRef;
+
+    if (secretKey) {
+      query = query.where('secretKey', '==', secretKey);
+    } else if (email) {
+      query = query.where('email', '==', email);
+    } else {
+      return { success: false, reason: 'Nenhuma chave de segurança ou e-mail fornecido.' };
+    }
+
+    const snapshot = await query.limit(1).get();
 
     if (snapshot.empty) {
-      return { success: false, reason: 'Cliente não encontrado.' };
+      return { success: false, reason: 'Cliente não encontrado no banco de dados.' };
     }
 
     const doc = snapshot.docs[0];

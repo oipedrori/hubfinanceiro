@@ -5,12 +5,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const secretKey = body.secretKey;
+    const email = body.email;
 
-    if (!secretKey) {
-      return NextResponse.json({ success: false, message: 'Chave de segurança não informada.' }, { status: 400 });
+    if (!secretKey && !email) {
+      return NextResponse.json({ success: false, message: 'Chave de segurança ou e-mail não informado.' }, { status: 400 });
     }
 
-    const result = await deleteCustomerBySecretKey(secretKey);
+    const result = await deleteCustomerBySecretKey({ secretKey, email });
     
     if (result.success) {
       return NextResponse.json({ success: true, message: 'Conta excluída com sucesso.' });

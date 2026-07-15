@@ -22,6 +22,7 @@ function LandingContent() {
   const [shortcutSaved, setShortcutSaved] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const localKey = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : secretKey;
 
   // Estados para Modais Legais
   const [showTerms, setShowTerms] = useState(false);
@@ -133,7 +134,10 @@ function LandingContent() {
         const res = await fetch('/api/delete-account', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secretKey: localKey })
+          body: JSON.stringify({ 
+            secretKey: localKey || null,
+            email: user?.email || null 
+          })
         });
         const data = await res.json();
         if (data.success) {
@@ -174,7 +178,6 @@ function LandingContent() {
     return <div className="main" style={{ minHeight: '100vh' }}><div className="spinner"></div></div>;
   }
 
-  const localKey = typeof window !== 'undefined' ? localStorage.getItem('zimbroo_secret_key') : secretKey;
   const contentMaxWidth = user ? '500px' : '1000px';
 
   return (
