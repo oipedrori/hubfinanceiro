@@ -21,6 +21,7 @@ function LandingContent() {
   const [notionConnected, setNotionConnected] = useState(false);
   const [shortcutSaved, setShortcutSaved] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
 
   // Estados para Modais Legais
   const [showTerms, setShowTerms] = useState(false);
@@ -360,13 +361,15 @@ function LandingContent() {
                         alert('Chave copiada! Agora salve-a no seu celular na próxima etapa.');
                       }}
                       className="accordion-btn"
-                      style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--foreground)', marginBottom: '0.5rem' }}
+                      style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--foreground)', marginBottom: '1.2rem' }}
                     >
                       Copiar Chave
                     </button>
 
                     <button 
                       onClick={async () => {
+                        if (verifying) return;
+                        setVerifying(true);
                         // Simula uma chamada rápida para verificar se as tabelas existem
                         try {
                           const res = await fetch('/api/process', {
@@ -384,12 +387,31 @@ function LandingContent() {
                           }
                         } catch (e) {
                           alert('Erro ao verificar conexão. Tente novamente.');
+                        } finally {
+                          setVerifying(false);
                         }
                       }}
                       className="accordion-btn"
-                      style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+                      disabled={verifying}
+                      style={{ 
+                        background: 'var(--foreground)', 
+                        color: 'var(--background)',
+                        opacity: verifying ? 0.7 : 1,
+                        cursor: verifying ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
                     >
-                      Verificar e Avançar
+                      {verifying ? (
+                        <>
+                          <div className="spinner" style={{ width: '14px', height: '14px', borderTopColor: 'currentColor' }}></div>
+                          <span>Verificando...</span>
+                        </>
+                      ) : (
+                        "Verificar e Avançar"
+                      )}
                     </button>
                   </div>
                 ) : (
