@@ -129,3 +129,21 @@ export async function logTokenUsage(pageId: string, tokensUsed: number) {
     console.error("Erro no Firebase Admin ao registrar uso de tokens:", error);
   }
 }
+
+export async function deleteCustomerBySecretKey(secretKey: string) {
+  try {
+    const customersRef = db.collection(CUSTOMERS_COLLECTION);
+    const snapshot = await customersRef.where('secretKey', '==', secretKey).limit(1).get();
+
+    if (snapshot.empty) {
+      return { success: false, reason: 'Cliente não encontrado.' };
+    }
+
+    const doc = snapshot.docs[0];
+    await doc.ref.delete();
+    return { success: true };
+  } catch (error) {
+    console.error("Erro no Firebase Admin ao deletar cliente:", error);
+    throw new Error('Falha ao tentar excluir os dados do cliente do banco de dados.');
+  }
+}

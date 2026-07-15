@@ -279,6 +279,23 @@ a {
   color: #ef4444 !important;
 }
 
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  color: #b91c1c !important;
+  opacity: 0.8;
+}
+
 .check-circle {
   width: 24px;
   height: 24px;
