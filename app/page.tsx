@@ -322,7 +322,7 @@ function LandingContent() {
           </div>
           
           <p className="subtitle" style={{ fontSize: '1rem', marginBottom: '2rem' }}>
-            Siga os passos abaixo para preparar seu ambiente financeiro.
+            Siga os passos abaixo para configurar seu Hub Financeiro na sua conta do Notion.
           </p>
 
           <div className="checklist">
